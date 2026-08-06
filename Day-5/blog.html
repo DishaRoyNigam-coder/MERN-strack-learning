@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Styled Semantic Blog</title>
+
+    <!-- ========================================================== -->
+    <!-- INTERNAL CSS STARTS HERE                                    -->
+    <!-- ========================================================== -->
+    <style>
+        /* --- 1. GLOBAL RESET & BASE STYLES --- */
+        /* 
+           By default, browsers add 8px margin to the body. 
+           We are resetting it to 0, and adding a background color.
+        */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box; /* Makes width/height include padding & border */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fc; /* Light blue-gray background */
+            color: #1a1a2e; /* Dark navy text for contrast */
+            line-height: 1.7; /* Makes paragraphs airy and readable */
+            padding: 40px 20px; /* Adds space around the entire page */
+        }
+
+        /* --- 2. STYLING THE HEADER & NAVIGATION --- */
+        header {
+            background-color: #16213e; /* Dark navy background */
+            color: #ffffff; /* White text */
+            padding: 30px 20px; /* INNER SPACE (Padding) */
+            border-radius: 12px; /* Rounds the corners */
+            margin-bottom: 30px; /* OUTER SPACE (Margin) pushing content below */
+            text-align: center;
+            border-bottom: 5px solid #e94560; /* A hot pink/red border line */
+        }
+
+        header h1 {
+            font-size: 2.5rem; /* Larger title */
+            font-weight: 700; /* Bold */
+            letter-spacing: 1px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.85; /* Slightly faded subtitle */
+            margin-top: 5px;
+        }
+
+        /* Styling the Navigation Menu */
+        nav ul {
+            list-style-type: none; /* Removes the bullet points */
+            display: flex; /* Lays items out horizontally */
+            justify-content: center; /* Centers them */
+            gap: 30px; /* Space between each link */
+            margin-top: 20px;
+            padding: 0;
+        }
+
+        nav ul li a {
+            color: #ffffff;
+            text-decoration: none; /* Removes the underline */
+            font-weight: 600;
+            padding: 8px 16px; /* Adds clickable padding */
+            border-radius: 30px;
+            transition: background-color 0.3s ease; /* Smooth hover effect */
+        }
+
+        /* Pseudo-class: Hover effect */
+        nav ul li a:hover {
+            background-color: #e94560; /* Pink background on hover */
+            color: #fff;
+        }
+
+        /* --- 3. STYLING THE MAIN CONTENT (The Blog Post) --- */
+        main {
+            max-width: 850px; /* Limits width so text isn't a huge line */
+            margin: 0 auto 30px auto; /* Centers the container (auto left/right) */
+            background-color: #ffffff; /* White card background */
+            padding: 40px 50px; /* INNER SPACE inside the white card */
+            border-radius: 16px; /* Soft rounded corners */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* A subtle shadow pop */
+        }
+
+        /* Styling the Article */
+        article {
+            /* Let's apply a border to demonstrate the box model */
+            border-left: 6px solid #e94560; /* Pink left border accent */
+            padding-left: 25px; /* Pushes content away from the border (Padding) */
+        }
+
+        /* Article Header (Title + Meta) */
+        article header {
+            background: transparent; /* Override the dark background from above */
+            color: #16213e;
+            padding: 0 0 20px 0;
+            margin: 0 0 20px 0;
+            border-bottom: 2px solid #eaeef3;
+            border-radius: 0;
+            text-align: left;
+        }
+
+        article header h2 {
+            font-size: 2rem;
+            color: #16213e;
+            margin-bottom: 5px;
+        }
+
+        article header p {
+            color: #6c757d; /* Gray meta info */
+            font-size: 0.95rem;
+            opacity: 1;
+        }
+
+        /* --- 4. STYLING SECTIONS INSIDE THE ARTICLE --- */
+        section {
+            margin-bottom: 30px; /* OUTER SPACE between sections */
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #dee2e6; /* Light dashed divider */
+        }
+
+        /* Remove border from the last section so it doesn't look cut off */
+        section:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        section h3 {
+            font-size: 1.5rem;
+            color: #16213e;
+            margin-bottom: 12px;
+        }
+
+        section h4 {
+            font-size: 1.2rem;
+            color: #e94560;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+
+        section p {
+            margin-bottom: 10px; /* Space between paragraphs */
+        }
+
+        /* Styling inline code tags (e.g., <code>&lt;article&gt;</code>) */
+        code {
+            background-color: #f1f3f5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #e94560;
+        }
+
+        /* --- 5. STYLING THE ARTICLE FOOTER (Tags) --- */
+        article footer {
+            background-color: #f8f9fa;
+            color: #333;
+            padding: 15px 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+            border: 1px solid #eaeef3;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        /* --- 6. STYLING THE ASIDE (Sidebar) --- */
+        aside {
+            background-color: #f8f9fa;
+            padding: 25px;
+            margin-top: 30px;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+        }
+
+        aside h3 {
+            color: #16213e;
+            margin-bottom: 15px;
+        }
+
+        aside ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        aside ul li {
+            margin-bottom: 10px;
+        }
+
+        aside ul li a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        aside ul li a:hover {
+            text-decoration: underline;
+        }
+
+        /* --- 7. STYLING THE MAIN FOOTER --- */
+        body > footer {
+            background-color: #16213e;
+            color: #adb5bd;
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 12px;
+            max-width: 850px;
+            margin: 0 auto; /* Centers the footer */
+        }
+
+        body > footer p {
+            margin: 5px 0;
+        }
+
+        body > footer a {
+            color: #e94560;
+            text-decoration: none;
+        }
+
+        body > footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* --- 8. RESPONSIVE TOUCH (Mobile friendly) --- */
+        /* If the screen is smaller than 700px, reduce padding */
+        @media (max-width: 700px) {
+            main {
+                padding: 20px;
+            }
+            article {
+                padding-left: 15px;
+            }
+            nav ul {
+                flex-wrap: wrap; /* Allows nav items to wrap */
+                gap: 10px;
+            }
+            header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= HEADER ================= -->
+    <header>
+        <h1>🚀 My Developer Journey</h1>
+        <p>Daily logs of a MERN Stack student</p>
+
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Projects</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main>
+
+        <article>
+
+            <!-- Article Header -->
+            <header>
+                <h2>Day 2: Learning Semantic HTML</h2>
+                <p>Published on <time datetime="2026-08-06">August 6, 2026</time> by <strong>Your Name</strong></p>
+            </header>
+
+            <!-- SECTION 1 -->
+            <section>
+                <h3>What are Semantic Tags?</h3>
+                <p>
+                    Today I learned about semantic HTML tags. Unlike generic <code>&lt;div&gt;</code> tags,
+                    semantic tags like <code>&lt;article&gt;</code> and <code>&lt;nav&gt;</code> give
+                    meaning to the content. This is crucial for accessibility and SEO.
+                </p>
+            </section>
+
+            <!-- SECTION 2 -->
+            <section>
+                <h3>Breaking Down My Layout</h3>
+                <p>
+                    I used <code>&lt;header&gt;</code> for my site banner, <code>&lt;nav&gt;</code> for the menu,
+                    <code>&lt;main&gt;</code> for the core content, and <code>&lt;article&gt;</code> for this blog post.
+                    Inside the article, I split the text into logical <code>&lt;section&gt;</code> elements.
+                </p>
+
+                <section>
+                    <h4>Why Accessibility Matters</h4>
+                    <p>
+                        Screen readers rely on these tags. A visually impaired user can jump directly to
+                        the <code>&lt;main&gt;</code> content without listening to the navigation over and over.
+                    </p>
+                </section>
+            </section>
+
+            <!-- SECTION 3 -->
+            <section>
+                <h3>What's Next?</h3>
+                <p>
+                    Tomorrow, I'll dive into HTML forms and inputs. But for now, I'm proud of this
+                    clean, semantic structure.
+                </p>
+            </section>
+
+            <!-- Article Footer -->
+            <footer>
+                <p>Posted in: <strong>HTML Basics</strong> | Tags: #semantic #accessibility #webdev</p>
+            </footer>
+
+        </article>
+
+        <!-- ASIDE (Sidebar) -->
+        <aside>
+            <h3>📖 Related Posts</h3>
+            <ul>
+                <li><a href="#">Day 1: Setting up VS Code</a></li>
+                <li><a href="#">Day 3: HTML Forms</a></li>
+                <li><a href="#">Day 4: CSS Flexbox</a></li>
+            </ul>
+        </aside>
+
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer>
+        <p>&copy; 2026 My Developer Journey. Built with ❤️ and Semantic HTML.</p>
+        <p>
+            <a href="#">Privacy Policy</a> |
+            <a href="#">Contact</a>
+        </p>
+    </footer>
+
+</body>
+</html>
