@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo App - Day 19</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 550px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 35px 30px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            animation: fadeSlideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header .icon {
+            font-size: 2.8rem;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        /* ---------- ADD FORM ---------- */
+        .add-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .add-form input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .add-form input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .add-form button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            background: #0f172a;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .add-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+        }
+
+        /* ---------- FILTERS ---------- */
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filters button {
+            padding: 6px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 30px;
+            background: transparent;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            color: #475569;
+        }
+
+        .filters button:hover {
+            background: #f1f5f9;
+        }
+
+        .filters button.active {
+            background: #0f172a;
+            color: #fff;
+            border-color: #0f172a;
+        }
+
+        .filters .clear-btn {
+            margin-left: auto;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+
+        .filters .clear-btn:hover {
+            background: #fef2f2;
+        }
+
+        /* ---------- STATS ---------- */
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #64748b;
+            padding: 8px 0 12px;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 16px;
+        }
+
+        .stats .count {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        /* ---------- TODO LIST ---------- */
+        .todo-list {
+            list-style: none;
+            min-height: 100px;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .todo-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .todo-item .checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            flex-shrink: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            background: #fff;
+            font-size: 0.8rem;
+        }
+
+        .todo-item .checkbox:hover {
+            border-color: #3b82f6;
+        }
+
+        .todo-item .checkbox.checked {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: #fff;
+        }
+
+        .todo-item .text {
+            flex: 1;
+            font-size: 1rem;
+            color: #0f172a;
+            word-break: break-word;
+            transition: color 0.25s ease, text-decoration 0.25s ease;
+        }
+
+        .todo-item .text.completed {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+
+        .todo-item .delete-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .todo-item .delete-btn:hover {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        /* ---------- EMPTY STATE ---------- */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state .big-emoji {
+            font-size: 3.5rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .empty-state h3 {
+            color: #475569;
+            font-size: 1.1rem;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 500px) {
+            .container {
+                padding: 24px 16px;
+            }
+            .add-form {
+                flex-direction: column;
+            }
+            .add-form button {
+                width: 100%;
+            }
+            .filters {
+                gap: 6px;
+            }
+            .filters button {
+                font-size: 0.75rem;
+                padding: 4px 12px;
+            }
+            .filters .clear-btn {
+                margin-left: 0;
+            }
+            .todo-item {
+                padding: 10px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">✅</span>
+            <h1>Todo List</h1>
+            <p>Stay organized and productive.</p>
+        </div>
+
+        <!-- ADD FORM -->
+        <form class="add-form" id="addForm">
+            <input
+                type="text"
+                id="todoInput"
+                placeholder="What do you need to do?"
+                maxlength="200"
+                autofocus
+            />
+            <button type="submit">Add Task</button>
+        </form>
+
+        <!-- FILTERS -->
+        <div class="filters" id="filterContainer">
+            <button class="active" data-filter="all">All</button>
+            <button data-filter="active">Active</button>
+            <button data-filter="completed">Completed</button>
+            <button class="clear-btn" id="clearCompleted">Clear Completed</button>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats">
+            <span>📋 <span class="count" id="taskCount">0</span> tasks</span>
+            <span>✅ <span id="completedCount">0</span> completed</span>
+        </div>
+
+        <!-- TODO LIST -->
+        <ul class="todo-list" id="todoList">
+            <!-- Tasks will be rendered here -->
+        </ul>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: STATE MANAGEMENT
+         * ============================================================
+         * We store todos in an array and sync to localStorage.
+         */
+
+        // --- State ---
+        let todos = [];
+        let currentFilter = 'all';
+
+        // --- DOM References ---
+        const todoList = document.getElementById('todoList');
+        const todoInput = document.getElementById('todoInput');
+        const addForm = document.getElementById('addForm');
+        const taskCount = document.getElementById('taskCount');
+        const completedCount = document.getElementById('completedCount');
+        const filterButtons = document.querySelectorAll('#filterContainer button[data-filter]');
+        const clearCompletedBtn = document.getElementById('clearCompleted');
+
+        // --- Load from localStorage ---
+        function loadTodos() {
+            const stored = localStorage.getItem('todos');
+            if (stored) {
+                try {
+                    todos = JSON.parse(stored);
+                } catch (e) {
+                    todos = [];
+                }
+            } else {
+                // Seed with sample todos
+                todos = [
+                    { id: 1, text: 'Learn DOM manipulation', completed: true },
+                    { id: 2, text: 'Build a todo app', completed: false },
+                    { id: 3, text: 'Master JavaScript', completed: false }
+                ];
+            }
+        }
+
+        // --- Save to localStorage ---
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        // --- Generate unique ID ---
+        function generateId() {
+            return Date.now() + Math.floor(Math.random() * 1000);
+        }
+
+
+        /**
+         * ============================================================
+         * PART 2: RENDER FUNCTION (Creates DOM elements)
+         * ============================================================
+         * This is where we use DOM manipulation methods:
+         * - createElement()
+         * - appendChild()
+         * - addEventListener()
+         * - classList
+         * - remove()
+         */
+
+        function renderTodos() {
+            // --- Filter todos ---
+            let filteredTodos = todos;
+            if (currentFilter === 'active') {
+                filteredTodos = todos.filter(todo => !todo.completed);
+            } else if (currentFilter === 'completed') {
+                filteredTodos = todos.filter(todo => todo.completed);
+            }
+
+            // --- Sort: uncompleted first, then by id ---
+            filteredTodos = [...filteredTodos].sort((a, b) => {
+                if (a.completed !== b.completed) {
+                    return a.completed ? 1 : -1;
+                }
+                return a.id - b.id;
+            });
+
+            // --- Clear the list (remove all children) ---
+            // Method 1: Using innerHTML (quick but less safe with user content)
+            // todoList.innerHTML = '';
+
+            // Method 2: Using while loop (removes one by one)
+            while (todoList.firstChild) {
+                todoList.removeChild(todoList.firstChild);
+            }
+
+            // --- Update stats before rendering ---
+            updateStats();
+
+            // --- Show empty state if no todos ---
+            if (filteredTodos.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                    <span class="big-emoji">📭</span>
+                    <h3>${todos.length === 0 ? 'No tasks yet. Add one above!' : 'No tasks in this filter.'}</h3>
+                `;
+                todoList.appendChild(emptyState);
+                return;
+            }
+
+            // --- Render each todo using createElement() and appendChild() ---
+            filteredTodos.forEach(todo => {
+                const li = document.createElement('li');
+                li.className = 'todo-item';
+                li.dataset.id = todo.id;
+
+                // --- Checkbox ---
+                const checkbox = document.createElement('div');
+                checkbox.className = `checkbox ${todo.completed ? 'checked' : ''}`;
+                checkbox.textContent = todo.completed ? '✓' : '';
+                checkbox.addEventListener('click', () => toggleTodo(todo.id));
+
+                // --- Text ---
+                const textSpan = document.createElement('span');
+                textSpan.className = `text ${todo.completed ? 'completed' : ''}`;
+                textSpan.textContent = todo.text;
+
+                // --- Delete button ---
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = '✕';
+                deleteBtn.setAttribute('aria-label', 'Delete task');
+                deleteBtn.addEventListener('click', () => deleteTodo(todo.id));
+
+                // --- Assemble ---
+                li.appendChild(checkbox);
+                li.appendChild(textSpan);
+                li.appendChild(deleteBtn);
+                todoList.appendChild(li);
+            });
+
+            // --- Update filter button states ---
+            filterButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+            });
+        }
+
+        /**
+         * ============================================================
+         * PART 3: CRUD OPERATIONS (Using DOM methods)
+         * ============================================================
+         */
+
+        // --- Add a new todo ---
+        function addTodo(text) {
+            const trimmedText = text.trim();
+            if (!trimmedText) {
+                alert('Please enter a task!');
+                return false;
+            }
+
+            // Check for duplicate (case-insensitive)
+            const duplicate = todos.some(todo =>
+                todo.text.toLowerCase() === trimmedText.toLowerCase()
+            );
+            if (duplicate) {
+                alert('This task already exists!');
+                return false;
+            }
+
+            const newTodo = {
+                id: generateId(),
+                text: trimmedText,
+                completed: false
+            };
+
+            todos.push(newTodo);
+            saveTodos();
+            renderTodos();
+            todoInput.value = '';
+            todoInput.focus();
+            return true;
+        }
+
+        // --- Toggle todo completion ---
+        function toggleTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                saveTodos();
+                renderTodos();
+            }
+        }
+
+        // --- Delete a todo ---
+        function deleteTodo(id) {
+            // Find the todo to show a confirmation message
+            const todo = todos.find(t => t.id === id);
+            if (!todo) return;
+
+            // Optional: confirm deletion
+            // if (!confirm(`Delete "${todo.text}"?`)) return;
+
+            // Remove the todo from the array
+            const index = todos.findIndex(t => t.id === id);
+            if (index !== -1) {
+                todos.splice(index, 1);
+                saveTodos();
+
+                // Animate removal (optional) - just re-render
+                renderTodos();
+            }
+        }
+
+        // --- Clear all completed todos ---
+        function clearCompleted() {
+            const completedTodos = todos.filter(t => t.completed);
+            if (completedTodos.length === 0) {
+                alert('No completed tasks to clear.');
+                return;
+            }
+
+            if (confirm(`Delete ${completedTodos.length} completed task(s)?`)) {
+                todos = todos.filter(t => !t.completed);
+                saveTodos();
+                renderTodos();
+            }
+        }
+
+        // --- Update stats ---
+        function updateStats() {
+            const total = todos.length;
+            const completed = todos.filter(t => t.completed).length;
+            taskCount.textContent = total;
+            completedCount.textContent = completed;
+
+            // Update the filter count display
+            // We could also show counts per filter, but keeping it simple
+        }
+
+
+        /**
+         * ============================================================
+         * PART 4: EVENT HANDLING
+         * ============================================================
+         * Using addEventListener() for various events.
+         */
+
+        // --- Form submission (add todo) ---
+        addForm.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevent page reload
+            const text = todoInput.value;
+            addTodo(text);
+        });
+
+        // --- Enter key on input (already handled by form submit) ---
+        // But we add a keydown listener for additional behavior
+        todoInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                todoInput.value = '';
+                todoInput.blur();
+            }
+        });
+
+        // --- Filter buttons ---
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentFilter = btn.dataset.filter;
+                renderTodos();
+            });
+        });
+
+        // --- Clear completed button ---
+        clearCompletedBtn.addEventListener('click', clearCompleted);
+
+        // --- Keyboard shortcut: Ctrl+Shift+Delete to clear completed ---
+        document.addEventListener('keydown', (event) => {
+            if (event.ctrlKey && event.shiftKey && event.key === 'Delete') {
+                event.preventDefault();
+                clearCompleted();
+            }
+        });
+
+
+        /**
+         * ============================================================
+         * PART 5: DEMONSTRATION (Console Output)
+         * ============================================================
+         * Showing DOM methods in action.
+         * (Open the browser console to see the output!)
+         */
+
+        console.log('\n=== DAY 19: DOM MANIPULATION DEMONSTRATION ===\n');
+
+        // --- 1. Selecting Elements ---
+        console.log('--- 1. Selecting Elements ---');
+
+        // Using querySelector
+        const container = document.querySelector('.container');
+        console.log('Container element:', container);
+
+        // Using querySelectorAll
+        const filterBtns = document.querySelectorAll('.filters button');
+        console.log('Filter buttons:', filterBtns.length);
+
+        // By ID
+        const todoInputEl = document.getElementById('todoInput');
+        console.log('Todo input (by ID):', todoInputEl);
+
+        // --- 2. Creating Elements ---
+        console.log('\n--- 2. Creating Elements ---');
+
+        const demoDiv = document.createElement('div');
+        demoDiv.textContent = 'This was created with createElement()';
+        demoDiv.style.padding = '10px';
+        demoDiv.style.background = '#f1f5f9';
+        demoDiv.style.borderRadius = '8px';
+        demoDiv.style.marginTop = '16px';
+        demoDiv.style.fontSize = '0.85rem';
+        demoDiv.style.color = '#64748b';
+
+        // Append to container
+        container.appendChild(demoDiv);
+
+        console.log('Added demo element to the page:', demoDiv);
+
+        // --- 3. Event Handling ---
+        console.log('\n--- 3. Event Handling ---');
+
+        // Adding a click listener to the demo div
+        demoDiv.addEventListener('click', () => {
+            console.log('📢 Demo div clicked!');
+            demoDiv.style.background = '#dbeafe';
+            setTimeout(() => {
+                demoDiv.style.background = '#f1f5f9';
+            }, 300);
+        });
+
+        console.log('Click the "This was created..." box to see the event in action!');
+
+        // --- 4. Removing Elements ---
+        console.log('\n--- 4. Removing Elements ---');
+
+        // We'll keep the demo element, but show how remove() works
+        const tempElement = document.createElement('div');
+        tempElement.textContent = 'Temporary element (will be removed)';
+        tempElement.style.display = 'none';
+        container.appendChild(tempElement);
+
+        // Remove it
+        tempElement.remove();
+        console.log('Temporary element created and removed.');
+
+        // --- 5. Class Manipulation ---
+        console.log('\n--- 5. Class Manipulation ---');
+
+        // Toggle a class on the header
+        const header = document.querySelector('.header');
+        console.log('Header classes before:', header.className);
+        header.classList.add('demo-class');
+        console.log('Header classes after adding:', header.className);
+        header.classList.remove('demo-class');
+        console.log('Header classes after removing:', header.className);
+
+        // --- 6. Event Delegation ---
+        console.log('\n--- 6. Event Delegation ---');
+
+        // We use event delegation on the todo list
+        // (Already implemented in the render function using addEventListener on each item)
+
+        console.log('✅ Event delegation is used for checkbox and delete button clicks.');
+        console.log('✅ All events are handled through individual listeners (simple approach).');
+
+        // --- 7. localStorage ---
+        console.log('\n--- 7. localStorage ---');
+
+        const storedTodos = localStorage.getItem('todos');
+        console.log('Todos stored in localStorage:', storedTodos ? JSON.parse(storedTodos).length : 'none');
+
+        console.log('\n=== Todo App is ready! Add, complete, delete, and filter your tasks. ===');
+    </script>
+
+</body>
+</html>
