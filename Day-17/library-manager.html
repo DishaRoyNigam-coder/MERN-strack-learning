@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Library Manager (Refactored) - Day 17</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8edf5 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 35px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            animation: fadeSlideUp 0.6s ease-out;
+            margin-top: 20px;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .header .icon {
+            font-size: 3.5rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .header .stats-badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* ---------- ADD BOOK FORM ---------- */
+        .add-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+        }
+
+        .add-section h2 {
+            font-size: 1.1rem;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .add-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .add-form input {
+            flex: 1 1 150px;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .add-form input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .add-form button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .add-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-add {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .btn-add:hover {
+            background: #1e293b;
+        }
+
+        .btn-clear {
+            background: #eef2f6;
+            color: #0f172a;
+        }
+
+        .btn-clear:hover {
+            background: #e2e8f0;
+        }
+
+        /* ---------- FILTERS ---------- */
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 12px 0;
+        }
+
+        .filters input {
+            flex: 1 1 200px;
+            padding: 8px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .filters input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .filters select {
+            padding: 8px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            background: #fff;
+            transition: border-color 0.3s ease;
+        }
+
+        .filters select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        /* ---------- BOOK LIST ---------- */
+        .book-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .book-list-header h2 {
+            font-size: 1.2rem;
+            color: #0f172a;
+        }
+
+        .book-list-header .count {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .book-list-header .count span {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .book-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .book-item {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .book-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            border-color: #94a3b8;
+        }
+
+        .book-item .book-info {
+            flex: 1 1 200px;
+        }
+
+        .book-item .book-title {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 1.05rem;
+        }
+
+        .book-item .book-author {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .book-item .book-meta {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 2px;
+        }
+
+        .book-item .book-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .book-item .book-actions button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .book-item .book-actions button:hover {
+            transform: scale(1.04);
+        }
+
+        .btn-remove {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .btn-remove:hover {
+            background: #fee2e2;
+        }
+
+        .btn-toggle-read {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .btn-toggle-read:hover {
+            background: #dcfce7;
+        }
+
+        .book-item .status-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 12px;
+            border-radius: 30px;
+            margin-left: 8px;
+        }
+
+        .status-badge.read {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-badge.unread {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        /* ---------- EMPTY STATE ---------- */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state .big-emoji {
+            font-size: 3.5rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .empty-state h3 {
+            color: #475569;
+            font-size: 1.2rem;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (min-width: 600px) {
+            .book-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px 16px;
+            }
+            .add-form input {
+                flex: 1 1 100%;
+            }
+            .book-item {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .book-item .book-actions {
+                justify-content: flex-start;
+            }
+            .filters {
+                flex-direction: column;
+            }
+            .filters input,
+            .filters select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">📚</span>
+            <h1>Library Manager</h1>
+            <p>Add, remove, and organize your book collection.</p>
+            <span class="stats-badge" id="statsBadge">📖 0 books in library</span>
+        </div>
+
+        <!-- ADD BOOK -->
+        <div class="add-section">
+            <h2>➕ Add a New Book</h2>
+            <div class="add-form">
+                <input type="text" id="bookTitle" placeholder="Book title *" />
+                <input type="text" id="bookAuthor" placeholder="Author *" />
+                <input type="text" id="bookISBN" placeholder="ISBN (optional)" />
+                <button class="btn-add" onclick="addBook()">Add Book</button>
+                <button class="btn-clear" onclick="clearForm()">Clear</button>
+            </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filters">
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="🔍 Search by title or author..."
+                oninput="renderBooks()"
+            />
+            <select id="filterStatus" onchange="renderBooks()">
+                <option value="all">All Books</option>
+                <option value="read">Read</option>
+                <option value="unread">Unread</option>
+            </select>
+        </div>
+
+        <!-- BOOK LIST -->
+        <div class="book-list-header">
+            <h2>📖 Your Books</h2>
+            <div class="count">Showing <span id="visibleCount">0</span> books</div>
+        </div>
+
+        <div class="book-grid" id="bookGrid">
+            <!-- Books will be rendered here -->
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT (REFACTORED WITH ES6+)                             -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: THE LIBRARY OBJECT (REFACTORED)
+         * ============================================================
+         * Features used:
+         * - Object destructuring in methods
+         * - Array destructuring in methods
+         * - Spread operator for copying arrays
+         * - Rest operator in function parameters
+         */
+
+        const Library = {
+            // --- Properties ---
+            books: [],
+            lastId: 0,
+
+            // --- Methods ---
+
+            /**
+             * addBook
+             * Uses object destructuring for parameters (cleaner!)
+             * Uses spread operator to create a new book object
+             */
+            addBook({ title, author, isbn = '' }) {
+                // ✅ OBJECT DESTRUCTURING in parameters (with default value)
+
+                // Validate input
+                if (!title || title.trim() === '') {
+                    console.error('❌ Book title is required.');
+                    return null;
+                }
+                if (!author || author.trim() === '') {
+                    console.error('❌ Book author is required.');
+                    return null;
+                }
+
+                // ✅ SPREAD OPERATOR: Create a new book object
+                // This is cleaner than manually assigning properties
+                const book = {
+                    id: ++this.lastId,
+                    title: title.trim(),
+                    author: author.trim(),
+                    isbn: isbn.trim() || 'N/A',
+                    isRead: false,
+                    addedAt: new Date().toLocaleDateString()
+                };
+
+                // ✅ SPREAD OPERATOR: Add book to array
+                // Creates a new array with the book added
+                this.books = [...this.books, book];
+
+                console.log(`✅ Book added: "${book.title}" by ${book.author}`);
+                return book;
+            },
+
+            /**
+             * removeBook
+             * Uses array destructuring to get the removed book
+             */
+            removeBook(id) {
+                // ✅ ARRAY DESTRUCTURING: Find index and remove
+                const index = this.books.findIndex(book => book.id === id);
+
+                if (index === -1) {
+                    console.warn(`⚠️ Book with ID ${id} not found.`);
+                    return false;
+                }
+
+                // ✅ ARRAY DESTRUCTURING: Get the removed book
+                // SPREAD OPERATOR: Create a new array without the book
+                const [removed] = this.books.splice(index, 1);
+                console.log(`🗑️ Book removed: "${removed.title}" by ${removed.author}`);
+                return true;
+            },
+
+            /**
+             * toggleReadStatus
+             * Uses object destructuring to get book properties
+             */
+            toggleReadStatus(id) {
+                const book = this.books.find(b => b.id === id);
+
+                if (!book) {
+                    console.warn(`⚠️ Book with ID ${id} not found.`);
+                    return false;
+                }
+
+                // ✅ OBJECT DESTRUCTURING + SPREAD: Update the book
+                // Creates a new book object with isRead toggled
+                const updatedBook = { ...book, isRead: !book.isRead };
+
+                // ✅ ARRAY DESTRUCTURING + SPREAD: Replace the book
+                const index = this.books.findIndex(b => b.id === id);
+                this.books = [
+                    ...this.books.slice(0, index),
+                    updatedBook,
+                    ...this.books.slice(index + 1)
+                ];
+
+                console.log(`📖 Book "${book.title}" marked as ${updatedBook.isRead ? 'READ' : 'UNREAD'}`);
+                return true;
+            },
+
+            /**
+             * getBook
+             * Uses object destructuring in return
+             */
+            getBook(id) {
+                const book = this.books.find(b => b.id === id);
+                return book ? { ...book } : null; // ✅ SPREAD: Return a copy
+            },
+
+            /**
+             * searchBooks
+             * Uses destructuring in filter callback
+             */
+            searchBooks(query) {
+                if (!query || query.trim() === '') {
+                    return [...this.books]; // ✅ SPREAD: Return a copy
+                }
+
+                const term = query.toLowerCase().trim();
+
+                // ✅ OBJECT DESTRUCTURING in filter callback
+                return this.books.filter(({ title, author }) =>
+                    title.toLowerCase().includes(term) ||
+                    author.toLowerCase().includes(term)
+                );
+            },
+
+            /**
+             * getBooksByStatus
+             * Uses destructuring in filter callback
+             */
+            getBooksByStatus(status) {
+                if (status === 'all') {
+                    return [...this.books]; // ✅ SPREAD: Return a copy
+                }
+
+                const isRead = status === 'read';
+
+                // ✅ OBJECT DESTRUCTURING in filter callback
+                return this.books.filter(({ isRead: bookIsRead }) => bookIsRead === isRead);
+                // Note: Renaming isRead to bookIsRead to avoid conflict with the variable above
+            },
+
+            /**
+             * getStats
+             * Uses destructuring for stats calculation
+             */
+            getStats() {
+                const total = this.books.length;
+                const read = this.books.filter(b => b.isRead).length;
+                const unread = total - read;
+
+                // ✅ ARRAY DESTRUCTURING: Get most recent book
+                const [mostRecent] = this.books.length > 0 ?
+                    this.books.sort((a, b) => b.id - a.id).slice(0, 1) :
+                    [null];
+
+                return {
+                    total,
+                    read,
+                    unread,
+                    mostRecent
+                };
+            },
+
+            /**
+             * clearAll
+             * Uses rest operator to log all removed books
+             */
+            clearAll() {
+                if (this.books.length === 0) return;
+
+                const count = this.books.length;
+
+                // ✅ SPREAD: Keep a copy before clearing
+                const removedBooks = [...this.books];
+
+                // ✅ REST OPERATOR: Log each removed book (demonstration)
+                const logBooks = (...books) => {
+                    books.forEach(book => {
+                        console.log(`  Removed: "${book.title}" by ${book.author}`);
+                    });
+                };
+
+                console.log(`🗑️ Clearing ${count} books:`);
+                logBooks(...removedBooks); // ✅ SPREAD: Pass each book as argument
+
+                this.books = [];
+                this.lastId = 0;
+                console.log(`🗑️ Cleared all ${count} books.`);
+            },
+
+            /**
+             * getFormattedBook
+             * Uses object destructuring to format a book
+             */
+            getFormattedBook(book) {
+                // ✅ OBJECT DESTRUCTURING: Extract properties
+                const { id, title, author, isRead } = book;
+                const status = isRead ? '📖 READ' : '📕 UNREAD';
+                return `[#${id}] "${title}" by ${author} - ${status}`;
+            },
+
+            /**
+             * logAllBooks
+             * Uses forEach with destructuring
+             */
+            logAllBooks() {
+                if (this.books.length === 0) {
+                    console.log('📚 Library is empty.');
+                    return;
+                }
+
+                console.log(`\n📚 LIBRARY (${this.books.length} books):`);
+
+                // ✅ OBJECT DESTRUCTURING in forEach callback
+                this.books.forEach(({ id, title, author, isRead }) => {
+                    const status = isRead ? '📖 READ' : '📕 UNREAD';
+                    console.log(`  [#${id}] "${title}" by ${author} - ${status}`);
+                });
+            }
+        };
+
+
+        /**
+         * ============================================================
+         * PART 2: UI FUNCTIONS (REFACTORED)
+         * ============================================================
+         * Features used:
+         * - Object destructuring to get values from form
+         * - Array destructuring for DOM queries
+         */
+
+        /**
+         * addBook
+         * Uses object destructuring to get form values
+         */
+        function addBook() {
+            // ✅ OBJECT DESTRUCTURING: Get all input values in one go
+            const titleInput = document.getElementById('bookTitle');
+            const authorInput = document.getElementById('bookAuthor');
+            const isbnInput = document.getElementById('bookISBN');
+
+            const title = titleInput.value.trim();
+            const author = authorInput.value.trim();
+            const isbn = isbnInput.value.trim();
+
+            // Validate
+            if (!title) {
+                alert('⚠️ Please enter a book title.');
+                titleInput.focus();
+                return;
+            }
+            if (!author) {
+                alert('⚠️ Please enter the author name.');
+                authorInput.focus();
+                return;
+            }
+
+            // ✅ OBJECT DESTRUCTURING: Pass as an object (cleaner than multiple params)
+            const book = Library.addBook({ title, author, isbn });
+
+            if (book) {
+                // Clear inputs
+                titleInput.value = '';
+                authorInput.value = '';
+                isbnInput.value = '';
+                titleInput.focus();
+
+                // Update the UI
+                renderBooks();
+                updateStats();
+            }
+        }
+
+        /**
+         * clearForm
+         * Uses array destructuring with querySelectorAll
+         */
+        function clearForm() {
+            // ✅ ARRAY DESTRUCTURING: Get all inputs in one line
+            const inputs = document.querySelectorAll('#bookTitle, #bookAuthor, #bookISBN');
+            inputs.forEach(input => input.value = '');
+            document.getElementById('bookTitle').focus();
+        }
+
+        /**
+         * removeBook
+         */
+        function removeBook(id) {
+            if (confirm('Are you sure you want to remove this book?')) {
+                Library.removeBook(id);
+                renderBooks();
+                updateStats();
+            }
+        }
+
+        /**
+         * toggleReadStatus
+         */
+        function toggleReadStatus(id) {
+            Library.toggleReadStatus(id);
+            renderBooks();
+            updateStats();
+        }
+
+        /**
+         * renderBooks
+         * Uses destructuring extensively in the rendering logic
+         */
+        function renderBooks() {
+            const grid = document.getElementById('bookGrid');
+            const searchTerm = document.getElementById('searchInput').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            // --- 1. Get filtered books ---
+            let books = [...Library.books]; // ✅ SPREAD: Create a copy
+
+            // Apply search filter
+            if (searchTerm.trim() !== '') {
+                books = Library.searchBooks(searchTerm);
+            }
+
+            // Apply status filter
+            if (statusFilter !== 'all') {
+                books = Library.getBooksByStatus(statusFilter);
+            }
+
+            // --- 2. Update visible count ---
+            document.getElementById('visibleCount').textContent = books.length;
+
+            // --- 3. Render the books ---
+            if (books.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <span class="big-emoji">📭</span>
+                        <h3>No books found</h3>
+                        <p>${Library.books.length === 0 ? 'Start by adding your first book!' : 'Try adjusting your filters.'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // ✅ OBJECT DESTRUCTURING in map callback
+            const html = books.map(({
+                id,
+                title,
+                author,
+                isbn,
+                isRead,
+                addedAt
+            }) => {
+                const statusText = isRead ? 'READ' : 'UNREAD';
+                const statusClass = isRead ? 'read' : 'unread';
+                const toggleText = isRead ? '📖 Read' : '📕 Unread';
+
+                return `
+                    <div class="book-item" data-id="${id}">
+                        <div class="book-info">
+                            <div class="book-title">
+                                ${title}
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                            <div class="book-author">✍️ ${author}</div>
+                            <div class="book-meta">
+                                <span>📌 ISBN: ${isbn}</span>
+                                <span>📅 Added: ${addedAt}</span>
+                            </div>
+                        </div>
+                        <div class="book-actions">
+                            <button class="btn-toggle-read" onclick="toggleReadStatus(${id})">
+                                ${toggleText}
+                            </button>
+                            <button class="btn-remove" onclick="removeBook(${id})">
+                                🗑️ Remove
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            grid.innerHTML = html;
+        }
+
+        /**
+         * updateStats
+         * Uses object destructuring to get stats
+         */
+        function updateStats() {
+            // ✅ OBJECT DESTRUCTURING: Extract stats in one line
+            const { total, read, unread } = Library.getStats();
+            const badge = document.getElementById('statsBadge');
+
+            let emoji = '📖';
+            if (total === 0) emoji = '📭';
+            else if (read === total) emoji = '🎉';
+
+            badge.textContent = `${emoji} ${total} books (${read} read, ${unread} unread)`;
+        }
+
+        /**
+         * renderAndUpdate
+         */
+        function renderAndUpdate() {
+            renderBooks();
+            updateStats();
+        }
+
+
+        /**
+         * ============================================================
+         * PART 3: SEED DATA (Using destructuring and spread)
+         * ============================================================
+         */
+
+        function seedLibrary() {
+            // ✅ ARRAY OF OBJECTS: Using spread to add multiple books
+            const seedBooks = [
+                { title: 'JavaScript: The Good Parts', author: 'Douglas Crockford', isbn: '978-0596517748' },
+                { title: 'Eloquent JavaScript', author: 'Marijn Haverbeke', isbn: '978-1593279509' },
+                { title: "You Don't Know JS", author: 'Kyle Simpson', isbn: '978-1491924464' },
+                { title: 'CSS: The Definitive Guide', author: 'Eric Meyer', isbn: '978-1491918029' },
+                { title: 'HTML & CSS: Design and Build Websites', author: 'Jon Duckett', isbn: '978-1118871645' }
+            ];
+
+            // ✅ SPREAD OPERATOR: Add each book using spread
+            seedBooks.forEach(bookData => {
+                Library.addBook(bookData);
+            });
+
+            // Mark some as read using destructuring
+            const books = Library.books;
+            if (books.length >= 2) {
+                // ✅ OBJECT DESTRUCTURING + SPREAD to update books
+                const [first, second, third] = books;
+                Library.toggleReadStatus(first.id);
+                Library.toggleReadStatus(third.id);
+            }
+
+            console.log('📚 Seeded library with 5 books.');
+        }
+
+
+        /**
+         * ============================================================
+         * PART 4: INITIALIZATION
+         * ============================================================
+         */
+
+        seedLibrary();
+        renderAndUpdate();
+        Library.logAllBooks();
+
+
+        /**
+         * ============================================================
+         * PART 5: DEMONSTRATION (Console Output)
+         * ============================================================
+         * These examples show all the ES6+ features in action.
+         * (Open the browser console to see the output!)
+         */
+
+        console.log('\n=== DAY 17: ES6+ DESTRUCTURING & SPREAD/REST DEMONSTRATION ===\n');
+
+        // --- 1. Array Destructuring ---
+        console.log('--- 1. Array Destructuring ---');
+        const fruits = ['apple', 'banana', 'orange', 'grape', 'kiwi'];
+        const [firstFruit, secondFruit, ...restFruits] = fruits;
+        console.log('First fruit:', firstFruit);
+        console.log('Second fruit:', secondFruit);
+        console.log('Rest fruits:', restFruits);
+
+        // Swapping variables
+        let a = 10;
+        let b = 20;
+        [a, b] = [b, a];
+        console.log('After swap: a =', a, ', b =', b);
+
+        // --- 2. Object Destructuring ---
+        console.log('\n--- 2. Object Destructuring ---');
+        const person = {
+            name: 'Alice',
+            age: 30,
+            city: 'New York',
+            country: 'USA'
+        };
+
+        const { name, age, ...location } = person;
+        console.log('Name:', name);
+        console.log('Age:', age);
+        console.log('Location:', location);
+
+        // Renaming
+        const { name: personName, age: personAge } = person;
+        console.log('Renamed: personName =', personName);
+
+        // Default values
+        const { email = 'N/A' } = person;
+        console.log('Email (default):', email);
+
+        // Nested destructuring
+        const userWithAddress = {
+            name: 'Bob',
+            address: {
+                street: '123 Main St',
+                city: 'Los Angeles',
+                zip: '90001'
+            }
+        };
+        const { address: { street, city: userCity } } = userWithAddress;
+        console.log('Street:', street);
+        console.log('City:', userCity);
+
+        // --- 3. Spread Operator ---
+        console.log('\n--- 3. Spread Operator ---');
+
+        // Array spread
+        const arr1 = [1, 2, 3];
+        const arr2 = [4, 5, 6];
+        const combined = [...arr1, ...arr2];
+        console.log('Combined arrays:', combined);
+
+        const copyArray = [...arr1];
+        console.log('Copy of arr1:', copyArray);
+
+        // Object spread
+        const userObj = { name: 'Charlie', age: 25 };
+        const userAddress = { city: 'Chicago', country: 'USA' };
+        const fullUser = { ...userObj, ...userAddress };
+        console.log('Merged user:', fullUser);
+
+        const updatedUser = { ...fullUser, age: 26 };
+        console.log('Updated user:', updatedUser);
+
+        // --- 4. Rest Operator ---
+        console.log('\n--- 4. Rest Operator ---');
+
+        // Rest in function parameters
+        function sumAll(...numbers) {
+            return numbers.reduce((acc, num) => acc + num, 0);
+        }
+        console.log('sumAll(1, 2, 3) =', sumAll(1, 2, 3));
+        console.log('sumAll(1, 2, 3, 4, 5) =', sumAll(1, 2, 3, 4, 5));
+
+        function greet(greeting, ...names) {
+            return names.map(name => `${greeting}, ${name}!`);
+        }
+        console.log('greet("Hello", "Alice", "Bob"):', greet('Hello', 'Alice', 'Bob'));
+
+        // --- 5. Destructuring in Function Parameters ---
+        console.log('\n--- 5. Destructuring in Function Parameters ---');
+
+        function printUser({ name, age, city = 'Unknown' }) {
+            console.log(`  Name: ${name}, Age: ${age}, City: ${city}`);
+        }
+        printUser({ name: 'Diana', age: 28, city: 'Miami' });
+        printUser({ name: 'Eve', age: 22 });
+
+        // --- 6. Array Destructuring in Function Parameters ---
+        console.log('\n--- 6. Array Destructuring in Function Parameters ---');
+
+        function getFirstAndLast([first, ...rest]) {
+            const last = rest.length > 0 ? rest[rest.length - 1] : first;
+            return { first, last };
+        }
+        const result = getFirstAndLast(['a', 'b', 'c', 'd']);
+        console.log('First and last:', result);
+
+        console.log('\n=== Library Manager refactored with ES6+! ===');
+        console.log('Check the code to see destructuring, spread, and rest in action.');
+    </script>
+
+</body>
+</html>
