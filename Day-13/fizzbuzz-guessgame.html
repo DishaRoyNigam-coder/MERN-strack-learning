@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FizzBuzz & Guessing Game - Day 13</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f1f5f9;
+            color: #0f172a;
+            padding: 30px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+            animation: fadeSlideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- SECTION HEADERS ---------- */
+        .section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #eef2f6;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h2 .badge {
+            font-size: 0.7rem;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+
+        .section p {
+            color: #475569;
+            margin-bottom: 16px;
+        }
+
+        /* ---------- BUTTONS ---------- */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: #0f172a;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #1e293b;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #15803d;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #0f172a;
+            border: 2px solid #e2e8f0;
+        }
+        .btn-outline:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        /* ---------- OUTPUT BOXES ---------- */
+        .output-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-all;
+            min-height: 60px;
+            margin-top: 12px;
+        }
+
+        .output-box .fizz { color: #dc2626; font-weight: 700; }
+        .output-box .buzz { color: #16a34a; font-weight: 700; }
+        .output-box .fizzbuzz { color: #8b5cf6; font-weight: 700; }
+        .output-box .number { color: #475569; }
+        .output-box .highlight { background: #fef08a; padding: 0 4px; }
+
+        /* ---------- GUESSING GAME ---------- */
+        .guess-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin: 12px 0;
+        }
+
+        .guess-area input {
+            padding: 10px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 30px;
+            font-size: 1rem;
+            width: 120px;
+            transition: border-color 0.3s ease;
+        }
+
+        .guess-area input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .guess-area input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .guess-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-radius: 12px;
+        }
+
+        .guess-stats span {
+            font-weight: 600;
+        }
+
+        .guess-stats .attempts {
+            color: #3b82f6;
+        }
+
+        .guess-stats .range {
+            color: #8b5cf6;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (min-width: 600px) {
+            body { padding: 40px; }
+            .container { padding: 40px; }
+        }
+
+        @media (max-width: 500px) {
+            .guess-area input {
+                width: 100%;
+            }
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* ---------- REDUCED MOTION ---------- */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎮 FizzBuzz & Guessing Game</h1>
+    <p class="subtitle">Day 13 – Operators, Conditionals & Loops</p>
+
+    <div class="container">
+
+        <!-- ============================================================ -->
+        <!-- SECTION 1: FIZZBUZZ                                          -->
+        <!-- ============================================================ -->
+        <section class="section">
+            <h2>
+                🔢 FizzBuzz
+                <span class="badge">Classic Challenge</span>
+            </h2>
+            <p>
+                Prints numbers 1 to 100. Multiples of 3 → "Fizz", multiples of 5 → "Buzz",
+                multiples of both → "FizzBuzz".
+            </p>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="runFizzBuzz()">
+                    ▶ Run FizzBuzz
+                </button>
+                <button class="btn btn-outline" onclick="clearFizzBuzz()">
+                    ✕ Clear
+                </button>
+            </div>
+
+            <div class="output-box" id="fizzBuzzOutput">
+                <span style="color: #94a3b8;">Click "Run FizzBuzz" to see the output...</span>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SECTION 2: NUMBER GUESSING GAME                              -->
+        <!-- ============================================================ -->
+        <section class="section">
+            <h2>
+                🎯 Number Guessing Game
+                <span class="badge">Interactive</span>
+            </h2>
+            <p>
+                I'm thinking of a number between 1 and 100. Can you guess it?
+            </p>
+
+            <div class="guess-area">
+                <input type="number" id="guessInput" placeholder="Enter guess..." min="1" max="100" />
+                <button class="btn btn-success" id="guessBtn" onclick="makeGuess()">
+                    🎯 Guess
+                </button>
+                <button class="btn btn-danger" onclick="resetGame()">
+                    🔄 New Game
+                </button>
+            </div>
+
+            <div class="guess-stats">
+                <span>🎯 Range: <span class="range" id="rangeDisplay">1 - 100</span></span>
+                <span>📊 Attempts: <span class="attempts" id="attemptsDisplay">0</span></span>
+                <span>💬 <span id="hintDisplay">Make a guess!</span></span>
+            </div>
+
+            <div class="output-box" id="guessHistory">
+                <span style="color: #94a3b8;">Your guess history will appear here...</span>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: FIZZBUZZ
+         * ============================================================
+         */
+
+        function runFizzBuzz() {
+            const output = document.getElementById('fizzBuzzOutput');
+            let result = '';
+
+            // --- Using a for loop from 1 to 100 ---
+            for (let i = 1; i <= 100; i++) {
+                // --- Using if/else if/else for logic ---
+                if (i % 15 === 0) {
+                    // Multiple of both 3 and 5
+                    result += `<span class="fizzbuzz">FizzBuzz</span> `;
+                } else if (i % 3 === 0) {
+                    // Multiple of 3
+                    result += `<span class="fizz">Fizz</span> `;
+                } else if (i % 5 === 0) {
+                    // Multiple of 5
+                    result += `<span class="buzz">Buzz</span> `;
+                } else {
+                    // Not a multiple
+                    result += `<span class="number">${i}</span> `;
+                }
+
+                // Add a line break every 10 numbers for readability
+                if (i % 10 === 0) {
+                    result += '\n';
+                }
+            }
+
+            output.innerHTML = result;
+        }
+
+        function clearFizzBuzz() {
+            const output = document.getElementById('fizzBuzzOutput');
+            output.innerHTML = '<span style="color: #94a3b8;">Click "Run FizzBuzz" to see the output...</span>';
+        }
+
+
+        /**
+         * ============================================================
+         * PART 2: NUMBER GUESSING GAME
+         * ============================================================
+         */
+
+        // --- Game State Variables ---
+        let secretNumber;
+        let attempts = 0;
+        let gameOver = false;
+        let low = 1;
+        let high = 100;
+        let guessHistory = [];
+
+        // --- Initialize the game ---
+        function initGame() {
+            // Generate a random number between 1 and 100 (inclusive)
+            // Math.random() returns a number between 0 (inclusive) and 1 (exclusive)
+            // Math.floor() rounds down to the nearest integer
+            secretNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = 0;
+            gameOver = false;
+            low = 1;
+            high = 100;
+            guessHistory = [];
+
+            // Update UI
+            document.getElementById('rangeDisplay').textContent = `${low} - ${high}`;
+            document.getElementById('attemptsDisplay').textContent = '0';
+            document.getElementById('hintDisplay').textContent = 'Make a guess!';
+            document.getElementById('guessInput').value = '';
+            document.getElementById('guessInput').disabled = false;
+            document.getElementById('guessBtn').disabled = false;
+            document.getElementById('guessHistory').innerHTML =
+                '<span style="color: #94a3b8;">Your guess history will appear here...</span>';
+
+            console.log('🔢 New game! Secret number:', secretNumber); // For debugging (remove later)
+        }
+
+        /**
+         * Make a guess
+         */
+        function makeGuess() {
+            // --- Prevent guessing if game is over ---
+            if (gameOver) {
+                alert('🎉 Game is over! Click "New Game" to play again.');
+                return;
+            }
+
+            // --- Get the guess from the input field ---
+            const input = document.getElementById('guessInput');
+            const guessValue = input.value.trim();
+
+            // --- Validate input ---
+            if (guessValue === '') {
+                alert('Please enter a number!');
+                return;
+            }
+
+            const guess = Number(guessValue);
+
+            // Check if it's a valid number
+            if (isNaN(guess)) {
+                alert('❌ Please enter a valid number!');
+                input.value = '';
+                return;
+            }
+
+            // Check if it's within range
+            if (guess < low || guess > high) {
+                alert(`❌ Please enter a number between ${low} and ${high}!`);
+                input.value = '';
+                return;
+            }
+
+            // --- Process the guess ---
+            attempts++;
+            guessHistory.push(guess);
+
+            // Update attempts display
+            document.getElementById('attemptsDisplay').textContent = attempts;
+
+            // --- Compare the guess to the secret number ---
+            let message = '';
+            let hint = '';
+
+            if (guess === secretNumber) {
+                // --- CORRECT! ---
+                message = `🎉 Correct! The number was ${secretNumber}. You got it in ${attempts} attempts!`;
+                hint = '🎉 You won!';
+                gameOver = true;
+                document.getElementById('guessInput').disabled = true;
+                document.getElementById('guessBtn').disabled = true;
+
+                // Highlight the win in the history
+                addHistoryEntry(`✅ ${guess} → CORRECT! 🎉`, 'correct');
+
+            } else if (guess < secretNumber) {
+                // --- TOO LOW ---
+                message = `📈 ${guess} is too low! Try a higher number.`;
+                hint = `🔺 Too low! Try between ${guess + 1} and ${high}`;
+                low = Math.max(low, guess + 1);
+                addHistoryEntry(`⬆️ ${guess} → Too low`, 'low');
+
+            } else {
+                // --- TOO HIGH ---
+                message = `📉 ${guess} is too high! Try a lower number.`;
+                hint = `🔻 Too high! Try between ${low} and ${guess - 1}`;
+                high = Math.min(high, guess - 1);
+                addHistoryEntry(`⬇️ ${guess} → Too high`, 'high');
+            }
+
+            // --- Update the UI ---
+            document.getElementById('rangeDisplay').textContent = `${low} - ${high}`;
+            document.getElementById('hintDisplay').textContent = hint;
+
+            // Clear the input field
+            input.value = '';
+
+            // Focus on the input for the next guess
+            if (!gameOver) {
+                input.focus();
+            }
+
+            // --- Check for impossible range (cheating protection) ---
+            if (low > high && !gameOver) {
+                alert('⚠️ Something went wrong! The range is empty. Starting a new game.');
+                resetGame();
+            }
+        }
+
+        /**
+         * Add an entry to the guess history
+         */
+        function addHistoryEntry(text, type) {
+            const historyDiv = document.getElementById('guessHistory');
+
+            // Remove placeholder if present
+            if (historyDiv.innerHTML.includes('Your guess history')) {
+                historyDiv.innerHTML = '';
+            }
+
+            // Create a new entry
+            const entry = document.createElement('div');
+
+            // Add styling based on type
+            if (type === 'correct') {
+                entry.style.color = '#16a34a';
+                entry.style.fontWeight = '700';
+                entry.style.fontSize = '1.1rem';
+            } else if (type === 'low') {
+                entry.style.color = '#2563eb';
+            } else if (type === 'high') {
+                entry.style.color = '#dc2626';
+            }
+
+            entry.textContent = text;
+            historyDiv.appendChild(entry);
+
+            // Auto-scroll to bottom
+            historyDiv.scrollTop = historyDiv.scrollHeight;
+        }
+
+        /**
+         * Reset the game
+         */
+        function resetGame() {
+            initGame();
+            // Clear the history
+            document.getElementById('guessHistory').innerHTML =
+                '<span style="color: #94a3b8;">Your guess history will appear here...</span>';
+        }
+
+        /**
+         * ============================================================
+         * KEYBOARD SUPPORT: Press Enter to submit a guess
+         * ============================================================
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('guessInput');
+            input.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    makeGuess();
+                }
+            });
+
+            // Start the game when the page loads
+            initGame();
+        });
+
+        /**
+         * ============================================================
+         * DEMONSTRATION: Operators, Conditionals & Loops
+         * ============================================================
+         * This code runs in the console when the page loads.
+         * (Open the browser console to see the output!)
+         */
+        console.log('\n=== DAY 13: OPERATORS, CONDITIONALS & LOOPS ===\n');
+
+        // --- 1. OPERATORS ---
+        console.log('--- 1. Operators ---');
+
+        let a = 10;
+        let b = 3;
+
+        console.log(`a = ${a}, b = ${b}`);
+        console.log(`a + b = ${a + b}`);
+        console.log(`a - b = ${a - b}`);
+        console.log(`a * b = ${a * b}`);
+        console.log(`a / b = ${a / b}`);
+        console.log(`a % b = ${a % b}`);
+        console.log(`a ** b = ${a ** b}`);
+
+        // Comparison operators
+        console.log(`a > b: ${a > b}`);
+        console.log(`a < b: ${a < b}`);
+        console.log(`a === 10: ${a === 10}`);
+        console.log(`a !== 10: ${a !== 10}`);
+
+        // Logical operators
+        let isAdult = true;
+        let hasLicense = false;
+        console.log(`isAdult && hasLicense: ${isAdult && hasLicense}`);
+        console.log(`isAdult || hasLicense: ${isAdult || hasLicense}`);
+        console.log(`!isAdult: ${!isAdult}`);
+
+        // --- 2. CONDITIONALS ---
+        console.log('\n--- 2. Conditionals ---');
+
+        // if/else
+        let score = 85;
+        let grade;
+
+        if (score >= 90) {
+            grade = 'A';
+        } else if (score >= 80) {
+            grade = 'B';
+        } else if (score >= 70) {
+            grade = 'C';
+        } else if (score >= 60) {
+            grade = 'D';
+        } else {
+            grade = 'F';
+        }
+        console.log(`Score: ${score}, Grade: ${grade}`);
+
+        // switch
+        let day = 3;
+        let dayName;
+
+        switch (day) {
+            case 1:
+                dayName = 'Monday';
+                break;
+            case 2:
+                dayName = 'Tuesday';
+                break;
+            case 3:
+                dayName = 'Wednesday';
+                break;
+            case 4:
+                dayName = 'Thursday';
+                break;
+            case 5:
+                dayName = 'Friday';
+                break;
+            case 6:
+                dayName = 'Saturday';
+                break;
+            case 7:
+                dayName = 'Sunday';
+                break;
+            default:
+                dayName = 'Invalid day';
+        }
+        console.log(`Day ${day}: ${dayName}`);
+
+        // --- 3. LOOPS ---
+        console.log('\n--- 3. Loops ---');
+
+        // for loop
+        console.log('for loop (1 to 5):');
+        for (let i = 1; i <= 5; i++) {
+            console.log(`  ${i}`);
+        }
+
+        // while loop
+        console.log('while loop (count down from 5):');
+        let count = 5;
+        while (count > 0) {
+            console.log(`  ${count}`);
+            count--;
+        }
+
+        // do...while loop
+        console.log('do...while loop (run at least once):');
+        let num = 10;
+        do {
+            console.log(`  ${num}`);
+            num -= 3;
+        } while (num > 0);
+
+        // break and continue
+        console.log('break and continue:');
+        for (let i = 1; i <= 10; i++) {
+            if (i === 3) {
+                console.log('  Skipping 3 (continue)');
+                continue;
+            }
+            if (i === 7) {
+                console.log('  Stopping at 7 (break)');
+                break;
+            }
+            console.log(`  ${i}`);
+        }
+
+        console.log('\n=== Play the games above! ===');
+    </script>
+
+</body>
+</html>

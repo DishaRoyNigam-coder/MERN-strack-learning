@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BMI Calculator - Day 14</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 40px 35px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            animation: fadeSlideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header .icon {
+            font-size: 3.5rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        /* ---------- FORM ---------- */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        .form-group label .unit {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-group .hint {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-primary {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1e293b;
+        }
+
+        .btn-secondary {
+            background: #eef2f6;
+            color: #0f172a;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        /* ---------- RESULT ---------- */
+        .result-box {
+            margin-top: 24px;
+            padding: 20px;
+            border-radius: 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.5s ease;
+        }
+
+        .result-box .bmi-value {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .result-box .bmi-category {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .result-box .bmi-detail {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .result-box .placeholder {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
+        /* ---------- CATEGORY COLORS ---------- */
+        .category-underweight .bmi-category {
+            color: #2563eb;
+        }
+        .category-underweight {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .category-normal .bmi-category {
+            color: #16a34a;
+        }
+        .category-normal {
+            border-color: #16a34a;
+            background: #f0fdf4;
+        }
+
+        .category-overweight .bmi-category {
+            color: #f59e0b;
+        }
+        .category-overweight {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .category-obese .bmi-category {
+            color: #dc2626;
+        }
+        .category-obese {
+            border-color: #dc2626;
+            background: #fef2f2;
+        }
+
+        /* ---------- HISTORY ---------- */
+        .history-section {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 2px solid #eef2f6;
+        }
+
+        .history-section h3 {
+            font-size: 1rem;
+            color: #0f172a;
+            margin-bottom: 10px;
+        }
+
+        .history-list {
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .history-list .entry {
+            padding: 6px 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .history-list .empty {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 500px) {
+            .container {
+                padding: 24px 20px;
+            }
+            .btn {
+                font-size: 0.9rem;
+                padding: 12px 16px;
+            }
+            .result-box .bmi-value {
+                font-size: 2.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">⚖️</span>
+            <h1>BMI Calculator</h1>
+            <p>Calculate your Body Mass Index in seconds.</p>
+        </div>
+
+        <!-- FORM -->
+        <div class="form-group">
+            <label for="weightInput">
+                Weight <span class="unit">(kg)</span>
+            </label>
+            <input
+                type="number"
+                id="weightInput"
+                placeholder="e.g., 70"
+                step="0.1"
+                min="0"
+            />
+            <div class="hint">Enter your weight in kilograms.</div>
+        </div>
+
+        <div class="form-group">
+            <label for="heightInput">
+                Height <span class="unit">(cm)</span>
+            </label>
+            <input
+                type="number"
+                id="heightInput"
+                placeholder="e.g., 175"
+                step="0.1"
+                min="0"
+            />
+            <div class="hint">Enter your height in centimeters.</div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="calculateAndDisplay()">
+                📊 Calculate BMI
+            </button>
+            <button class="btn btn-secondary" onclick="clearAll()">
+                ✕ Clear
+            </button>
+        </div>
+
+        <!-- RESULT -->
+        <div class="result-box" id="resultBox">
+            <span class="placeholder">Enter your weight and height, then click "Calculate BMI"</span>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="history-section">
+            <h3>📋 History</h3>
+            <div class="history-list" id="historyList">
+                <span class="empty">No calculations yet.</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: FUNCTION DECLARATIONS (The Classic Way)
+         * ============================================================
+         * These are hoisted (can be called before they're defined).
+         * We'll use these for our main business logic.
+         */
+
+        /**
+         * calculateBMI
+         * Calculates BMI from weight (kg) and height (cm).
+         * 
+         * @param {number} weight - Weight in kilograms
+         * @param {number} heightCm - Height in centimeters
+         * @returns {number} BMI value (rounded to 1 decimal)
+         */
+        function calculateBMI(weight, heightCm) {
+            // Convert height from cm to meters
+            const heightM = heightCm / 100;
+            
+            // BMI formula: weight / (height * height)
+            const bmi = weight / (heightM * heightM);
+            
+            // Round to 1 decimal place
+            return Math.round(bmi * 10) / 10;
+        }
+
+        /**
+         * interpretBMI
+         * Returns the category and description based on BMI.
+         * 
+         * @param {number} bmi - The BMI value
+         * @returns {object} { category, description, className }
+         */
+        function interpretBMI(bmi) {
+            if (bmi < 18.5) {
+                return {
+                    category: 'Underweight',
+                    description: 'You may be underweight. Consider consulting a healthcare professional.',
+                    className: 'category-underweight'
+                };
+            } else if (bmi >= 18.5 && bmi <= 24.9) {
+                return {
+                    category: 'Normal weight',
+                    description: 'You\'re in a healthy weight range! Keep up the good work.',
+                    className: 'category-normal'
+                };
+            } else if (bmi >= 25 && bmi <= 29.9) {
+                return {
+                    category: 'Overweight',
+                    description: 'You may be overweight. Consider a balanced diet and exercise.',
+                    className: 'category-overweight'
+                };
+            } else {
+                return {
+                    category: 'Obese',
+                    description: 'You may be obese. Please consult a healthcare professional.',
+                    className: 'category-obese'
+                };
+            }
+        }
+
+
+        /**
+         * ============================================================
+         * PART 2: FUNCTION EXPRESSIONS
+         * ============================================================
+         * These functions are assigned to variables.
+         * They are NOT hoisted (must be defined before use).
+         * We'll use these for UI/display logic.
+         */
+
+        // Function expression for displaying the result
+        const displayResult = function(bmi, interpretation) {
+            const resultBox = document.getElementById('resultBox');
+            
+            // Remove all existing categories
+            resultBox.className = 'result-box';
+            
+            // Add the category class
+            resultBox.classList.add(interpretation.className);
+            
+            // Build the HTML content
+            resultBox.innerHTML = `
+                <div class="bmi-value">${bmi}</div>
+                <div class="bmi-category">${interpretation.category}</div>
+                <div class="bmi-detail">${interpretation.description}</div>
+            `;
+        };
+
+        // Function expression for adding to history
+        const addHistoryEntry = function(bmi, category) {
+            const historyList = document.getElementById('historyList');
+            
+            // Remove "empty" placeholder if present
+            if (historyList.querySelector('.empty')) {
+                historyList.innerHTML = '';
+            }
+            
+            // Create a new entry
+            const entry = document.createElement('div');
+            entry.className = 'entry';
+            
+            // Get current date/time
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            entry.innerHTML = `
+                <span>BMI: <strong>${bmi}</strong></span>
+                <span>${category} • ${timeString}</span>
+            `;
+            
+            historyList.appendChild(entry);
+            
+            // Auto-scroll to bottom
+            historyList.scrollTop = historyList.scrollHeight;
+        };
+
+        // Function expression for clearing the history
+        const clearHistory = function() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '<span class="empty">No calculations yet.</span>';
+        };
+
+
+        /**
+         * ============================================================
+         * PART 3: ARROW FUNCTIONS
+         * ============================================================
+         * Modern, concise syntax. Great for short, simple functions.
+         * We'll use these for validation and utility functions.
+         */
+
+        // Arrow function with implicit return (single expression)
+        const isValidNumber = (value) => value !== '' && !isNaN(value) && value > 0;
+
+        // Arrow function with multiple parameters
+        const getInputValue = (id) => {
+            const element = document.getElementById(id);
+            return parseFloat(element.value);
+        };
+
+        // Arrow function with default parameter
+        const resetInputs = (inputId = 'weightInput') => {
+            document.getElementById(inputId).value = '';
+        };
+
+        // Arrow function with rest parameters (advanced)
+        const clearAllInputs = (...inputIds) => {
+            inputIds.forEach(id => {
+                document.getElementById(id).value = '';
+            });
+        };
+
+
+        /**
+         * ============================================================
+         * PART 4: MAIN FUNCTION (Puts everything together)
+         * ============================================================
+         * This function is called when the user clicks "Calculate BMI".
+         * It uses all the functions we've defined above.
+         */
+
+        function calculateAndDisplay() {
+            // --- 1. Get user input ---
+            const weight = getInputValue('weightInput');
+            const height = getInputValue('heightInput');
+
+            // --- 2. Validate input (using arrow function) ---
+            if (!isValidNumber(weight)) {
+                alert('⚠️ Please enter a valid weight (e.g., 70).');
+                document.getElementById('weightInput').focus();
+                return;
+            }
+
+            if (!isValidNumber(height)) {
+                alert('⚠️ Please enter a valid height (e.g., 175).');
+                document.getElementById('heightInput').focus();
+                return;
+            }
+
+            // Check for realistic values
+            if (weight < 10 || weight > 500) {
+                alert('⚠️ Please enter a realistic weight (between 10 and 500 kg).');
+                return;
+            }
+
+            if (height < 50 || height > 300) {
+                alert('⚠️ Please enter a realistic height (between 50 and 300 cm).');
+                return;
+            }
+
+            // --- 3. Calculate BMI (using function declaration) ---
+            const bmi = calculateBMI(weight, height);
+
+            // --- 4. Interpret BMI (using function declaration) ---
+            const interpretation = interpretBMI(bmi);
+
+            // --- 5. Display result (using function expression) ---
+            displayResult(bmi, interpretation);
+
+            // --- 6. Add to history (using function expression) ---
+            addHistoryEntry(bmi, interpretation.category);
+
+            // --- 7. Log to console (for debugging) ---
+            console.log(`📊 BMI Calculation: Weight=${weight}kg, Height=${height}cm → BMI=${bmi} (${interpretation.category})`);
+        }
+
+
+        /**
+         * ============================================================
+         * PART 5: CLEAR FUNCTION
+         * ============================================================
+         */
+
+        function clearAll() {
+            // Clear inputs using arrow function with rest parameters
+            clearAllInputs('weightInput', 'heightInput');
+            
+            // Clear result (using function expression)
+            const resultBox = document.getElementById('resultBox');
+            resultBox.className = 'result-box';
+            resultBox.innerHTML = `<span class="placeholder">Enter your weight and height, then click "Calculate BMI"</span>`;
+            
+            // Clear history (using function expression)
+            clearHistory();
+        }
+
+
+        /**
+         * ============================================================
+         * PART 6: DEMONSTRATION (Console Output)
+         * ============================================================
+         * This code runs when the page loads.
+         * It demonstrates different function types.
+         * (Open the browser console to see the output!)
+         */
+
+        console.log('\n=== DAY 14: FUNCTIONS DEMONSTRATION ===\n');
+
+        // --- 1. Function Declaration ---
+        console.log('--- 1. Function Declaration ---');
+        console.log('calculateBMI(70, 175) =', calculateBMI(70, 175));
+        console.log('interpretBMI(22.8) =', interpretBMI(22.8));
+
+        // --- 2. Function Expression ---
+        console.log('\n--- 2. Function Expression ---');
+        const square = function(x) {
+            return x * x;
+        };
+        console.log('square(5) =', square(5));
+
+        // --- 3. Arrow Function ---
+        console.log('\n--- 3. Arrow Function ---');
+        const cube = (x) => x * x * x;
+        const multiply = (a, b) => a * b;
+        const greet = (name = 'Guest') => `Hello, ${name}!`;
+        
+        console.log('cube(3) =', cube(3));
+        console.log('multiply(4, 6) =', multiply(4, 6));
+        console.log('greet() =', greet());
+        console.log('greet("Alice") =', greet('Alice'));
+
+        // --- 4. Default Parameters ---
+        console.log('\n--- 4. Default Parameters ---');
+        function power(base, exponent = 2) {
+            return base ** exponent;
+        }
+        console.log('power(3) =', power(3)); // 3^2 = 9
+        console.log('power(3, 4) =', power(3, 4)); // 3^4 = 81
+
+        // --- 5. Rest Parameters ---
+        console.log('\n--- 5. Rest Parameters ---');
+        function sumAll(...numbers) {
+            let total = 0;
+            for (let num of numbers) {
+                total += num;
+            }
+            return total;
+        }
+        console.log('sumAll(1, 2, 3) =', sumAll(1, 2, 3));
+        console.log('sumAll(1, 2, 3, 4, 5) =', sumAll(1, 2, 3, 4, 5));
+
+        // --- 6. Return ---
+        console.log('\n--- 6. Return Statement ---');
+        function returnExample(value) {
+            if (value < 0) {
+                return 'Negative';
+            } else if (value === 0) {
+                return 'Zero';
+            }
+            return 'Positive';
+        }
+        console.log('returnExample(-5) =', returnExample(-5));
+        console.log('returnExample(0) =', returnExample(0));
+        console.log('returnExample(10) =', returnExample(10));
+
+        // --- 7. Scope ---
+        console.log('\n--- 7. Scope ---');
+        const globalVar = 'I am global';
+        function scopeTest() {
+            const localVar = 'I am local';
+            console.log('  Inside function:', globalVar); // Works
+            console.log('  Inside function:', localVar); // Works
+        }
+        scopeTest();
+        console.log('  Outside function:', globalVar); // Works
+        // console.log(localVar); // ❌ Would cause an error
+
+        console.log('\n=== BMI Calculator is ready! ===');
+    </script>
+
+</body>
+</html>
