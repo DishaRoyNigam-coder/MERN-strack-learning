@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Magazine Layout - Day 8</title>
+
+    <style>
+        /* ---------- RESET ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: #f5f0eb;
+            color: #1a1a2e;
+            padding: 30px 20px;
+            line-height: 1.6;
+        }
+
+        .magazine {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        }
+
+        /* ---------- HEADER ---------- */
+        .magazine-header {
+            text-align: center;
+            padding: 20px 0 30px;
+            border-bottom: 4px double #e2d5c9;
+            margin-bottom: 30px;
+        }
+
+        .magazine-header h1 {
+            font-size: 3rem;
+            letter-spacing: 2px;
+            font-weight: 700;
+            color: #2d1b12;
+        }
+
+        .magazine-header p {
+            color: #6b5b4e;
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+
+        /* ============================================================ */
+        /* THE GRID CONTAINER (The Magazine Layout)                     */
+        /* ============================================================ */
+        .magazine-grid {
+            /*
+                🚀 ACTIVATE GRID
+                This turns .magazine-grid into a 2D layout system.
+                Direct children (.hero, .sidebar, .article-card, .featured-article)
+                become grid items.
+            */
+            display: grid;
+
+            /*
+                DEFINE COLUMNS:
+                - 2fr for the main content area
+                - 1fr for the sidebar
+                The main content takes twice the space of the sidebar.
+            */
+            grid-template-columns: 2fr 1fr;
+
+            /*
+                DEFINE ROWS:
+                - auto: Hero section takes as much height as its content needs.
+                - auto: Articles section takes as much height as its content needs.
+                The rows will be determined by content.
+            */
+            grid-template-rows: auto auto;
+
+            /*
+                GAPS:
+                - 30px between rows
+                - 30px between columns
+            */
+            gap: 30px;
+
+            /* For visual structure */
+            padding: 10px 0;
+        }
+
+        /* ============================================================ */
+        /* GRID ITEMS - HERO (Featured Article)                        */
+        /* ============================================================ */
+        .hero {
+            /*
+                SPAN ACROSS 2 COLUMNS:
+                grid-column: 1 / 3; means "start at column line 1 and end at line 3"
+                This makes the hero span the full width of the grid (since we have 2 columns).
+            */
+            grid-column: 1 / 3;
+
+            /*
+                SPAN ACROSS ROWS:
+                We only want it to take row 1, so grid-row: 1 / 2 (or just grid-row: 1).
+            */
+            grid-row: 1 / 2;
+
+            /* --- Styling --- */
+            background: linear-gradient(135deg, #2d1b12 0%, #4a2c1a 100%);
+            color: #ffffff;
+            padding: 40px 50px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 250px;
+        }
+
+        .hero .tag {
+            display: inline-block;
+            background: #e94560;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            align-self: flex-start;
+            margin-bottom: 15px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .hero h2 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+        }
+
+        .hero .meta {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        /* ============================================================ */
+        /* GRID ITEMS - SIDEBAR                                        */
+        /* ============================================================ */
+        .sidebar {
+            /*
+                SIDEBAR POSITION:
+                It sits in the second column (starting at line 2).
+                It spans from row 1 to row 3 (spans both the hero and articles row).
+            */
+            grid-column: 2 / 3;
+            grid-row: 1 / 3;
+
+            /* --- Styling --- */
+            background: #f8f5f0;
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid #e8e0d8;
+            align-self: stretch;
+        }
+
+        .sidebar h3 {
+            font-size: 1.2rem;
+            font-family: 'Segoe UI', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #2d1b12;
+            border-bottom: 3px solid #e94560;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar ul li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e8e0d8;
+        }
+
+        .sidebar ul li:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar ul li a {
+            text-decoration: none;
+            color: #2d1b12;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            display: block;
+        }
+
+        .sidebar ul li a:hover {
+            color: #e94560;
+        }
+
+        .sidebar ul li .date {
+            display: block;
+            font-size: 0.8rem;
+            color: #8a7a6a;
+            font-style: italic;
+        }
+
+        /* ============================================================ */
+        /* GRID ITEMS - ARTICLES SECTION                                */
+        /* ============================================================ */
+        .articles-section {
+            /*
+                ARTICLES POSITION:
+                Starts at column line 1, ends at line 2 (only the main content area).
+                Starts at row line 2 (after the hero), ends at row 3.
+            */
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+
+            /*
+                This section also becomes a GRID CONTAINER!
+                Nested grids are powerful for sub-layouts.
+            */
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2 columns for article cards */
+            gap: 20px;
+        }
+
+        /* --- Individual Article Cards --- */
+        .article-card {
+            background: #fcfaf8;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #eee8e2;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .article-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .article-card .category {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #e94560;
+            margin-bottom: 8px;
+        }
+
+        .article-card h4 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #2d1b12;
+        }
+
+        .article-card p {
+            font-size: 0.9rem;
+            color: #5a4a3a;
+            line-height: 1.5;
+        }
+
+        .article-card .read-more {
+            display: inline-block;
+            margin-top: 12px;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 600;
+            color: #e94560;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .article-card .read-more:hover {
+            text-decoration: underline;
+        }
+
+        /* --- Featured Article (Spans 2 columns inside the articles section) --- */
+        .featured-article {
+            /*
+                SPAN 2 COLUMNS inside the nested grid:
+                This card takes the full width of the 2-column nested grid.
+            */
+            grid-column: 1 / 3;
+
+            /* Make it visually distinct */
+            background: #f0ebe5;
+            border-left: 5px solid #e94560;
+            padding: 25px 30px;
+        }
+
+        .featured-article h4 {
+            font-size: 1.3rem;
+        }
+
+        /* ============================================================ */
+        /* GRID ITEMS - NEWSLETTER (Full-width section)                */
+        /* ============================================================ */
+        .newsletter {
+            /*
+                Span the full width of the main grid.
+            */
+            grid-column: 1 / 3;
+            grid-row: 3 / 4;
+
+            background: #2d1b12;
+            color: #fff;
+            padding: 35px 50px;
+            border-radius: 16px;
+            text-align: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .newsletter h3 {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+
+        .newsletter p {
+            opacity: 0.8;
+            margin-bottom: 15px;
+        }
+
+        .newsletter input {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 30px;
+            width: 300px;
+            max-width: 80%;
+            font-size: 1rem;
+        }
+
+        .newsletter button {
+            padding: 12px 30px;
+            background: #e94560;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background 0.2s ease;
+        }
+
+        .newsletter button:hover {
+            background: #c0392b;
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE: STACK ON MOBILE                                 */
+        /* ============================================================ */
+        @media (max-width: 850px) {
+            .magazine-grid {
+                /*
+                    On smaller screens, stack everything into a single column.
+                */
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+
+            .hero {
+                grid-column: 1 / 2;
+                grid-row: 1 / 2;
+            }
+
+            .sidebar {
+                grid-column: 1 / 2;
+                grid-row: 2 / 3;
+            }
+
+            .articles-section {
+                grid-column: 1 / 2;
+                grid-row: 3 / 4;
+            }
+
+            .newsletter {
+                grid-column: 1 / 2;
+                grid-row: 4 / 5;
+            }
+
+            /* On mobile, articles section becomes 1 column */
+            .articles-section {
+                grid-template-columns: 1fr;
+            }
+
+            .featured-article {
+                grid-column: 1 / 2;
+            }
+
+            .magazine-header h1 {
+                font-size: 2rem;
+            }
+
+            .hero h2 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .magazine {
+                padding: 15px;
+            }
+            .hero {
+                padding: 25px;
+            }
+            .hero h2 {
+                font-size: 1.4rem;
+            }
+            .newsletter {
+                padding: 25px 20px;
+            }
+            .newsletter input {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            .newsletter button {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+
+        /* ============================================================ */
+        /* FOOTER                                                      */
+        /* ============================================================ */
+        .magazine-footer {
+            text-align: center;
+            padding-top: 30px;
+            margin-top: 30px;
+            border-top: 2px solid #e8e0d8;
+            color: #6b5b4e;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="magazine">
+
+        <!-- ===== HEADER ===== -->
+        <header class="magazine-header">
+            <h1>The Daily Chronicle</h1>
+            <p>Insights • Ideas • Inspiration</p>
+        </header>
+
+        <!-- ============================================================ -->
+        <!-- THE GRID CONTAINER                                            -->
+        <!-- ============================================================ -->
+        <div class="magazine-grid">
+
+            <!-- ========================================================== -->
+            <!-- 1. HERO (Featured Article - Spanning 2 columns)             -->
+            <!-- ========================================================== -->
+            <article class="hero">
+                <span class="tag">🔥 Featured</span>
+                <h2>The Future of Web Development in 2026</h2>
+                <p>
+                    How AI, WebAssembly, and the MERN stack are reshaping the way
+                    we build applications for the next generation.
+                </p>
+                <p class="meta">By Sarah Chen • August 8, 2026 • 12 min read</p>
+            </article>
+
+            <!-- ========================================================== -->
+            <!-- 2. SIDEBAR (Recent Posts)                                   -->
+            <!-- ========================================================== -->
+            <aside class="sidebar">
+                <h3>📰 Recent Posts</h3>
+                <ul>
+                    <li>
+                        <a href="#">
+                            Mastering Flexbox in 7 Days
+                            <span class="date">August 7, 2026</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            CSS Grid vs Flexbox: When to Use Which
+                            <span class="date">August 5, 2026</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            10 Tips for Writing Clean JavaScript
+                            <span class="date">August 3, 2026</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            Deploying MERN Apps to Production
+                            <span class="date">July 30, 2026</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            The Complete Guide to Git Workflows
+                            <span class="date">July 28, 2026</span>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- ========================================================== -->
+            <!-- 3. ARTICLES SECTION (Nested Grid)                           -->
+            <!-- ========================================================== -->
+            <section class="articles-section">
+
+                <!-- Featured Article Card (Spans 2 columns in the nested grid) -->
+                <article class="article-card featured-article">
+                    <div class="category">📋 Opinion</div>
+                    <h4>Why Every Developer Should Learn System Design</h4>
+                    <p>
+                        System design isn't just for senior engineers. Understanding
+                        how systems scale will set you apart in any interview.
+                    </p>
+                    <a href="#" class="read-more">Continue Reading →</a>
+                </article>
+
+                <!-- Regular Article Card 1 -->
+                <article class="article-card">
+                    <div class="category">🎨 Design</div>
+                    <h4>Color Theory for Developers</h4>
+                    <p>
+                        A developer's guide to choosing the right colors for
+                        accessible and beautiful UIs.
+                    </p>
+                    <a href="#" class="read-more">Continue Reading →</a>
+                </article>
+
+                <!-- Regular Article Card 2 -->
+                <article class="article-card">
+                    <div class="category">⚡ Performance</div>
+                    <h4>Optimizing React Apps for Speed</h4>
+                    <p>
+                        Lazy loading, memoization, and code splitting techniques
+                        to make your React apps lightning fast.
+                    </p>
+                    <a href="#" class="read-more">Continue Reading →</a>
+                </article>
+
+                <!-- Regular Article Card 3 -->
+                <article class="article-card">
+                    <div class="category">🔐 Security</div>
+                    <h4>JWT Authentication Best Practices</h4>
+                    <p>
+                        How to implement secure, scalable authentication in your
+                        MERN stack applications.
+                    </p>
+                    <a href="#" class="read-more">Continue Reading →</a>
+                </article>
+
+                <!-- Regular Article Card 4 -->
+                <article class="article-card">
+                    <div class="category">📱 Mobile</div>
+                    <h4>Responsive Design: Beyond Media Queries</h4>
+                    <p>
+                        Using CSS Grid, Flexbox, and modern techniques to build
+                        truly device-agnostic layouts.
+                    </p>
+                    <a href="#" class="read-more">Continue Reading →</a>
+                </article>
+
+            </section>
+
+            <!-- ========================================================== -->
+            <!-- 4. NEWSLETTER (Full-width section)                          -->
+            <!-- ========================================================== -->
+            <section class="newsletter">
+                <h3>📬 Subscribe to the Chronicle</h3>
+                <p>Get weekly insights delivered to your inbox. No spam, ever.</p>
+                <form>
+                    <input type="email" placeholder="Enter your email address" />
+                    <button type="submit">Subscribe</button>
+                </form>
+            </section>
+
+        </div>
+        <!-- END magazine-grid -->
+
+        <!-- ===== FOOTER ===== -->
+        <footer class="magazine-footer">
+            <p>&copy; 2026 The Daily Chronicle. All rights reserved.</p>
+        </footer>
+
+    </div>
+    <!-- END magazine -->
+
+</body>
+</html>
