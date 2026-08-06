@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Name | Developer Portfolio</title>
+
+    <!-- ============================================================ -->
+    <!-- GOOGLE FONTS (Optional but nice)                             -->
+    <!-- ============================================================ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ============================================================ */
+        /* 1. RESET & BASE                                              */
+        /* ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth; /* Smooth scrolling for anchor links */
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            line-height: 1.7;
+            padding: 20px;
+        }
+
+        /* ============================================================ */
+        /* 2. TYPOGRAPHY & UTILITIES                                    */
+        /* ============================================================ */
+        h1, h2, h3 {
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); }
+        h2 { font-size: clamp(2rem, 4vw, 3rem); }
+        h3 { font-size: clamp(1.3rem, 2.5vw, 1.8rem); }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 30px 24px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.05);
+            animation: fadeSlideUp 0.7s ease-out;
+        }
+
+        /* ============================================================ */
+        /* 3. ENTRANCE ANIMATION                                        */
+        /* ============================================================ */
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* ============================================================ */
+        /* 4. HEADER / NAVIGATION                                       */
+        /* ============================================================ */
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0 20px;
+            border-bottom: 2px solid #eef2f6;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .logo span {
+            color: #3b82f6;
+        }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 24px;
+        }
+
+        nav a {
+            color: #475569;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.25s ease, transform 0.2s ease;
+        }
+
+        nav a:hover {
+            color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        /* ============================================================ */
+        /* 5. HERO SECTION                                              */
+        /* ============================================================ */
+        .hero {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 40px;
+            padding: 20px 0 30px;
+        }
+
+        .hero-content {
+            flex: 1 1 300px;
+        }
+
+        .hero-content .badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .hero-content h1 {
+            margin-bottom: 16px;
+        }
+
+        .hero-content h1 .highlight {
+            color: #3b82f6;
+            position: relative;
+        }
+
+        .hero-content p {
+            font-size: 1.15rem;
+            color: #475569;
+            max-width: 500px;
+            margin-bottom: 24px;
+        }
+
+        .hero-image {
+            flex: 1 1 200px;
+            text-align: center;
+        }
+
+        .hero-image .avatar {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: #fff;
+            margin: 0 auto;
+            box-shadow: 0 16px 48px rgba(59, 130, 246, 0.25);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .hero-image .avatar:hover {
+            transform: scale(1.04) rotate(-4deg);
+            box-shadow: 0 24px 64px rgba(59, 130, 246, 0.35);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1e293b;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+        }
+
+        .btn-secondary {
+            background: #eef2f6;
+            color: #0f172a;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-3px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+
+        .btn-outline:hover {
+            background: #3b82f6;
+            color: #fff;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+        }
+
+        /* ============================================================ */
+        /* 6. SKILLS SECTION                                            */
+        /* ============================================================ */
+        .skills {
+            margin: 40px 0 30px;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .skill-card {
+            background: #f8fafc;
+            padding: 18px 12px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #eef2f6;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .skill-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            border-color: #3b82f6;
+        }
+
+        .skill-card .icon {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .skill-card .name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #0f172a;
+        }
+
+        /* ============================================================ */
+        /* 7. PROJECTS SECTION                                          */
+        /* ============================================================ */
+        .projects {
+            margin: 40px 0 30px;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .project-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 24px 20px;
+            border: 1px solid #eef2f6;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+            border-color: #3b82f6;
+        }
+
+        .project-card .emoji {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .project-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 6px;
+        }
+
+        .project-card p {
+            font-size: 0.95rem;
+            color: #475569;
+            margin-bottom: 14px;
+        }
+
+        .project-card .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .project-card .tags span {
+            background: #eef2f6;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .project-card .project-link {
+            color: #3b82f6;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .project-card .project-link:hover {
+            color: #1d4ed8;
+        }
+
+        /* ============================================================ */
+        /* 8. CONTACT SECTION                                           */
+        /* ============================================================ */
+        .contact {
+            margin: 40px 0 20px;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .contact h2 {
+            margin-bottom: 10px;
+        }
+
+        .contact p {
+            color: #475569;
+            margin-bottom: 20px;
+        }
+
+        .contact-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .contact-links a {
+            color: #0f172a;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 30px;
+            background: #ffffff;
+            border: 1px solid #eef2f6;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .contact-links a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+            border-color: #3b82f6;
+        }
+
+        /* ============================================================ */
+        /* 9. FOOTER                                                    */
+        /* ============================================================ */
+        footer {
+            text-align: center;
+            padding-top: 24px;
+            margin-top: 30px;
+            border-top: 1px solid #eef2f6;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        /* ============================================================ */
+        /* 10. RESPONSIVE BREAKPOINTS                                   */
+        /* ============================================================ */
+
+        /* Tablet */
+        @media (min-width: 600px) {
+            body { padding: 30px; }
+            .container { padding: 40px; }
+        }
+
+        /* Desktop */
+        @media (min-width: 900px) {
+            body { padding: 40px; }
+            .container { padding: 50px; }
+            .hero { gap: 60px; }
+        }
+
+        /* ============================================================ */
+        /* 11. ACCESSIBILITY - Reduced Motion                          */
+        /* ============================================================ */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ============================================================ -->
+        <!-- HEADER & NAVIGATION                                           -->
+        <!-- ============================================================ -->
+        <header>
+            <div class="logo">Dev<span>Port</span></div>
+            <nav>
+                <a href="#about">About</a>
+                <a href="#skills">Skills</a>
+                <a href="#projects">Projects</a>
+                <a href="#contact">Contact</a>
+            </nav>
+        </header>
+
+        <!-- ============================================================ -->
+        <!-- HERO SECTION                                                  -->
+        <!-- ============================================================ -->
+        <section class="hero" id="about">
+            <div class="hero-content">
+                <span class="badge">🚀 Open to Opportunities</span>
+                <h1>
+                    Hi, I'm <span class="highlight">Disha Nigam</span>
+                </h1>
+                <p>
+                    A passionate developer on a journey to master the MERN stack.
+                    I love building clean, responsive, and user-friendly web applications.
+                </p>
+                <div class="btn-group">
+                    <a href="#projects" class="btn btn-primary">View My Work</a>
+                    <a href="#contact" class="btn btn-secondary">Let's Connect</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="avatar">👨‍💻</div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SKILLS SECTION                                                -->
+        <!-- ============================================================ -->
+        <section class="skills" id="skills">
+            <h2>🛠️ Tech Stack</h2>
+            <p style="color: #475569; margin-top: 4px;">
+                Technologies I'm learning and working with.
+            </p>
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <span class="icon">🌐</span>
+                    <span class="name">HTML5</span>
+                </div>
+                <div class="skill-card">
+                    <span class="icon">🎨</span>
+                    <span class="name">CSS3</span>
+                </div>
+                <div class="skill-card">
+                    <span class="icon">⚡</span>
+                    <span class="name">JavaScript</span>
+                </div>
+                <div class="skill-card">
+                    <span class="icon">⚛️</span>
+                    <span class="name">React</span>
+                </div>
+                <div class="skill-card">
+                    <span class="icon">🟩</span>
+                    <span class="name">Node.js</span>
+                </div>
+                <div class="skill-card">
+                    <span class="icon">🍃</span>
+                    <span class="name">MongoDB</span>
+                </div>
+                <div class="skill-card">
+                    <span class="icon">📱</span>
+                    <span class="name">Responsive</span>
+                </div>
+                <div class="skill-card">
+                    <span class="icon">🐙</span>
+                    <span class="name">Git/GitHub</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- PROJECTS SECTION                                               -->
+        <!-- ============================================================ -->
+        <section class="projects" id="projects">
+            <h2>📁 Featured Projects</h2>
+            <p style="color: #475569; margin-top: 4px;">
+                Here are some of the projects I've built during my learning journey.
+            </p>
+            <div class="project-grid">
+
+                <div class="project-card">
+                    <span class="emoji">📝</span>
+                    <h3>Semantic Blog</h3>
+                    <p>
+                        A clean blog layout built with semantic HTML and CSS.
+                    </p>
+                    <div class="tags">
+                        <span>HTML5</span>
+                        <span>CSS3</span>
+                        <span>Semantic</span>
+                    </div>
+                    <a href="#" class="project-link">View Project →</a>
+                </div>
+
+                <div class="project-card">
+                    <span class="emoji">🛒</span>
+                    <h3>Product Catalog</h3>
+                    <p>
+                        Responsive product grid with hover effects and a price comparison table.
+                    </p>
+                    <div class="tags">
+                        <span>Flexbox</span>
+                        <span>Grid</span>
+                        <span>Responsive</span>
+                        <span>Animations</span>
+                    </div>
+                    <a href="#" class="project-link">View Project →</a>
+                </div>
+
+                <div class="project-card">
+                    <span class="emoji">📰</span>
+                    <h3>Magazine Layout</h3>
+                    <p>
+                        A magazine-style layout using CSS Grid with a hero and sidebar.
+                    </p>
+                    <div class="tags">
+                        <span>CSS Grid</span>
+                        <span>Nested Grid</span>
+                        <span>Responsive</span>
+                    </div>
+                    <a href="#" class="project-link">View Project →</a>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- CONTACT SECTION                                               -->
+        <!-- ============================================================ -->
+        <section class="contact" id="contact">
+            <h2>📬 Let's Connect</h2>
+            <p>
+                I'm always open to new opportunities, collaborations, or just a friendly chat.
+            </p>
+            <div class="contact-links">
+                <a href="mailto:your.email@example.com">✉️ Email</a>
+                <a href="https://github.com/yourusername" target="_blank">🐙 GitHub</a>
+                <a href="https://linkedin.com/in/yourusername" target="_blank">💼 LinkedIn</a>
+                <a href="https://twitter.com/yourusername" target="_blank">🐦 Twitter</a>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- FOOTER                                                        -->
+        <!-- ============================================================ -->
+        <footer>
+            <p>
+                &copy; <span id="year"></span> Your Name. Built with ❤️ and lots of coffee.
+            </p>
+            <p style="font-size: 0.8rem; margin-top: 4px;">
+                🚀 Day 11 – MERN Stack Journey
+            </p>
+        </footer>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT (Just for the dynamic year)                       -->
+    <!-- ============================================================ -->
+    <script>
+        // Set the current year in the footer
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+
+</body>
+</html>
