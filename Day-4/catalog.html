@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GadgetHub - Product Catalog</title>
+
+    <!-- Minimal styling to make the catalog visually organized -->
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f9f9f9;
+            color: #333;
+        }
+        h1, h2 {
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 8px;
+        }
+        .product-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            flex: 1 1 280px;
+        }
+        .product-card img {
+            max-width: 100%;
+            border-radius: 8px;
+            height: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+        .media-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        video, audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .spec-list {
+            list-style-type: square;
+            padding-left: 20px;
+        }
+        .spec-list li {
+            margin: 6px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🛒 GadgetHub Catalog</h1>
+        <p>Your one-stop shop for the latest tech.</p>
+        <nav>
+            <a href="#">Home</a> | <a href="#">Products</a> | <a href="#">About</a>
+        </nav>
+    </header>
+
+    <main>
+
+        <!-- ============================================ -->
+        <!-- SECTION 1: HERO BANNER with Image + Figure   -->
+        <!-- ============================================ -->
+        <section>
+            <h2>🌟 Featured Product: SmartX Pro</h2>
+            <figure>
+                <!-- 
+                    Using a placeholder image from picsum.photos (random real image).
+                    In a real project, you'd use your own image URL.
+                -->
+                <img 
+                    src="https://picsum.photos/seed/gadget/800/400" 
+                    alt="SmartX Pro smartwatch on a wooden desk" 
+                    width="800" 
+                    height="400"
+                />
+                <figcaption>
+                    <strong>SmartX Pro</strong> – The ultimate smartwatch with 7-day battery life.
+                </figcaption>
+            </figure>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- SECTION 2: PRODUCTS (Using Lists & Cards)    -->
+        <!-- ============================================ -->
+        <section>
+            <h2>📦 Our Top Products</h2>
+
+            <!-- Unordered List: Product Features (Global) -->
+            <p><strong>Why shop with us?</strong></p>
+            <ul>
+                <li>✅ Free shipping on orders over $50</li>
+                <li>✅ 2-year warranty on all electronics</li>
+                <li>✅ 24/7 customer support</li>
+            </ul>
+
+            <!-- Product Cards (Using Description List for specs) -->
+            <div class="product-grid">
+
+                <!-- Product 1 -->
+                <article class="product-card">
+                    <h3>SmartX Pro Watch</h3>
+                    <img src="https://picsum.photos/seed/watch/300/200" alt="SmartX Pro Watch" />
+                    <dl>
+                        <dt><strong>Display:</strong></dt>
+                        <dd>1.8" AMOLED, Always-On</dd>
+                        <dt><strong>Battery:</strong></dt>
+                        <dd>7 days (typical)</dd>
+                        <dt><strong>Features:</strong></dt>
+                        <dd>Heart rate, SpO2, GPS</dd>
+                    </dl>
+                    <p><strong>Price:</strong> $249.99</p>
+                </article>
+
+                <!-- Product 2 -->
+                <article class="product-card">
+                    <h3>AudioBeats Earbuds</h3>
+                    <img src="https://picsum.photos/seed/earbuds/300/200" alt="AudioBeats Earbuds" />
+                    <dl>
+                        <dt><strong>Driver:</strong></dt>
+                        <dd>10mm dynamic</dd>
+                        <dt><strong>Battery:</strong></dt>
+                        <dd>8 hours (with case: 32 hours)</dd>
+                        <dt><strong>Features:</strong></dt>
+                        <dd>Noise cancellation, IPX5</dd>
+                    </dl>
+                    <p><strong>Price:</strong> $89.99</p>
+                </article>
+
+                <!-- Product 3 -->
+                <article class="product-card">
+                    <h3>LumenBook Laptop</h3>
+                    <img src="https://picsum.photos/seed/laptop/300/200" alt="LumenBook Laptop" />
+                    <dl>
+                        <dt><strong>CPU:</strong></dt>
+                        <dd>Intel Core i7-14th Gen</dd>
+                        <dt><strong>RAM:</strong></dt>
+                        <dd>16GB DDR5</dd>
+                        <dt><strong>Storage:</strong></dt>
+                        <dd>1TB NVMe SSD</dd>
+                    </dl>
+                    <p><strong>Price:</strong> $1,299.00</p>
+                </article>
+            </div>
+
+            <!-- Ordered List: Top Selling Items (Ranking) -->
+            <h3>🏆 Top 3 Best Sellers (This Month)</h3>
+            <ol>
+                <li>AudioBeats Earbuds – 2,300 units</li>
+                <li>SmartX Pro Watch – 1,850 units</li>
+                <li>LumenBook Laptop – 920 units</li>
+            </ol>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- SECTION 3: PRICE COMPARISON TABLE            -->
+        <!-- ============================================ -->
+        <section>
+            <h2>📊 Price Comparison (vs. Competitors)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>GadgetHub Price</th>
+                        <th>Competitor A</th>
+                        <th>Competitor B</th>
+                        <th>Savings (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>SmartX Pro Watch</td>
+                        <td><strong>$249.99</strong></td>
+                        <td>$279.99</td>
+                        <td>$299.99</td>
+                        <td>16%</td>
+                    </tr>
+                    <tr>
+                        <td>AudioBeats Earbuds</td>
+                        <td><strong>$89.99</strong></td>
+                        <td>$99.99</td>
+                        <td>$109.99</td>
+                        <td>18%</td>
+                    </tr>
+                    <tr>
+                        <td>LumenBook Laptop</td>
+                        <td><strong>$1,299.00</strong></td>
+                        <td>$1,399.00</td>
+                        <td>$1,449.00</td>
+                        <td>10%</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5" style="text-align: center; background: #e9ecef;">
+                            * Prices updated as of August 2026. Best value guaranteed!
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- SECTION 4: MEDIA GALLERY (Video + Audio)    -->
+        <!-- ============================================ -->
+        <section>
+            <h2>🎬 See & Hear the Difference</h2>
+
+            <div class="media-container">
+                <!-- VIDEO ELEMENT -->
+                <h3>Video: Unboxing the SmartX Pro</h3>
+                <figure>
+                    <!-- 
+                        Using a sample video from the web (public domain sample).
+                        In production, host your own MP4.
+                    -->
+                    <video 
+                        src="https://www.w3schools.com/html/mov_bbb.mp4" 
+                        controls 
+                        width="100%" 
+                        poster="https://picsum.photos/seed/poster/800/400"
+                    >
+                        Your browser does not support the video tag.
+                    </video>
+                    <figcaption>
+                        Watch the unboxing experience – it's as premium as it looks.
+                    </figcaption>
+                </figure>
+
+                <!-- AUDIO ELEMENT -->
+                <h3>Audio: Customer Testimonial (5-star review)</h3>
+                <figure>
+                    <!-- 
+                        Using a sample audio file from the web.
+                    -->
+                    <audio controls src="https://www.w3schools.com/html/horse.mp3">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <figcaption>
+                        <em>"I've been using the SmartX Pro for a month now. It completely changed my workflow."</em> – Sarah J.
+                    </figcaption>
+                </figure>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ============================================ -->
+    <!-- FOOTER                                      -->
+    <!-- ============================================ -->
+    <footer style="margin-top: 40px; border-top: 2px solid #007bff; padding-top: 20px; text-align: center;">
+        <p>&copy; 2026 GadgetHub. All rights reserved. | 
+           <a href="#">Privacy</a> | <a href="#">Terms</a></p>
+    </footer>
+
+</body>
+</html>
