@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GadgetHub - Responsive Product Catalog</title>
+
+    <style>
+        /* ============================================================ */
+        /* 1. RESET & BASE (MOBILE-FIRST)                               */
+        /* ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7fc;
+            color: #1a1a2e;
+            line-height: 1.6;
+            padding: 16px; /* Smaller padding on mobile */
+        }
+
+        /* ============================================================ */
+        /* 2. FLUID IMAGES                                              */
+        /* ============================================================ */
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        /* ============================================================ */
+        /* 3. RESPONSIVE TYPOGRAPHY                                     */
+        /* ============================================================ */
+        h1 {
+            font-size: clamp(1.8rem, 5vw, 3rem); /* Min 1.8rem, ideal 5vw, max 3rem */
+        }
+        h2 {
+            font-size: clamp(1.4rem, 4vw, 2.2rem);
+        }
+        h3 {
+            font-size: clamp(1.1rem, 3vw, 1.6rem);
+        }
+        p, li, td, th {
+            font-size: clamp(1rem, 2vw, 1.1rem);
+        }
+
+        /* ============================================================ */
+        /* 4. LAYOUT CONTAINERS                                         */
+        /* ============================================================ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px; /* Mobile padding */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        /* ============================================================ */
+        /* 5. HEADER                                                    */
+        /* ============================================================ */
+        header {
+            text-align: center;
+            padding: 16px 0 20px;
+            border-bottom: 3px solid #e94560;
+            margin-bottom: 24px;
+        }
+
+        header h1 {
+            color: #16213e;
+        }
+
+        header p {
+            color: #6c757d;
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
+        }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        nav a {
+            color: #16213e;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 30px;
+            transition: background 0.2s ease;
+            font-size: clamp(0.85rem, 1.5vw, 1rem);
+        }
+
+        nav a:hover {
+            background: #e94560;
+            color: #fff;
+        }
+
+        /* ============================================================ */
+        /* 6. PRODUCT GRID (Flexbox)                                    */
+        /* ============================================================ */
+        .product-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .product-card {
+            background: #ffffff;
+            border: 1px solid #eaeef3;
+            border-radius: 12px;
+            padding: 18px 16px 20px;
+            flex: 1 1 100%; /* Full width on mobile */
+            max-width: 100%;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .product-card img {
+            margin-bottom: 12px;
+            width: 100%;
+            aspect-ratio: 16 / 9; /* Maintains aspect ratio */
+            object-fit: cover;
+        }
+
+        .product-card h3 {
+            color: #16213e;
+            margin-bottom: 8px;
+        }
+
+        .product-card dl {
+            margin: 10px 0;
+            font-size: clamp(0.85rem, 1.5vw, 0.95rem);
+        }
+
+        .product-card dt {
+            font-weight: 600;
+            display: inline;
+        }
+
+        .product-card dd {
+            display: inline;
+            margin-left: 4px;
+            color: #4a5568;
+        }
+
+        .product-card dd::after {
+            content: "";
+            display: block; /* Break to new line after each dd */
+        }
+
+        .product-card .price {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            font-weight: 700;
+            color: #e94560;
+            margin-top: 8px;
+        }
+
+        /* ============================================================ */
+        /* 7. RANKING LIST                                              */
+        /* ============================================================ */
+        .ranking {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fc;
+            border-radius: 12px;
+        }
+
+        .ranking ol {
+            padding-left: 24px;
+        }
+
+        .ranking ol li {
+            margin: 6px 0;
+        }
+
+        /* ============================================================ */
+        /* 8. TABLE (Responsive)                                        */
+        /* ============================================================ */
+        .table-wrapper {
+            overflow-x: auto; /* Horizontal scroll on mobile */
+            margin-top: 20px;
+            border-radius: 12px;
+            border: 1px solid #eaeef3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.85rem, 1.5vw, 1rem);
+            min-width: 500px; /* Ensures table doesn't get too squished */
+        }
+
+        th {
+            background: #16213e;
+            color: #ffffff;
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #eaeef3;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fc;
+        }
+
+        tbody tr:hover {
+            background: #eef2f7;
+        }
+
+        tfoot td {
+            background: #f1f3f5;
+            font-style: italic;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        /* ============================================================ */
+        /* 9. MEDIA (Video & Audio) - Responsive                        */
+        /* ============================================================ */
+        .media-container {
+            background: #f8f9fc;
+            padding: 18px;
+            border-radius: 12px;
+            margin: 30px 0 10px;
+        }
+
+        .media-container figure {
+            margin: 12px 0;
+        }
+
+        .media-container video,
+        .media-container audio {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .media-container figcaption {
+            font-size: clamp(0.85rem, 1.5vw, 0.95rem);
+            color: #4a5568;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* ============================================================ */
+        /* 10. FOOTER                                                   */
+        /* ============================================================ */
+        footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eaeef3;
+            text-align: center;
+            font-size: clamp(0.85rem, 1.5vw, 0.95rem);
+            color: #6c757d;
+        }
+
+        footer a {
+            color: #e94560;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ============================================================ */
+        /* 11. RESPONSIVE HELPERS                                       */
+        /* ============================================================ */
+        .hide-on-mobile {
+            display: none;
+        }
+
+        .show-on-mobile {
+            display: block;
+        }
+
+        /* ============================================================ */
+        /* 12. TABLET BREAKPOINT (min-width: 600px)                     */
+        /* ============================================================ */
+        @media (min-width: 600px) {
+            body {
+                padding: 24px;
+            }
+
+            .container {
+                padding: 30px;
+            }
+
+            .product-card {
+                flex: 1 1 calc(50% - 20px); /* 2 columns */
+                max-width: calc(50% - 20px);
+            }
+
+            .hide-on-mobile {
+                display: inline;
+            }
+
+            .table-wrapper {
+                overflow-x: visible;
+            }
+
+            table {
+                min-width: auto;
+            }
+        }
+
+        /* ============================================================ */
+        /* 13. DESKTOP BREAKPOINT (min-width: 900px)                    */
+        /* ============================================================ */
+        @media (min-width: 900px) {
+            body {
+                padding: 40px;
+            }
+
+            .container {
+                padding: 40px;
+            }
+
+            .product-card {
+                flex: 1 1 calc(33.333% - 20px); /* 3 columns */
+                max-width: calc(33.333% - 20px);
+            }
+
+            .product-grid {
+                gap: 30px;
+            }
+
+            header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: left;
+                padding: 16px 0 24px;
+            }
+
+            header .header-text {
+                flex: 1;
+            }
+
+            nav {
+                margin-top: 0;
+            }
+
+            .media-container {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+        }
+
+        /* ============================================================ */
+        /* 14. LARGE DESKTOP (min-width: 1200px)                        */
+        /* ============================================================ */
+        @media (min-width: 1200px) {
+            .product-card {
+                flex: 1 1 calc(25% - 30px); /* 4 columns */
+                max-width: calc(25% - 30px);
+            }
+
+            .product-grid {
+                gap: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- ===== HEADER ===== -->
+        <header>
+            <div class="header-text">
+                <h1>🛒 GadgetHub Catalog</h1>
+                <p>Your one-stop shop for the latest tech.</p>
+            </div>
+            <nav>
+                <a href="#">Home</a>
+                <a href="#">Products</a>
+                <a href="#">About</a>
+            </nav>
+        </header>
+
+        <!-- ===== PRODUCT GRID ===== -->
+        <section>
+            <h2>📦 Our Top Products</h2>
+
+            <div class="product-grid">
+
+                <!-- Product 1 -->
+                <article class="product-card">
+                    <img src="https://picsum.photos/seed/watch/400/300" alt="SmartX Pro Watch" loading="lazy" />
+                    <h3>SmartX Pro Watch</h3>
+                    <dl>
+                        <dt>Display:</dt>
+                        <dd>1.8" AMOLED</dd>
+                        <dt>Battery:</dt>
+                        <dd>7 days</dd>
+                        <dt>Features:</dt>
+                        <dd>Heart rate, GPS</dd>
+                    </dl>
+                    <div class="price">$249.99</div>
+                </article>
+
+                <!-- Product 2 -->
+                <article class="product-card">
+                    <img src="https://picsum.photos/seed/earbuds/400/300" alt="AudioBeats Earbuds" loading="lazy" />
+                    <h3>AudioBeats Earbuds</h3>
+                    <dl>
+                        <dt>Driver:</dt>
+                        <dd>10mm dynamic</dd>
+                        <dt>Battery:</dt>
+                        <dd>8 hours</dd>
+                        <dt>Features:</dt>
+                        <dd>Noise cancellation</dd>
+                    </dl>
+                    <div class="price">$89.99</div>
+                </article>
+
+                <!-- Product 3 -->
+                <article class="product-card">
+                    <img src="https://picsum.photos/seed/laptop/400/300" alt="LumenBook Laptop" loading="lazy" />
+                    <h3>LumenBook Laptop</h3>
+                    <dl>
+                        <dt>CPU:</dt>
+                        <dd>Intel Core i7</dd>
+                        <dt>RAM:</dt>
+                        <dd>16GB DDR5</dd>
+                        <dt>Storage:</dt>
+                        <dd>1TB SSD</dd>
+                    </dl>
+                    <div class="price">$1,299.00</div>
+                </article>
+
+                <!-- Product 4 -->
+                <article class="product-card">
+                    <img src="https://picsum.photos/seed/tablet/400/300" alt="TabPro Tablet" loading="lazy" />
+                    <h3>TabPro Tablet</h3>
+                    <dl>
+                        <dt>Display:</dt>
+                        <dd>11" Liquid Retina</dd>
+                        <dt>Storage:</dt>
+                        <dd>256GB</dd>
+                        <dt>Features:</dt>
+                        <dd>5G, Stylus included</dd>
+                    </dl>
+                    <div class="price">$599.99</div>
+                </article>
+
+            </div>
+
+            <!-- Ranking (Best Sellers) -->
+            <div class="ranking">
+                <h3>🏆 Top 3 Best Sellers</h3>
+                <ol>
+                    <li>AudioBeats Earbuds – 2,300 units</li>
+                    <li>SmartX Pro Watch – 1,850 units</li>
+                    <li>LumenBook Laptop – 920 units</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- ===== PRICE COMPARISON TABLE ===== -->
+        <section>
+            <h2>📊 Price Comparison</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>GadgetHub</th>
+                            <th>Competitor A</th>
+                            <th>Competitor B</th>
+                            <th>Savings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SmartX Pro Watch</td>
+                            <td><strong>$249.99</strong></td>
+                            <td>$279.99</td>
+                            <td>$299.99</td>
+                            <td>16%</td>
+                        </tr>
+                        <tr>
+                            <td>AudioBeats Earbuds</td>
+                            <td><strong>$89.99</strong></td>
+                            <td>$99.99</td>
+                            <td>$109.99</td>
+                            <td>18%</td>
+                        </tr>
+                        <tr>
+                            <td>LumenBook Laptop</td>
+                            <td><strong>$1,299.00</strong></td>
+                            <td>$1,399.00</td>
+                            <td>$1,449.00</td>
+                            <td>10%</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5">* Prices updated as of August 2026. Best value guaranteed!</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <!-- ===== MEDIA GALLERY ===== -->
+        <section>
+            <h2>🎬 See & Hear the Difference</h2>
+
+            <div class="media-container">
+                <!-- Video -->
+                <figure>
+                    <video
+                        src="https://www.w3schools.com/html/mov_bbb.mp4"
+                        controls
+                        poster="https://picsum.photos/seed/poster/800/400"
+                        loading="lazy"
+                    >
+                        Your browser does not support the video tag.
+                    </video>
+                    <figcaption>Unboxing the SmartX Pro – premium experience.</figcaption>
+                </figure>
+
+                <!-- Audio -->
+                <figure>
+                    <audio controls src="https://www.w3schools.com/html/horse.mp3">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <figcaption>"Best earbuds I've ever used!" – Sarah J.</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <!-- ===== FOOTER ===== -->
+        <footer>
+            <p>&copy; 2026 GadgetHub. All rights reserved. |
+               <a href="#">Privacy</a> | <a href="#">Terms</a></p>
+        </footer>
+    </div>
+
+</body>
+</html>
