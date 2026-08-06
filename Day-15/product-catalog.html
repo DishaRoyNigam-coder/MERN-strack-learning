@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product Catalog - Day 15</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f1f5f9;
+            color: #0f172a;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 30px 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+            animation: fadeSlideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .header .icon {
+            font-size: 2.8rem;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        /* ---------- FILTERS ---------- */
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .filter-group {
+            flex: 1 1 200px;
+            min-width: 150px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: #ffffff;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .filter-group .price-inputs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-group .price-inputs input {
+            width: 50%;
+        }
+
+        /* ---------- PRODUCT COUNT ---------- */
+        .product-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-radius: 12px;
+        }
+
+        .product-stats .count {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .product-stats .count span {
+            color: #3b82f6;
+        }
+
+        .product-stats .reset-btn {
+            padding: 6px 18px;
+            border: none;
+            border-radius: 30px;
+            background: #0f172a;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .product-stats .reset-btn:hover {
+            background: #1e293b;
+            transform: translateY(-2px);
+        }
+
+        /* ---------- PRODUCT GRID ---------- */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 4px;
+        }
+
+        .product-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 18px 16px 20px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            border-color: #3b82f6;
+        }
+
+        .product-card .emoji {
+            font-size: 2.8rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .product-card .name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .product-card .category {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #3b82f6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .product-card .description {
+            font-size: 0.9rem;
+            color: #64748b;
+            flex-grow: 1;
+            margin-bottom: 10px;
+        }
+
+        .product-card .price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: auto;
+        }
+
+        .product-card .price .currency {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        .product-card .rating {
+            font-size: 0.85rem;
+            color: #f59e0b;
+            margin-top: 4px;
+        }
+
+        /* ---------- EMPTY STATE ---------- */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state .big-emoji {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.3rem;
+            color: #475569;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (min-width: 600px) {
+            body {
+                padding: 30px;
+            }
+            .container {
+                padding: 40px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .filters {
+                padding: 16px;
+            }
+            .filter-group {
+                flex: 1 1 100%;
+            }
+            .product-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            .product-card {
+                padding: 14px 12px;
+            }
+            .product-card .emoji {
+                font-size: 2rem;
+            }
+            .product-card .price {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">🛍️</span>
+            <h1>Product Catalog</h1>
+            <p>Browse, filter, and search our product collection.</p>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filters">
+            <div class="filter-group">
+                <label for="categoryFilter">🏷️ Category</label>
+                <select id="categoryFilter">
+                    <option value="all">All Categories</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="searchInput">🔍 Search</label>
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search products..."
+                />
+            </div>
+
+            <div class="filter-group">
+                <label>💰 Price Range</label>
+                <div class="price-inputs">
+                    <input
+                        type="number"
+                        id="minPrice"
+                        placeholder="Min"
+                        min="0"
+                    />
+                    <input
+                        type="number"
+                        id="maxPrice"
+                        placeholder="Max"
+                        min="0"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- PRODUCT STATS -->
+        <div class="product-stats">
+            <div class="count">
+                📦 Showing <span id="productCount">0</span> products
+            </div>
+            <button class="reset-btn" onclick="resetFilters()">🔄 Reset Filters</button>
+        </div>
+
+        <!-- PRODUCT GRID -->
+        <div class="product-grid" id="productGrid">
+            <!-- Products will be rendered here by JavaScript -->
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: PRODUCT DATA (Array of Objects)
+         * ============================================================
+         * Each product is an object with properties.
+         * This is how real-world data is structured!
+         */
+
+        const products = [
+            { id: 1, name: 'Wireless Headphones', category: 'electronics', price: 79.99, rating: 4.5, emoji: '🎧', description: 'Premium noise-canceling headphones with 30-hour battery life.' },
+            { id: 2, name: 'Smart Watch Pro', category: 'electronics', price: 249.99, rating: 4.7, emoji: '⌚', description: 'Track your fitness, heart rate, and stay connected on the go.' },
+            { id: 3, name: 'Laptop Backpack', category: 'accessories', price: 49.99, rating: 4.3, emoji: '🎒', description: 'Water-resistant laptop backpack with USB charging port.' },
+            { id: 4, name: 'Bluetooth Speaker', category: 'electronics', price: 89.99, rating: 4.2, emoji: '🔊', description: 'Portable waterproof speaker with 360° sound.' },
+            { id: 5, name: 'Coffee Mug', category: 'home', price: 12.99, rating: 4.0, emoji: '☕', description: 'Ceramic mug with heat-resistant handle and large capacity.' },
+            { id: 6, name: 'Desk Lamp', category: 'home', price: 34.99, rating: 4.1, emoji: '💡', description: 'Adjustable LED desk lamp with 3 brightness levels.' },
+            { id: 7, name: 'Phone Case', category: 'accessories', price: 19.99, rating: 4.4, emoji: '📱', description: 'Durable shockproof case with built-in screen protector.' },
+            { id: 8, name: 'Power Bank', category: 'electronics', price: 39.99, rating: 4.6, emoji: '🔋', description: '20000mAh fast-charging portable power bank.' },
+            { id: 9, name: 'Water Bottle', category: 'home', price: 24.99, rating: 4.2, emoji: '🧴', description: 'Stainless steel insulated bottle keeps drinks cold for 24 hours.' },
+            { id: 10, name: 'Wireless Mouse', category: 'electronics', price: 29.99, rating: 4.3, emoji: '🖱️', description: 'Ergonomic wireless mouse with silent clicks.' },
+            { id: 11, name: 'Notebook Set', category: 'accessories', price: 14.99, rating: 4.0, emoji: '📓', description: 'Set of 3 ruled notebooks with durable covers.' },
+            { id: 12, name: 'Plant Pot', category: 'home', price: 22.99, rating: 3.9, emoji: '🪴', description: 'Ceramic plant pot with drainage hole and saucer.' }
+        ];
+
+
+        /**
+         * ============================================================
+         * PART 2: DOM REFERENCES
+         * ============================================================
+         */
+
+        const productGrid = document.getElementById('productGrid');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const searchInput = document.getElementById('searchInput');
+        const minPrice = document.getElementById('minPrice');
+        const maxPrice = document.getElementById('maxPrice');
+        const productCount = document.getElementById('productCount');
+
+
+        /**
+         * ============================================================
+         * PART 3: FUNCTION DECLARATIONS
+         * ============================================================
+         */
+
+        /**
+         * populateCategoryFilter
+         * Uses map() and forEach() to populate the category dropdown.
+         */
+        function populateCategoryFilter() {
+            // --- 1. Get all unique categories using map() and Set ---
+            // map() extracts categories, Set removes duplicates
+            const categories = [...new Set(products.map(product => product.category))];
+
+            // --- 2. Add "All" option ---
+            categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+
+            // --- 3. Add each category using forEach() ---
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        /**
+         * filterProducts
+         * Uses filter() to narrow down products based on filters.
+         * Uses reduce() to count products in each category.
+         * Returns the filtered array.
+         */
+        function filterProducts() {
+            // --- 1. Get filter values ---
+            const category = categoryFilter.value;
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const min = parseFloat(minPrice.value) || 0;
+            const max = parseFloat(maxPrice.value) || Infinity;
+
+            // --- 2. Apply filters using filter() ---
+            const filtered = products.filter(product => {
+                // Category filter
+                if (category !== 'all' && product.category !== category) {
+                    return false;
+                }
+
+                // Search filter (name or description)
+                if (searchTerm) {
+                    const nameMatch = product.name.toLowerCase().includes(searchTerm);
+                    const descMatch = product.description.toLowerCase().includes(searchTerm);
+                    if (!nameMatch && !descMatch) {
+                        return false;
+                    }
+                }
+
+                // Price range filter
+                if (product.price < min || product.price > max) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            return filtered;
+        }
+
+        /**
+         * renderProducts
+         * Uses map() to transform products into HTML.
+         * Uses forEach() for additional processing.
+         * Updates the DOM.
+         */
+        function renderProducts() {
+            // --- 1. Get filtered products ---
+            const filtered = filterProducts();
+
+            // --- 2. Update product count ---
+            productCount.textContent = filtered.length;
+
+            // --- 3. Generate HTML using map() ---
+            if (filtered.length === 0) {
+                productGrid.innerHTML = `
+                    <div class="empty-state">
+                        <span class="big-emoji">🔍</span>
+                        <h3>No products found</h3>
+                        <p style="color: #94a3b8;">Try adjusting your filters.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // map() transforms each product into HTML
+            const productHTML = filtered.map(product => {
+                // Generate star rating using Array().fill() and reduce()
+                const stars = '⭐'.repeat(Math.floor(product.rating)) +
+                             (product.rating % 1 >= 0.5 ? '✨' : '');
+
+                return `
+                    <div class="product-card" data-id="${product.id}">
+                        <div class="emoji">${product.emoji}</div>
+                        <div class="name">${product.name}</div>
+                        <div class="category">${product.category}</div>
+                        <div class="description">${product.description}</div>
+                        <div class="price">
+                            <span class="currency">$</span>${product.price.toFixed(2)}
+                        </div>
+                        <div class="rating">${stars} ${product.rating}</div>
+                    </div>
+                `;
+            }).join(''); // join() converts array to string
+
+            productGrid.innerHTML = productHTML;
+
+            // --- 4. Extra: Use forEach() to add data attributes (just for demonstration) ---
+            // This could be used for click handlers, etc.
+            const cards = productGrid.querySelectorAll('.product-card');
+            cards.forEach((card, index) => {
+                // This is where you'd add event listeners
+                // card.addEventListener('click', () => console.log('Product clicked:', index));
+            });
+        }
+
+        /**
+         * updateCategoryStats
+         * Uses reduce() to count products per category.
+         * Logs to console (for demonstration).
+         */
+        function updateCategoryStats() {
+            // reduce() counts products by category
+            const stats = products.reduce((acc, product) => {
+                acc[product.category] = (acc[product.category] || 0) + 1;
+                return acc;
+            }, {});
+
+            console.log('📊 Category Stats:', stats);
+
+            // Additional: Use reduce() to calculate average price
+            const totalPrice = products.reduce((sum, product) => sum + product.price, 0);
+            const avgPrice = (totalPrice / products.length).toFixed(2);
+            console.log(`💰 Average Price: $${avgPrice}`);
+
+            // Find cheapest product using reduce()
+            const cheapest = products.reduce((cheapest, product) => {
+                return product.price < cheapest.price ? product : cheapest;
+            });
+            console.log(`🏷️ Cheapest Product: ${cheapest.name} ($${cheapest.price.toFixed(2)})`);
+
+            // Find most expensive using reduce()
+            const mostExpensive = products.reduce((most, product) => {
+                return product.price > most.price ? product : most;
+            });
+            console.log(`🏷️ Most Expensive: ${mostExpensive.name} ($${mostExpensive.price.toFixed(2)})`);
+
+            // Count products with rating > 4.3 using filter() + length
+            const highRated = products.filter(p => p.rating > 4.3).length;
+            console.log(`⭐ Products with rating > 4.3: ${highRated}`);
+        }
+
+        /**
+         * resetFilters
+         * Resets all filters to default and re-renders.
+         */
+        function resetFilters() {
+            categoryFilter.value = 'all';
+            searchInput.value = '';
+            minPrice.value = '';
+            maxPrice.value = '';
+            renderProducts();
+        }
+
+
+        /**
+         * ============================================================
+         * PART 4: EVENT LISTENERS
+         * ============================================================
+         * Using forEach() on an array of elements to attach events.
+         */
+
+        // --- All inputs trigger a re-render ---
+        const filterInputs = [categoryFilter, searchInput, minPrice, maxPrice];
+
+        // Using forEach() to attach event listeners
+        filterInputs.forEach(input => {
+            input.addEventListener('input', renderProducts);
+            // For select, 'change' event works better
+            if (input.tagName === 'SELECT') {
+                input.addEventListener('change', renderProducts);
+            }
+        });
+
+        // --- Also trigger on Enter key for search ---
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                renderProducts();
+            }
+        });
+
+
+        /**
+         * ============================================================
+         * PART 5: INITIALIZATION
+         * ============================================================
+         */
+
+        // --- Populate the category filter ---
+        populateCategoryFilter();
+
+        // --- Render products ---
+        renderProducts();
+
+        // --- Update stats in console ---
+        updateCategoryStats();
+
+
+        /**
+         * ============================================================
+         * PART 6: DEMONSTRATION (Console Output)
+         * ============================================================
+         * These examples show all the array methods in action.
+         * (Open the browser console to see the output!)
+         */
+
+        console.log('\n=== DAY 15: ARRAY METHODS DEMONSTRATION ===\n');
+
+        // --- 1. Mutating Methods ---
+        console.log('--- 1. Mutating Methods ---');
+        const demoArray = ['apple', 'banana', 'orange'];
+        console.log('Original:', demoArray);
+
+        demoArray.push('grape');
+        console.log('After push("grape"):', demoArray);
+
+        const popped = demoArray.pop();
+        console.log('After pop():', demoArray, '(removed:', popped, ')');
+
+        demoArray.unshift('kiwi');
+        console.log('After unshift("kiwi"):', demoArray);
+
+        const shifted = demoArray.shift();
+        console.log('After shift():', demoArray, '(removed:', shifted, ')');
+
+        // --- 2. forEach() ---
+        console.log('\n--- 2. forEach() ---');
+        const numbers = [1, 2, 3, 4, 5];
+        console.log('Numbers:', numbers);
+        console.log('Double each number:');
+        numbers.forEach(num => console.log(`  ${num} × 2 = ${num * 2}`));
+
+        // --- 3. map() ---
+        console.log('\n--- 3. map() ---');
+        const doubled = numbers.map(num => num * 2);
+        console.log('Original:', numbers);
+        console.log('Doubled (map):', doubled);
+
+        const names = products.map(p => p.name);
+        console.log('Product names (map):', names);
+
+        // --- 4. filter() ---
+        console.log('\n--- 4. filter() ---');
+        const expensiveProducts = products.filter(p => p.price > 50);
+        console.log('Products > $50 (filter):', expensiveProducts.length);
+
+        const highRatedProducts = products.filter(p => p.rating >= 4.5);
+        console.log('Products with rating ≥ 4.5 (filter):', highRatedProducts.map(p => p.name));
+
+        // --- 5. reduce() ---
+        console.log('\n--- 5. reduce() ---');
+        const total = numbers.reduce((acc, curr) => acc + curr, 0);
+        console.log('Sum of numbers (reduce):', total);
+
+        const productPrices = products.map(p => p.price);
+        const totalValue = productPrices.reduce((acc, curr) => acc + curr, 0);
+        console.log('Total value of all products:', `$${totalValue.toFixed(2)}`);
+
+        // Category count using reduce()
+        const categoryCount = products.reduce((acc, p) => {
+            acc[p.category] = (acc[p.category] || 0) + 1;
+            return acc;
+        }, {});
+        console.log('Category counts (reduce):', categoryCount);
+
+        // --- 6. find(), some(), every() ---
+        console.log('\n--- 6. find(), some(), every() ---');
+        const firstUnder20 = products.find(p => p.price < 20);
+        console.log('First product under $20 (find):', firstUnder20?.name);
+
+        const hasBluetooth = products.some(p => p.name.includes('Bluetooth'));
+        console.log('Has Bluetooth product? (some):', hasBluetooth);
+
+        const allPositive = products.every(p => p.price > 0);
+        console.log('All prices positive? (every):', allPositive);
+
+        // --- 7. includes() and indexOf() ---
+        console.log('\n--- 7. includes() and indexOf() ---');
+        const fruitArray = ['apple', 'banana', 'orange'];
+        console.log('Fruits:', fruitArray);
+        console.log('Includes "banana"?', fruitArray.includes('banana'));
+        console.log('Index of "orange":', fruitArray.indexOf('orange'));
+        console.log('Index of "grape":', fruitArray.indexOf('grape'));
+
+        console.log('\n=== Interactive Product Catalog is ready! ===');
+        console.log('Try filtering by category, searching, or setting a price range.');
+    </script>
+
+</body>
+</html>
