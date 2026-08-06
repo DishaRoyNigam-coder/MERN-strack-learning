@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo App (Event Delegation) - Day 20</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 550px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 35px 30px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            animation: fadeSlideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header .icon {
+            font-size: 2.8rem;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        /* ---------- ADD FORM ---------- */
+        .add-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .add-form input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .add-form input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .add-form button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            background: #0f172a;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .add-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+        }
+
+        /* ---------- FILTERS ---------- */
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filters button {
+            padding: 6px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 30px;
+            background: transparent;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            color: #475569;
+        }
+
+        .filters button:hover {
+            background: #f1f5f9;
+        }
+
+        .filters button.active {
+            background: #0f172a;
+            color: #fff;
+            border-color: #0f172a;
+        }
+
+        .filters .clear-btn {
+            margin-left: auto;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+
+        .filters .clear-btn:hover {
+            background: #fef2f2;
+        }
+
+        /* ---------- STATS ---------- */
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #64748b;
+            padding: 8px 0 12px;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 16px;
+        }
+
+        .stats .count {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        /* ---------- TODO LIST ---------- */
+        .todo-list {
+            list-style: none;
+            min-height: 100px;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .todo-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .todo-item .checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            flex-shrink: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            background: #fff;
+            font-size: 0.8rem;
+            user-select: none;
+        }
+
+        .todo-item .checkbox:hover {
+            border-color: #3b82f6;
+        }
+
+        .todo-item .checkbox.checked {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: #fff;
+        }
+
+        .todo-item .text {
+            flex: 1;
+            font-size: 1rem;
+            color: #0f172a;
+            word-break: break-word;
+            transition: color 0.25s ease, text-decoration 0.25s ease;
+            cursor: pointer;
+        }
+
+        .todo-item .text.completed {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+
+        .todo-item .delete-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .todo-item .delete-btn:hover {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        /* ---------- EMPTY STATE ---------- */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state .big-emoji {
+            font-size: 3.5rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .empty-state h3 {
+            color: #475569;
+            font-size: 1.1rem;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 500px) {
+            .container {
+                padding: 24px 16px;
+            }
+            .add-form {
+                flex-direction: column;
+            }
+            .add-form button {
+                width: 100%;
+            }
+            .filters {
+                gap: 6px;
+            }
+            .filters button {
+                font-size: 0.75rem;
+                padding: 4px 12px;
+            }
+            .filters .clear-btn {
+                margin-left: 0;
+            }
+            .todo-item {
+                padding: 10px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">✅</span>
+            <h1>Todo List</h1>
+            <p>Stay organized and productive.</p>
+        </div>
+
+        <!-- ADD FORM -->
+        <form class="add-form" id="addForm">
+            <input
+                type="text"
+                id="todoInput"
+                placeholder="What do you need to do?"
+                maxlength="200"
+                autofocus
+            />
+            <button type="submit">Add Task</button>
+        </form>
+
+        <!-- FILTERS -->
+        <div class="filters" id="filterContainer">
+            <button class="active" data-filter="all">All</button>
+            <button data-filter="active">Active</button>
+            <button data-filter="completed">Completed</button>
+            <button class="clear-btn" id="clearCompleted">Clear Completed</button>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats">
+            <span>📋 <span class="count" id="taskCount">0</span> tasks</span>
+            <span>✅ <span id="completedCount">0</span> completed</span>
+        </div>
+
+        <!-- TODO LIST -->
+        <ul class="todo-list" id="todoList">
+            <!-- Tasks will be rendered here -->
+        </ul>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT (REFACTORED WITH EVENT DELEGATION)                 -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: STATE MANAGEMENT
+         * ============================================================
+         */
+
+        let todos = [];
+        let currentFilter = 'all';
+
+        // --- DOM References ---
+        const todoList = document.getElementById('todoList');
+        const todoInput = document.getElementById('todoInput');
+        const addForm = document.getElementById('addForm');
+        const taskCount = document.getElementById('taskCount');
+        const completedCount = document.getElementById('completedCount');
+        const filterButtons = document.querySelectorAll('#filterContainer button[data-filter]');
+        const clearCompletedBtn = document.getElementById('clearCompleted');
+
+        // --- Load from localStorage ---
+        function loadTodos() {
+            const stored = localStorage.getItem('todos');
+            if (stored) {
+                try {
+                    todos = JSON.parse(stored);
+                } catch (e) {
+                    todos = [];
+                }
+            } else {
+                todos = [
+                    { id: 1, text: 'Learn event delegation', completed: true },
+                    { id: 2, text: 'Refactor todo app', completed: false },
+                    { id: 3, text: 'Master DOM events', completed: false }
+                ];
+            }
+        }
+
+        // --- Save to localStorage ---
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        // --- Generate unique ID ---
+        function generateId() {
+            return Date.now() + Math.floor(Math.random() * 1000);
+        }
+
+
+        /**
+         * ============================================================
+         * PART 2: RENDER FUNCTION (Using createElement)
+         * ============================================================
+         * We still use createElement() for rendering.
+         * The key difference: NO event listeners on individual items!
+         * Event delegation handles everything through the parent.
+         */
+
+        function renderTodos() {
+            // --- Filter todos ---
+            let filteredTodos = todos;
+            if (currentFilter === 'active') {
+                filteredTodos = todos.filter(todo => !todo.completed);
+            } else if (currentFilter === 'completed') {
+                filteredTodos = todos.filter(todo => todo.completed);
+            }
+
+            // --- Sort ---
+            filteredTodos = [...filteredTodos].sort((a, b) => {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                return a.id - b.id;
+            });
+
+            // --- Clear the list ---
+            while (todoList.firstChild) {
+                todoList.removeChild(todoList.firstChild);
+            }
+
+            // --- Update stats ---
+            updateStats();
+
+            // --- Empty state ---
+            if (filteredTodos.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                    <span class="big-emoji">📭</span>
+                    <h3>${todos.length === 0 ? 'No tasks yet. Add one above!' : 'No tasks in this filter.'}</h3>
+                `;
+                todoList.appendChild(emptyState);
+                return;
+            }
+
+            // --- Render each todo ---
+            // ⚠️ Note: No event listeners are added to checkbox or deleteBtn!
+            // Events are handled via delegation in PART 3.
+            filteredTodos.forEach(todo => {
+                const li = document.createElement('li');
+                li.className = 'todo-item';
+                li.dataset.id = todo.id;
+
+                // Checkbox
+                const checkbox = document.createElement('div');
+                checkbox.className = `checkbox ${todo.completed ? 'checked' : ''}`;
+                checkbox.textContent = todo.completed ? '✓' : '';
+                // ✅ No event listener here!
+
+                // Text
+                const textSpan = document.createElement('span');
+                textSpan.className = `text ${todo.completed ? 'completed' : ''}`;
+                textSpan.textContent = todo.text;
+
+                // Delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = '✕';
+                deleteBtn.setAttribute('aria-label', 'Delete task');
+                // ✅ No event listener here!
+
+                // Assemble
+                li.appendChild(checkbox);
+                li.appendChild(textSpan);
+                li.appendChild(deleteBtn);
+                todoList.appendChild(li);
+            });
+
+            // --- Update filter buttons ---
+            filterButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+            });
+        }
+
+
+        /**
+         * ============================================================
+         * PART 3: EVENT DELEGATION (🚀 THE GAME CHANGER)
+         * ============================================================
+         * A single event listener on the parent (todoList) handles
+         * clicks on checkbox, delete button, and text.
+         * 
+         * This automatically works for dynamically added items!
+         */
+
+        /**
+         * EVENT DELEGATION: One listener to rule them all!
+         */
+        todoList.addEventListener('click', function(event) {
+            // --- Step 1: Find the parent li.todo-item ---
+            // .closest() searches up the DOM tree for the nearest match
+            const li = event.target.closest('.todo-item');
+            if (!li) return; // Clicked on something outside a task
+
+            // Get the task ID from the li's data attribute
+            const id = Number(li.dataset.id);
+
+            // --- Step 2: Determine which part was clicked ---
+
+            // Case 1: Checkbox clicked (toggle completion)
+            if (event.target.classList.contains('checkbox')) {
+                console.log(`📋 Toggling todo with ID: ${id} (delegation)`);
+                toggleTodo(id);
+                return;
+            }
+
+            // Case 2: Delete button clicked
+            if (event.target.classList.contains('delete-btn')) {
+                console.log(`🗑️ Deleting todo with ID: ${id} (delegation)`);
+                deleteTodo(id);
+                return;
+            }
+
+            // Case 3: Text clicked (also toggle completion - bonus feature)
+            if (event.target.classList.contains('text')) {
+                console.log(`📋 Toggling todo via text click: ${id} (delegation)`);
+                toggleTodo(id);
+                return;
+            }
+
+            // Case 4: Click on the li itself (not a child) - also toggle
+            if (event.target.classList.contains('todo-item')) {
+                console.log(`📋 Toggling todo via li click: ${id} (delegation)`);
+                toggleTodo(id);
+                return;
+            }
+        });
+
+        // --- Alternative: Using event delegation with a switch statement ---
+        // The above approach with if/else is clearer for beginners.
+
+        /**
+         * ============================================================
+         * PART 4: CRUD OPERATIONS (Unchanged from Day 19)
+         * ============================================================
+         */
+
+        function addTodo(text) {
+            const trimmedText = text.trim();
+            if (!trimmedText) {
+                alert('Please enter a task!');
+                return false;
+            }
+
+            const duplicate = todos.some(todo =>
+                todo.text.toLowerCase() === trimmedText.toLowerCase()
+            );
+            if (duplicate) {
+                alert('This task already exists!');
+                return false;
+            }
+
+            const newTodo = {
+                id: generateId(),
+                text: trimmedText,
+                completed: false
+            };
+
+            todos.push(newTodo);
+            saveTodos();
+            renderTodos();
+            todoInput.value = '';
+            todoInput.focus();
+            return true;
+        }
+
+        function toggleTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                saveTodos();
+                renderTodos();
+            }
+        }
+
+        function deleteTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            if (!todo) return;
+
+            // Uncomment for confirmation:
+            // if (!confirm(`Delete "${todo.text}"?`)) return;
+
+            const index = todos.findIndex(t => t.id === id);
+            if (index !== -1) {
+                todos.splice(index, 1);
+                saveTodos();
+                renderTodos();
+            }
+        }
+
+        function clearCompleted() {
+            const completedTodos = todos.filter(t => t.completed);
+            if (completedTodos.length === 0) {
+                alert('No completed tasks to clear.');
+                return;
+            }
+
+            if (confirm(`Delete ${completedTodos.length} completed task(s)?`)) {
+                todos = todos.filter(t => !t.completed);
+                saveTodos();
+                renderTodos();
+            }
+        }
+
+        function updateStats() {
+            const total = todos.length;
+            const completed = todos.filter(t => t.completed).length;
+            taskCount.textContent = total;
+            completedCount.textContent = completed;
+        }
+
+
+        /**
+         * ============================================================
+         * PART 5: EVENT HANDLING WITH preventDefault & stopPropagation
+         * ============================================================
+         */
+
+        // --- Form submission with preventDefault ---
+        addForm.addEventListener('submit', function(event) {
+            // 🚨 preventDefault stops the page from reloading
+            event.preventDefault();
+            console.log('📝 Form submitted (preventDefault used)');
+            const text = todoInput.value;
+            addTodo(text);
+        });
+
+        // --- Keyboard shortcut: Escape clears input ---
+        todoInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                todoInput.value = '';
+                todoInput.blur();
+            }
+        });
+
+        // --- Filter buttons ---
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                currentFilter = this.dataset.filter;
+                renderTodos();
+            });
+        });
+
+        // --- Clear completed ---
+        clearCompletedBtn.addEventListener('click', clearCompleted);
+
+        // --- Keyboard shortcut: Ctrl+Shift+Delete ---
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.shiftKey && event.key === 'Delete') {
+                event.preventDefault(); // Prevent browser's default behavior
+                clearCompleted();
+            }
+        });
+
+        // --- 🚨 DEMONSTRATION: stopPropagation vs preventDefault ---
+        // Adding a click listener to the container to show bubbling
+        // This demonstrates that events bubble up, but delegation handles it cleanly
+        document.querySelector('.container').addEventListener('click', function(event) {
+            // Only log if the click is NOT on a todo item (to avoid noise)
+            if (!event.target.closest('.todo-item')) {
+                console.log(`📢 Container clicked (bubbling from: ${event.target.tagName})`);
+            }
+        });
+
+        // --- 🚨 DEMONSTRATION: Preventing context menu on the todo list ---
+        // Shows how preventDefault works
+        todoList.addEventListener('contextmenu', function(event) {
+            // Check if right-clicked on a todo item
+            if (event.target.closest('.todo-item')) {
+                event.preventDefault();
+                console.log('⚠️ Right-click prevented on todo item!');
+                // Could show a custom context menu here
+            }
+        });
+
+
+        /**
+         * ============================================================
+         * PART 6: INITIALIZATION
+         * ============================================================
+         */
+
+        loadTodos();
+        renderTodos();
+
+
+        /**
+         * ============================================================
+         * PART 7: DEMONSTRATION (Console Output)
+         * ============================================================
+         * Showing event concepts in action.
+         * (Open the browser console to see the output!)
+         */
+
+        console.log('\n=== DAY 20: EVENT BUBBLING, DELEGATION, PREVENTDEFAULT ===\n');
+
+        // --- 1. Event Bubbling Demonstration ---
+        console.log('--- 1. Event Bubbling ---');
+
+        // Add listeners to demonstrate bubbling
+        const demoParent = document.createElement('div');
+        demoParent.style.cssText = `
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-size: 0.85rem;
+            color: #475569;
+            cursor: pointer;
+        `;
+        demoParent.innerHTML = `
+            <strong>Click me (bubbling demo)</strong>
+            <button id="demoChild" style="margin-left: 10px; padding: 4px 12px;">Child Button</button>
+            <span style="margin-left: 10px; color: #94a3b8;">Click the button or the box to see bubbling</span>
+        `;
+        document.querySelector('.container').appendChild(demoParent);
+
+        // Parent listener
+        demoParent.addEventListener('click', function() {
+            console.log('  📦 Parent box clicked (bubbling phase)');
+        });
+
+        // Child listener
+        const demoChild = document.getElementById('demoChild');
+        if (demoChild) {
+            demoChild.addEventListener('click', function(event) {
+                console.log('  🔘 Child button clicked (target phase)');
+                // Uncomment to stop bubbling:
+                // event.stopPropagation();
+                // console.log('  ⛔ Bubbling stopped!');
+            });
+        }
+
+        // --- 2. Event Delegation Demonstration ---
+        console.log('\n--- 2. Event Delegation ---');
+        console.log('✅ Todo list uses event delegation for all clicks.');
+        console.log('✅ One listener on #todoList handles all checkbox, delete, and text clicks.');
+        console.log('✅ Dynamically added items work automatically!');
+
+        // --- 3. preventDefault Demonstration ---
+        console.log('\n--- 3. preventDefault ---');
+        console.log('✅ Form submission prevented (page doesn\'t reload).');
+        console.log('✅ Right-click on a todo item is prevented.');
+        console.log('✅ Ctrl+Shift+Delete shows a confirmation dialog.');
+
+        // --- 4. stopPropagation Demonstration ---
+        console.log('\n--- 4. stopPropagation ---');
+        console.log('Click the "Child Button" above to see bubbling in action.');
+        console.log('Events bubble: child → parent.');
+        console.log('Uncomment event.stopPropagation() in the child click to stop bubbling.');
+
+        // --- 5. event.target vs event.currentTarget ---
+        console.log('\n--- 5. event.target vs event.currentTarget ---');
+        console.log('  event.target: The element that was actually clicked.');
+        console.log('  event.currentTarget: The element with the listener.');
+        console.log('  In delegation, target is the child, currentTarget is the parent.');
+
+        console.log('\n=== Todo App refactored with event delegation! ===');
+        console.log('Try:');
+        console.log('  - Add a new task');
+        console.log('  - Click checkbox, text, or delete button');
+        console.log('  - Right-click on a task (prevented)');
+        console.log('  - Check the console logs to see delegation in action');
+    </script>
+
+</body>
+</html>
