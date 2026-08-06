@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flexbox Navbar - Day 6</title>
+
+    <style>
+        /* ---------- RESET ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        /* ---------- THE FLEX CONTAINER (THE NAVBAR) ---------- */
+        .navbar {
+            /*
+                🚀 FLEXBOX ACTIVATED:
+                All direct children (.logo, .nav-links, .auth-buttons)
+                will become flex items.
+            */
+            display: flex;
+
+            /*
+                MAIN AXIS ALIGNMENT (horizontal):
+                space-between pushes the logo to the far left,
+                and the login button to the far right.
+                The nav links sit perfectly in the middle.
+            */
+            justify-content: space-between;
+
+            /*
+                CROSS AXIS ALIGNMENT (vertical):
+                center ensures the logo, links, and button
+                are all perfectly aligned vertically in the middle.
+            */
+            align-items: center;
+
+            /*
+                WRAPPING:
+                If the screen is too small, the items will wrap
+                onto a new line instead of overflowing horizontally.
+            */
+            flex-wrap: wrap;
+
+            /*
+                GAP:
+                Creates a clean 20px space between the logo,
+                the nav links, and the login button.
+            */
+            gap: 20px;
+
+            /* ---- Styling the box itself (Box Model!) ---- */
+            background: #ffffff;
+            padding: 15px 30px; /* Inner space (padding) */
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #eaeef3;
+
+            max-width: 1200px;
+            margin: 0 auto; /* Centers the navbar on the page */
+        }
+
+        /* ---------- FLEX ITEMS (The Logo) ---------- */
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #16213e;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: #e94560; /* Highlight the "Hub" part */
+        }
+
+        /* ---------- FLEX ITEMS (The Navigation Links) ---------- */
+        .nav-links {
+            /*
+                This <ul> is also a flex container!
+                This turns its <li> children into flex items.
+                Nesting Flexbox is totally normal and powerful.
+            */
+            display: flex;
+            gap: 30px; /* Space between each link */
+
+            /* Removes default bullet points */
+            list-style-type: none;
+
+            /* Removes default padding on ul */
+            padding: 0;
+        }
+
+        .nav-links li a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 8px 0; /* Only vertical padding, we rely on gap for horizontal */
+            border-bottom: 3px solid transparent; /* Invisible border to prevent jumping on hover */
+            transition: all 0.2s ease;
+        }
+
+        /* Hover effect for links */
+        .nav-links li a:hover {
+            color: #e94560;
+            border-bottom-color: #e94560;
+        }
+
+        /* ---------- FLEX ITEMS (Auth Buttons) ---------- */
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 22px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        /* Login button (outline style) */
+        .btn-login {
+            color: #16213e;
+            border: 2px solid #eaeef3;
+            background: transparent;
+        }
+        .btn-login:hover {
+            background: #f0f2f5;
+            border-color: #16213e;
+        }
+
+        /* Signup button (solid primary) */
+        .btn-signup {
+            background: #16213e;
+            color: #ffffff;
+            border: 2px solid #16213e;
+        }
+        .btn-signup:hover {
+            background: #e94560;
+            border-color: #e94560;
+        }
+
+        /* ---------- DEMO SECTION (To show off the layout) ---------- */
+        .page-content {
+            max-width: 1200px;
+            margin: 40px auto 0;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* ---------- RESPONSIVE BEHAVIOR ---------- */
+        /*
+            When the screen gets smaller (e.g., tablets/phones),
+            the flex-wrap: wrap; kicks in.
+            The nav-links and auth-buttons will drop to the next line.
+            Let's center them when they wrap.
+        */
+        @media (max-width: 768px) {
+            .navbar {
+                justify-content: center; /* Center everything when wrapped */
+                flex-direction: column; /* Stack everything vertically */
+                padding: 20px;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px 25px; /* Row gap 15px, column gap 25px */
+            }
+
+            .auth-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-links {
+                flex-direction: column; /* Stack links vertically on tiny phones */
+                align-items: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================================================== -->
+    <!-- THE NAVBAR (FLEX CONTAINER)                        -->
+    <!-- ================================================== -->
+    <nav class="navbar">
+
+        <!-- Flex Item 1: Logo -->
+        <div class="logo">
+            Dev<span>Hub</span>
+        </div>
+
+        <!-- Flex Item 2: Navigation Links -->
+        <!-- This <ul> is also a flex container for its children -->
+        <ul class="nav-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Projects</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">About</a></li>
+        </ul>
+
+        <!-- Flex Item 3: Auth Buttons -->
+        <div class="auth-buttons">
+            <a href="#" class="btn btn-login">Log In</a>
+            <a href="#" class="btn btn-signup">Sign Up</a>
+        </div>
+
+    </nav>
+
+    <!-- ================================================== -->
+    <!-- DEMO CONTENT (Just to show the navbar in context)  -->
+    <!-- ================================================== -->
+    <div class="page-content">
+        <h1>Flexbox Navigation Bar 🔥</h1>
+        <p>
+            Notice how the logo, links, and login button are perfectly aligned horizontally.
+            Resize your browser window to see the <strong>flex-wrap</strong> and
+            <strong>media queries</strong> kick in!
+        </p>
+        <ul>
+            <li><strong>justify-content: space-between</strong> – Pushed items to the edges.</li>
+            <li><strong>align-items: center</strong> – Kept everything vertically centered, regardless of height.</li>
+            <li><strong>flex-wrap: wrap</strong> – Prevents horizontal overflow on small screens.</li>
+        </ul>
+    </div>
+
+</body>
+</html>
