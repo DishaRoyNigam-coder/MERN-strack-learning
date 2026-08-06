@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JavaScript Calculator - Day 12</title>
+
+    <style>
+        /* Simple styling to make it look nice */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f8fafc;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 40px 50px;
+            border-radius: 24px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            animation: fadeSlideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #0f172a;
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+
+        .calculator-icon {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .btn-run {
+            background: #0f172a;
+            color: #fff;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        }
+
+        .btn-run:hover {
+            background: #1e293b;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+        }
+
+        .result-box {
+            margin-top: 24px;
+            padding: 16px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-size: 1.1rem;
+            color: #0f172a;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-box .placeholder {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .result-box .success {
+            color: #16a34a;
+            font-weight: 700;
+        }
+
+        .result-box .error {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        footer {
+            margin-top: 24px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <span class="calculator-icon">🧮</span>
+        <h1>Simple Calculator</h1>
+        <p>Click the button below to run the calculator in the browser.</p>
+
+        <button class="btn-run" onclick="runCalculator()">Run Calculator 🚀</button>
+
+        <div class="result-box" id="resultBox">
+            <span class="placeholder">Result will appear here...</span>
+        </div>
+
+        <footer>Day 12 – MERN Stack Journey</footer>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT STARTS HERE                                        -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * THE CALCULATOR FUNCTION
+         * ============================================================
+         * This function runs when the user clicks the button.
+         * It uses prompt() to get input, performs the calculation,
+         * and displays the result using alert() and on the page.
+         */
+        function runCalculator() {
+
+            // --- Step 1: Show a welcome message ---
+            alert('🧮 Welcome to the Calculator!\n\nYou\'ll be asked for two numbers and an operation.');
+
+            // --- Step 2: Get the first number ---
+            // prompt() returns a string. We'll convert it to a number.
+            let num1Input = prompt('Enter the first number:');
+
+            // If the user clicks "Cancel" or leaves it empty, num1Input will be null or "".
+            if (num1Input === null || num1Input.trim() === '') {
+                displayResult('❌ Operation cancelled. Please try again.', 'error');
+                return;
+            }
+
+            // Convert to number (explicit conversion)
+            let num1 = Number(num1Input);
+
+            // Check if it's a valid number
+            if (isNaN(num1)) {
+                displayResult('❌ Invalid input! Please enter a valid number.', 'error');
+                return;
+            }
+
+            // --- Step 3: Get the second number ---
+            let num2Input = prompt('Enter the second number:');
+
+            if (num2Input === null || num2Input.trim() === '') {
+                displayResult('❌ Operation cancelled. Please try again.', 'error');
+                return;
+            }
+
+            let num2 = Number(num2Input);
+
+            if (isNaN(num2)) {
+                displayResult('❌ Invalid input! Please enter a valid number.', 'error');
+                return;
+            }
+
+            // --- Step 4: Get the operation ---
+            let operation = prompt(
+                'Choose an operation:\n\n' +
+                '➕  +  (Addition)\n' +
+                '➖  -  (Subtraction)\n' +
+                '✖️  *  (Multiplication)\n' +
+                '➗  /  (Division)\n\n' +
+                'Enter the operator (+, -, *, /):'
+            );
+
+            if (operation === null || operation.trim() === '') {
+                displayResult('❌ Operation cancelled. Please try again.', 'error');
+                return;
+            }
+
+            // Trim whitespace
+            operation = operation.trim();
+
+            // --- Step 5: Perform the calculation ---
+            let result;
+            let operationSymbol;
+
+            // Using if/else (we'll learn about switch later!)
+            if (operation === '+') {
+                result = num1 + num2;
+                operationSymbol = '+';
+            } else if (operation === '-') {
+                result = num1 - num2;
+                operationSymbol = '-';
+            } else if (operation === '*') {
+                result = num1 * num2;
+                operationSymbol = '×';
+            } else if (operation === '/') {
+                // Check for division by zero
+                if (num2 === 0) {
+                    displayResult('❌ Error: Cannot divide by zero!', 'error');
+                    return;
+                }
+                result = num1 / num2;
+                operationSymbol = '÷';
+            } else {
+                displayResult('❌ Invalid operation! Please use +, -, *, or /.', 'error');
+                return;
+            }
+
+            // --- Step 6: Display the result ---
+
+            // Build the result message
+            let message = `📊 Calculation Result:\n\n`;
+            message += `  ${num1} ${operationSymbol} ${num2} = ${result}\n\n`;
+
+            // Check if the result is an integer (to avoid displaying .0)
+            if (Number.isInteger(result)) {
+                message += `✅ Result: ${result}`;
+            } else {
+                // Round to 4 decimal places for cleaner display
+                message += `✅ Result: ${result.toFixed(4)}`;
+            }
+
+            // Show in alert
+            alert(message);
+
+            // Display on the page
+            displayResult(
+                `${num1} ${operationSymbol} ${num2} = ${Number.isInteger(result) ? result : result.toFixed(4)}`,
+                'success'
+            );
+        }
+
+        /**
+         * ============================================================
+         * DISPLAY RESULT ON THE PAGE
+         * ============================================================
+         * This function updates the result box with a message.
+         */
+        function displayResult(message, type = 'success') {
+            const resultBox = document.getElementById('resultBox');
+
+            // Clear previous content
+            resultBox.innerHTML = '';
+
+            // Create a new span with the message
+            const span = document.createElement('span');
+
+            // Add the appropriate class
+            if (type === 'success') {
+                span.className = 'success';
+            } else if (type === 'error') {
+                span.className = 'error';
+            }
+
+            span.textContent = message;
+            resultBox.appendChild(span);
+        }
+
+        /**
+         * ============================================================
+         * DEMONSTRATION: VARIABLES, DATA TYPES & COERCION
+         * ============================================================
+         * This code runs when the page loads.
+         * It shows examples of variables, data types, and coercion.
+         * (Open the browser console to see the output!)
+         */
+        console.log('=== DAY 12: JAVASCRIPT FUNDAMENTALS ===\n');
+
+        // --- 1. VARIABLES ---
+        console.log('--- 1. Variables ---');
+
+        const userName = 'John';        // String (const)
+        let age = 25;                  // Number (let)
+        var oldWay = 'Avoid this!';    // var (not recommended)
+
+        console.log('Name:', userName);
+        console.log('Age:', age);
+
+        // Reassigning let
+        age = 26;
+        console.log('Age (after reassign):', age);
+
+        // ❌ This would cause an error:
+        // const userName = 'Jane'; // Can't redeclare const
+
+
+        // --- 2. DATA TYPES ---
+        console.log('\n--- 2. Data Types ---');
+
+        let stringVar = 'Hello World';
+        let numberVar = 42;
+        let booleanVar = true;
+        let undefinedVar;           // undefined
+        let nullVar = null;         // null
+        let objectVar = { name: 'John', age: 30 };
+        let arrayVar = [1, 2, 3];
+
+        console.log('String:', stringVar, typeof stringVar);
+        console.log('Number:', numberVar, typeof numberVar);
+        console.log('Boolean:', booleanVar, typeof booleanVar);
+        console.log('Undefined:', undefinedVar, typeof undefinedVar);
+        console.log('Null:', nullVar, typeof nullVar); // Interesting: typeof null = 'object' (bug in JS)
+        console.log('Object:', objectVar, typeof objectVar);
+        console.log('Array:', arrayVar, typeof arrayVar); // Array is an object
+
+
+        // --- 3. TYPE COERCION ---
+        console.log('\n--- 3. Type Coercion ---');
+
+        // String + Number = String (concatenation)
+        console.log('"5" + 3 =', '5' + 3);
+
+        // Number + String = String
+        console.log('5 + "3" =', 5 + '3');
+
+        // String - Number = Number
+        console.log('"10" - 5 =', '10' - 5);
+
+        // Number + Boolean
+        console.log('5 + true =', 5 + true);
+        console.log('5 + false =', 5 + false);
+
+        // Loose equality (==) vs strict equality (===)
+        console.log('5 == "5":', 5 == '5');   // true (coercion)
+        console.log('5 === "5":', 5 === '5'); // false (no coercion)
+
+        console.log('0 == false:', 0 == false);   // true
+        console.log('0 === false:', 0 === false); // false
+
+        // NaN (Not a Number)
+        console.log('"hello" - 5 =', 'hello' - 5); // NaN
+        console.log('NaN === NaN:', NaN === NaN); // false
+
+        // Explicit conversion
+        console.log('Number("123") =', Number('123'));
+        console.log('String(123) =', String(123));
+        console.log('Boolean(0) =', Boolean(0));
+        console.log('Boolean(1) =', Boolean(1));
+
+        console.log('\n=== Open the browser console to see this output! ===');
+    </script>
+
+</body>
+</html>
