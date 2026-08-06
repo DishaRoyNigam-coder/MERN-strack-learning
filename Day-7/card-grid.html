@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flexbox Card Grid - Day 7</title>
+
+    <style>
+        /* ---------- RESET ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fc;
+            padding: 40px 20px;
+            color: #1a1a2e;
+        }
+
+        .page-header {
+            max-width: 1200px;
+            margin: 0 auto 40px auto;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+        }
+        .page-header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        /* ============================================================ */
+        /* THE FLEX CONTAINER (The Grid)                                 */
+        /* ============================================================ */
+        .card-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+
+            /* --- CONTAINER PROPERTIES (Review from Day 6) --- */
+            display: flex;
+            flex-wrap: wrap;      /* Allows cards to wrap to the next line */
+            justify-content: center; /* Centers the row when cards don't fill the space */
+            gap: 30px;            /* Space between cards (horizontal & vertical) */
+
+            /* Add a little padding so cards don't touch the screen edges */
+            padding: 10px;
+        }
+
+        /* ============================================================ */
+        /* THE FLEX ITEMS (The Cards)                                   */
+        /* ============================================================ */
+        .card {
+            /* ==================================================== */
+            /* 🚀 THE MAGIC RESPONSIVE FORMULA                      */
+            /* flex: grow shrink basis;                            */
+            /* flex: 1 1 300px;                                   */
+            /* ==================================================== */
+            flex: 1 1 300px;
+
+            /* Minimum width so they don't get TOO tiny */
+            min-width: 250px;
+
+            /* Maximum width so they don't stretch excessively wide */
+            max-width: 400px;
+
+            /* --- Card Styling (Box Model) --- */
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 25px 20px 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+            border: 1px solid #eaeef3;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+            /* --- Flex Item Properties (Demonstration) --- */
+            /*
+                By default, align-items on the container is 'stretch'.
+                That means all cards will be the same height automatically!
+                We'll override this for one specific card using align-self.
+            */
+            display: flex; /* Nested flex for card internals */
+            flex-direction: column; /* Stack title, text, button vertically */
+        }
+
+        /* Hover effect for the card */
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+            border-color: #cbd5e0;
+        }
+
+        /* --- Card Internal Styling --- */
+        .card .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #16213e;
+        }
+
+        .card p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            /* This allows the button to stay at the bottom if cards are stretched */
+            flex-grow: 1;
+        }
+
+        .card .btn {
+            display: inline-block;
+            background: #16213e;
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+            transition: background 0.2s ease;
+            /* Align button to the left, but it will stay at bottom due to flex-grow:1 on p */
+            align-self: flex-start;
+        }
+
+        .card .btn:hover {
+            background: #e94560;
+        }
+
+        /* ----- SPECIAL CARD 1: FEATURED (Changes ORDER) ----- */
+        .card-featured {
+            /*
+                ORDER PROPERTY:
+                Default order is 0. Setting it to -1 pushes this card
+                to the VERY BEGINNING of the row, regardless of its
+                position in the HTML!
+            */
+            order: -1;
+
+            /* Make it visually distinct */
+            border: 2px solid #e94560;
+            background: #fff5f7;
+            box-shadow: 0 8px 25px rgba(233, 69, 96, 0.15);
+        }
+        .card-featured .btn {
+            background: #e94560;
+        }
+        .card-featured .btn:hover {
+            background: #c0392b;
+        }
+
+        /* ----- SPECIAL CARD 2: CUSTOM ALIGNMENT (align-self) ----- */
+        .card-align-top {
+            /*
+                ALIGN-SELF PROPERTY:
+                Overrides the parent container's align-items: stretch.
+                Instead of stretching to the same height as others,
+                this card will only be as tall as its content and align
+                to the top of the flex line.
+            */
+            align-self: flex-start;
+
+            /* Make it visually smaller to see the effect */
+            background: #f0f7ff;
+            border: 1px dashed #3182ce;
+        }
+
+        /* ----- SPECIAL CARD 3: CUSTOM ORDER (Push to the end) ----- */
+        .card-order-last {
+            order: 1; /* Pushes this card to the very end */
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVENESS                                               */
+        /* ============================================================ */
+        /*
+            🔥 NOTICE: We DID NOT write media queries for column counts!
+            flex: 1 1 300px; AND flex-wrap: wrap; handles everything automatically:
+            - If the container is > ~960px -> 3 cards fit (300px * 3 + gaps).
+            - If the container is ~660px -> 2 cards fit (300px * 2 + gaps).
+            - If the container is < 330px -> 1 card fits (300px * 1).
+        */
+
+        /* However, we do want to adjust the page header for tiny phones */
+        @media (max-width: 600px) {
+            .page-header h1 {
+                font-size: 1.8rem;
+            }
+            .card {
+                min-width: 100%; /* Force full width on very small screens if needed */
+                max-width: 100%;
+            }
+        }
+
+        /* ============================================================ */
+        /* DEMO FOOTER                                                  */
+        /* ============================================================ */
+        .demo-note {
+            max-width: 1200px;
+            margin: 40px auto 0;
+            background: #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.95rem;
+            color: #2d3748;
+        }
+        .demo-note code {
+            background: #1a202c;
+            color: #f7fafc;
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="page-header">
+        <h1>🚀 Our Services</h1>
+        <p>Flexible cards that adapt to your screen size automatically.</p>
+        <p style="font-size: 0.9rem; color: #e94560;">
+            ⚡ <strong>Resize your browser</strong> to see the magic of <code>flex: 1 1 300px;</code>
+        </p>
+    </header>
+
+    <!-- ============================================================ -->
+    <!-- THE CARD GRID (FLEX CONTAINER)                               -->
+    <!-- ============================================================ -->
+    <div class="card-grid">
+
+        <!-- Card 1: Web Development (Normal) -->
+        <!-- Notice this is NOT featured, not aligned top. Just a normal card. -->
+        <div class="card">
+            <div class="icon">💻</div>
+            <h3>Web Development</h3>
+            <p>
+                Build custom websites and web apps using modern technologies
+                like React, Node.js, and MongoDB.
+            </p>
+            <a href="#" class="btn">Learn More</a>
+        </div>
+
+        <!-- Card 2: FEATURED CARD (order: -1 makes it appear first!) -->
+        <!-- This card is inside the HTML as #2, but visually it's #1 -->
+        <div class="card card-featured">
+            <div class="icon">⭐</div>
+            <h3>Featured: AI Solutions</h3>
+            <p>
+                Our premium AI integration service. Leverage machine learning
+                to boost your business intelligence. (This card appears first!)
+            </p>
+            <a href="#" class="btn">Get Started</a>
+        </div>
+
+        <!-- Card 3: UI/UX Design (Normal) -->
+        <div class="card">
+            <div class="icon">🎨</div>
+            <h3>UI/UX Design</h3>
+            <p>
+                Beautiful, user-centric design that drives engagement and
+                conversions. We create pixel-perfect interfaces.
+            </p>
+            <a href="#" class="btn">View Portfolio</a>
+        </div>
+
+        <!-- Card 4: ALIGN-SELF DEMO (align-self: flex-start) -->
+        <!-- This card will NOT stretch to the height of its siblings -->
+        <div class="card card-align-top">
+            <div class="icon">📱</div>
+            <h3>Mobile First</h3>
+            <p>
+                Responsive designs that look amazing on any device.
+                (This card is shorter because it has less text.)
+            </p>
+            <a href="#" class="btn">See Examples</a>
+        </div>
+
+        <!-- Card 5: Cloud Services (Normal) -->
+        <div class="card">
+            <div class="icon">☁️</div>
+            <h3>Cloud Infrastructure</h3>
+            <p>
+                Scalable cloud solutions on AWS, Azure, and Google Cloud.
+                We handle the heavy lifting so you don't have to. This card has extra text to fill out the height, demonstrating the stretch effect.
+            </p>
+            <a href="#" class="btn">Explore Plans</a>
+        </div>
+
+        <!-- Card 6: ORDER-LAST (Pushed to the end) -->
+        <div class="card card-order-last">
+            <div class="icon">🔒</div>
+            <h3>Security Audit</h3>
+            <p>
+                Comprehensive security assessment and penetration testing
+                to keep your data safe. (This card appears last!)
+            </p>
+            <a href="#" class="btn">Book an Audit</a>
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- EXPLANATORY FOOTER                                          -->
+    <!-- ============================================================ -->
+    <div class="demo-note">
+        <p>
+            <strong>📐 How it works:</strong>
+            Each card has <code>flex: 1 1 300px;</code>.
+            <br />
+            <strong>Grow (1):</strong> Cards expand to fill empty space.
+            <strong>Shrink (1):</strong> Cards compress when space is tight.
+            <strong>Basis (300px):</strong> Cards start at 300px wide.
+            <br />
+            🔥 <strong>Order:</strong> The "Featured" card uses <code>order: -1</code> to appear first.
+            <br />
+            📌 <strong>Align-self:</strong> The "Mobile First" card uses <code>align-self: flex-start;</code> to not stretch.
+        </p>
+    </div>
+
+</body>
+</html>
