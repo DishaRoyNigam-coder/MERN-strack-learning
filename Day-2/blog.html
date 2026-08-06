@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Semantic Blog</title>
+</head>
+<body>
+
+    <!-- ================= HEADER ================= -->
+    <!-- The top banner of the entire website -->
+    <header>
+        <h1>My Developer Journey</h1>
+        <p>Daily logs of a MERN Stack student</p>
+        
+        <!-- ====== NAVIGATION ====== -->
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Projects</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <!-- Only ONE main tag per page -->
+    <main>
+
+        <!-- ====== INDIVIDUAL BLOG ARTICLE ====== -->
+        <!-- article is independent and reusable -->
+        <article>
+
+            <!-- Article Header (Title & Meta) -->
+            <header>
+                <h2>Day 2: Learning Semantic HTML</h2>
+                <p>Published on <time datetime="2026-08-06">August 6, 2026</time> by <strong>Your Name</strong></p>
+            </header>
+
+            <!-- ====== SECTION 1: Introduction ====== -->
+            <section>
+                <h3>What are Semantic Tags?</h3>
+                <p>
+                    Today I learned about semantic HTML tags. Unlike generic <code>&lt;div&gt;</code> tags, 
+                    semantic tags like <code>&lt;article&gt;</code> and <code>&lt;nav&gt;</code> give 
+                    meaning to the content. This is crucial for accessibility and SEO.
+                </p>
+            </section>
+
+            <!-- ====== SECTION 2: Main Content ====== -->
+            <section>
+                <h3>Breaking Down My Layout</h3>
+                <p>
+                    I used <code>&lt;header&gt;</code> for my site banner, <code>&lt;nav&gt;</code> for the menu,
+                    <code>&lt;main&gt;</code> for the core content, and <code>&lt;article&gt;</code> for this blog post.
+                    Inside the article, I split the text into logical <code>&lt;section&gt;</code> elements.
+                </p>
+
+                <!-- Nested section inside a section (allowed) -->
+                <section>
+                    <h4>Why Accessibility Matters</h4>
+                    <p>
+                        Screen readers rely on these tags. A visually impaired user can jump directly to 
+                        the <code>&lt;main&gt;</code> content without listening to the navigation over and over.
+                    </p>
+                </section>
+            </section>
+
+            <!-- ====== SECTION 3: Conclusion ====== -->
+            <section>
+                <h3>What's Next?</h3>
+                <p>
+                    Tomorrow, I'll dive into HTML forms and inputs. But for now, I'm proud of this 
+                    clean, semantic structure.
+                </p>
+            </section>
+
+            <!-- Article Footer (Meta info about the article) -->
+            <footer>
+                <p>Posted in: <strong>HTML Basics</strong> | Tags: #semantic #accessibility #webdev</p>
+            </footer>
+
+        </article>
+
+        <!-- ====== SIDEBAR: Related Posts (using aside and sections) ====== -->
+        <!-- Note: We use <aside> for tangentially related content -->
+        <aside>
+            <h3>Related Posts</h3>
+            <ul>
+                <li><a href="#">Day 1: Setting up VS Code</a></li>
+                <li><a href="#">Day 3: HTML Forms</a></li>
+                <li><a href="#">Day 4: CSS Flexbox</a></li>
+            </ul>
+        </aside>
+
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <!-- The bottom of the entire website -->
+    <footer>
+        <p>&copy; 2026 My Developer Journey. Built with ❤️ and Semantic HTML.</p>
+        <p>
+            <a href="#">Privacy Policy</a> | 
+            <a href="#">Contact</a>
+        </p>
+    </footer>
+
+</body>
+</html>
