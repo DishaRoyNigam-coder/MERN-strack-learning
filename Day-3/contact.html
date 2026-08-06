@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Me - Day 3</title>
+
+    <!-- We'll add basic CSS just to make the form readable tomorrow,
+         but today we keep it purely HTML -->
+    <style>
+        /* Tiny bit of styling to make it visually clear - still counts as structural! */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        fieldset {
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        legend {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        label {
+            display: block; /* Makes labels sit above inputs */
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        /* Adjust radio and checkbox to sit next to labels */
+        .inline-label {
+            display: inline;
+            font-weight: normal;
+        }
+        .inline-input {
+            width: auto;
+            margin-right: 10px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📬 Contact Me</h1>
+    <p>Fill out the form below and I'll get back to you within 24 hours.</p>
+
+    <!-- ================= THE FORM ================= -->
+    <!-- action="#": sends to the same page (for now) -->
+    <!-- method="POST": simulates sending data securely -->
+    <form action="#" method="POST">
+
+        <!-- ====== FIELD 1: PERSONAL INFORMATION ====== -->
+        <fieldset>
+            <legend>Your Personal Info</legend>
+
+            <!-- 1. TEXT INPUT -->
+            <label for="fullName">Full Name *</label>
+            <input type="text" id="fullName" name="fullName" 
+                   placeholder="e.g., John Doe" required />
+
+            <!-- 2. EMAIL INPUT (Browser validates @ and .) -->
+            <label for="emailAddress">Email Address *</label>
+            <input type="email" id="emailAddress" name="emailAddress" 
+                   placeholder="john@example.com" required />
+
+            <!-- 3. PASSWORD INPUT (Characters are masked) -->
+            <label for="password">Password (to secure your inquiry)</label>
+            <input type="password" id="password" name="password" 
+                   placeholder="Min 8 characters" />
+        </fieldset>
+
+        <!-- ====== FIELD 2: INQUIRY DETAILS ====== -->
+        <fieldset>
+            <legend>Your Inquiry</legend>
+
+            <!-- 4. SELECT DROPDOWN -->
+            <label for="category">Category</label>
+            <select id="category" name="category">
+                <option value="">-- Please select --</option>
+                <option value="general">General Question</option>
+                <option value="project">Project Collaboration</option>
+                <option value="job">Job Opportunity</option>
+                <option value="feedback">Feedback</option>
+            </select>
+
+            <!-- 5. TEXTAREA (Multi-line message) -->
+            <label for="message">Message *</label>
+            <textarea id="message" name="message" rows="5" 
+                      placeholder="Write your message here..." required></textarea>
+        </fieldset>
+
+        <!-- ====== FIELD 3: PREFERENCES ====== -->
+        <fieldset>
+            <legend>Preferences</legend>
+
+            <!-- 6. RADIO BUTTONS (Only ONE can be selected) -->
+            <p><strong>How would you like me to reply?</strong></p>
+
+            <label class="inline-label">
+                <input class="inline-input" type="radio" name="replyMethod" value="email" checked />
+                Email
+            </label>
+
+            <label class="inline-label">
+                <input class="inline-input" type="radio" name="replyMethod" value="phone" />
+                Phone Call
+            </label>
+
+            <label class="inline-label">
+                <input class="inline-input" type="radio" name="replyMethod" value="whatsapp" />
+                WhatsApp
+            </label>
+
+            <br /><br />
+
+            <!-- 7. CHECKBOXES (Multiple can be selected) -->
+            <p><strong>What are you interested in? (Check all that apply)</strong></p>
+
+            <label class="inline-label">
+                <input class="inline-input" type="checkbox" name="interests" value="webdev" />
+                Web Development
+            </label>
+
+            <label class="inline-label">
+                <input class="inline-input" type="checkbox" name="interests" value="uiux" />
+                UI/UX Design
+            </label>
+
+            <label class="inline-label">
+                <input class="inline-input" type="checkbox" name="interests" value="mern" checked />
+                MERN Stack
+            </label>
+
+            <label class="inline-label">
+                <input class="inline-input" type="checkbox" name="interests" value="career" />
+                Career Advice
+            </label>
+        </fieldset>
+
+        <!-- ====== SUBMIT BUTTON ====== -->
+        <button type="submit">Send Message ➤</button>
+
+    </form>
+
+    <!-- Optional: Display helpful hint about required fields -->
+    <p style="font-size: 0.9em; color: #666; margin-top: 20px;">
+        * Required fields. Your data is safe with me.
+    </p>
+
+</body>
+</html>
