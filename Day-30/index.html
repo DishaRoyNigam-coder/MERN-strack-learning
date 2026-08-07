@@ -409,7 +409,28 @@
             color: #94a3b8;
             font-size: 0.85rem;
         }
+                 
+        .btn-refresh {
+    background: rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 1.2rem;
+    padding: 14px 18px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: transform 0.25s ease, background 0.25s ease;
+}
 
+.btn-refresh:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.12);
+    transform: rotate(45deg);
+}
+
+.btn-refresh:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
         /* ---------- RESPONSIVE ---------- */
         @media (max-width: 600px) {
             .container {
@@ -510,6 +531,7 @@
                 <button class="btn-search" id="searchBtn">🔍 Search</button>
                 <button class="btn-location" id="locationBtn">📍 My Location</button>
                 <button class="btn-unit" id="unitBtn">°F</button>
+                <button class="btn-refresh" id="refreshBtn" title="Refresh weather">🔄</button>
             </div>
         </div>
 
@@ -731,7 +753,14 @@
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
                 .join(' ');
         }
-
+                   document.getElementById('refreshBtn').addEventListener('click', () => {
+    const city = cityInput.value.trim();
+    if (city) {
+        searchWeather(city);
+    } else {
+        showError('No city to refresh. Please search first.');
+    }
+});
         /**
          * ============================================================
          * PART 5: API CALLS
