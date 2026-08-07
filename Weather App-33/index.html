@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App - Modules</title>
+    <!-- CSS inline for simplicity (you could also move it to a separate file) -->
+    <style>
+        /* Copy the CSS from Day 32 here */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+        .container { max-width: 720px; width: 100%; background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border-radius: 32px; padding: 35px 30px 30px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 25px 80px rgba(0,0,0,0.6); }
+        /* ... rest of CSS from Day 32 ... */
+        /* (For brevity, copy the full CSS from Day 32) */
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HTML structure from Day 32 -->
+        <div class="header">
+            <span class="icon">🌤️</span>
+            <h1>Weather App</h1>
+            <p>Modular architecture — ES6 Modules</p>
+            <span class="badge">📦 import / export</span>
+        </div>
+
+        <div class="search-box">
+            <div class="input-wrapper">
+                <input type="text" id="cityInput" placeholder="Enter city name..." value="London" />
+            </div>
+            <div class="btn-group">
+                <button class="btn-search" id="searchBtn">🔍 Search</button>
+                <button class="btn-location" id="locationBtn">📍 My Location</button>
+                <button class="btn-unit" id="unitBtn">°F</button>
+                <button class="btn-refresh" id="refreshBtn">🔄</button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Fetching weather data...</p>
+        </div>
+
+        <div class="error-box error" id="errorBox">
+            <span class="error-title">❌ Error</span>
+            <span id="errorMessage">Something went wrong.</span>
+            <div class="error-details" id="errorDetails"></div>
+        </div>
+
+        <div class="weather-display" id="weatherDisplay">
+            <div class="current-weather">
+                <div class="city-name" id="cityName">London</div>
+                <div class="city-country" id="cityCountry">United Kingdom</div>
+                <div class="weather-icon" id="weatherIcon">☀️</div>
+                <div class="temperature" id="temperature">18<span class="degree">°C</span></div>
+                <div class="weather-desc" id="weatherDesc">Clear sky</div>
+                <div class="update-time" id="updateTime">Last updated: now</div>
+            </div>
+            <div class="weather-details" id="weatherDetails">
+                <div class="detail-card">
+                    <span class="detail-icon">💧</span>
+                    <div class="detail-value" id="humidity">—</div>
+                    <div class="detail-label">Humidity</div>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-icon">💨</span>
+                    <div class="detail-value" id="windSpeed">—</div>
+                    <div class="detail-label">Wind Speed</div>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-icon">🌡️</span>
+                    <div class="detail-value" id="feelsLike">—</div>
+                    <div class="detail-label">Feels Like</div>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-icon">☀️</span>
+                    <div class="detail-value" id="uvIndex">—</div>
+                    <div class="detail-label">UV Index</div>
+                </div>
+            </div>
+            <div class="forecast-section">
+                <h3>📅 7-Day Forecast</h3>
+                <div class="forecast-grid" id="forecastGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MAIN APP (ES Module)                                          -->
+    <!-- ============================================================ -->
+    <script type="module" src="app.js"></script>
+
+</body>
+</html>

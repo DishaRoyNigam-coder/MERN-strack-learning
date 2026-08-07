@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App - Modern JS</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 720px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 35px 30px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+            animation: fadeSlideUp 0.7s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header .icon { font-size: 2.6rem; display: block; }
+        .header h1 { font-size: 1.8rem; font-weight: 800; color: #ffffff; }
+        .header p { color: #94a3b8; font-size: 0.9rem; }
+        .header .badge {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* ---------- SEARCH ---------- */
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-box .input-wrapper {
+            flex: 1;
+            position: relative;
+            min-width: 180px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #e2e8f0;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        .search-box input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .search-box .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .search-box button {
+            padding: 14px 18px;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-box button:hover:not(:disabled) { transform: translateY(-2px); }
+        .search-box button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-search {
+            background: #3b82f6;
+            color: #fff;
+        }
+        .btn-search:hover:not(:disabled) {
+            background: #2563eb;
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-location {
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-location:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .btn-unit {
+            background: rgba(255, 255, 255, 0.06);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.85rem;
+            padding: 14px 16px;
+        }
+        .btn-unit.active {
+            background: #3b82f6;
+            color: #fff;
+            border-color: #3b82f6;
+        }
+
+        .btn-refresh {
+            background: rgba(255, 255, 255, 0.06);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 1.2rem;
+            padding: 14px 18px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: transform 0.25s ease, background 0.25s ease;
+        }
+        .btn-refresh:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.12);
+            transform: rotate(45deg);
+        }
+
+        /* ---------- LOADING ---------- */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .loading.visible {
+            display: block;
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading .spinner {
+            display: inline-block;
+            width: 44px;
+            height: 44px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading p { color: #94a3b8; }
+
+        /* ---------- ERROR ---------- */
+        .error-box {
+            display: none;
+            padding: 16px 20px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 16px;
+            color: #fca5a5;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .error-box.visible {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-box .error-title {
+            font-weight: 700;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* ---------- WEATHER DISPLAY ---------- */
+        .weather-display {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .weather-display.visible { display: block; }
+
+        .current-weather {
+            text-align: center;
+            padding: 20px 0 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 20px;
+        }
+
+        .current-weather .city-name { font-size: 2rem; font-weight: 700; color: #ffffff; }
+        .current-weather .city-country { font-size: 0.9rem; color: #94a3b8; margin-bottom: 12px; }
+        .current-weather .weather-icon { font-size: 4.5rem; margin-bottom: 4px; transition: transform 0.5s ease; }
+        .current-weather .weather-icon:hover { transform: scale(1.1) rotate(-5deg); }
+        .current-weather .temperature { font-size: 4rem; font-weight: 800; color: #ffffff; letter-spacing: -2px; }
+        .current-weather .temperature .degree { font-size: 2rem; font-weight: 400; color: #94a3b8; }
+        .current-weather .weather-desc { font-size: 1.1rem; color: #94a3b8; margin-top: 2px; }
+        .current-weather .update-time { font-size: 0.75rem; color: #64748b; margin-top: 8px; }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 14px 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .detail-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .detail-card .detail-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+        .detail-card .detail-value { font-size: 1.1rem; font-weight: 700; color: #ffffff; }
+        .detail-card .detail-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .forecast-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+        }
+
+        .forecast-day {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            padding: 12px 8px;
+            text-align: center;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .forecast-day:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .forecast-day .day-name { font-size: 0.8rem; font-weight: 600; color: #94a3b8; }
+        .forecast-day .day-icon { font-size: 2rem; display: block; margin: 4px 0; }
+        .forecast-day .day-temp { font-size: 1rem; font-weight: 700; color: #ffffff; }
+        .forecast-day .day-temp .temp-low { font-weight: 400; color: #94a3b8; font-size: 0.85rem; }
+
+        /* ---------- DEMO SECTION ---------- */
+        .demo-section {
+            margin-top: 24px;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+        }
+
+        .demo-section h4 {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .demo-section .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .demo-section .demo-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+
+        .demo-section .demo-card .label {
+            font-size: 0.75rem;
+            color: #64748b;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .demo-section .demo-card .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            word-break: break-all;
+        }
+
+        .demo-section .demo-card .value.success { color: #6ee7b7; }
+        .demo-section .demo-card .value.fallback { color: #fcd34d; }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 600px) {
+            .container { padding: 24px 16px; border-radius: 24px; }
+            .search-box { flex-direction: column; }
+            .search-box .input-wrapper { min-width: unset; }
+            .search-box .btn-group { justify-content: stretch; }
+            .search-box .btn-group button { flex: 1; justify-content: center; }
+            .current-weather .city-name { font-size: 1.6rem; }
+            .current-weather .temperature { font-size: 3rem; }
+            .current-weather .weather-icon { font-size: 3.5rem; }
+            .weather-details { grid-template-columns: repeat(2, 1fr); }
+            .forecast-grid { grid-template-columns: repeat(auto-fit, minmax(65px, 1fr)); gap: 6px; }
+            .forecast-day { padding: 8px 4px; }
+            .forecast-day .day-icon { font-size: 1.5rem; }
+            .forecast-day .day-temp { font-size: 0.85rem; }
+            .demo-section .demo-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 380px) {
+            .weather-details { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .forecast-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">🔬</span>
+            <h1>Weather App</h1>
+            <p>Modern JS — Optional Chaining (?.) & Nullish Coalescing (??)</p>
+            <span class="badge">✨ Safer Data Access</span>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="search-box">
+            <div class="input-wrapper">
+                <input type="text" id="cityInput" placeholder="Enter city name..." value="London" />
+            </div>
+            <div class="btn-group">
+                <button class="btn-search" id="searchBtn">🔍 Search</button>
+                <button class="btn-location" id="locationBtn">📍 My Location</button>
+                <button class="btn-unit" id="unitBtn">°F</button>
+                <button class="btn-refresh" id="refreshBtn">🔄</button>
+            </div>
+        </div>
+
+        <!-- LOADING -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Fetching weather data...</p>
+        </div>
+
+        <!-- ERROR -->
+        <div class="error-box" id="errorBox">
+            <span class="error-title">❌ Error</span>
+            <span id="errorMessage">Something went wrong.</span>
+        </div>
+
+        <!-- WEATHER DISPLAY -->
+        <div class="weather-display" id="weatherDisplay">
+            <div class="current-weather">
+                <div class="city-name" id="cityName">London</div>
+                <div class="city-country" id="cityCountry">United Kingdom</div>
+                <div class="weather-icon" id="weatherIcon">☀️</div>
+                <div class="temperature" id="temperature">18<span class="degree">°C</span></div>
+                <div class="weather-desc" id="weatherDesc">Clear sky</div>
+                <div class="update-time" id="updateTime">Last updated: now</div>
+            </div>
+
+            <div class="weather-details" id="weatherDetails">
+                <div class="detail-card">
+                    <span class="detail-icon">💧</span>
+                    <div class="detail-value" id="humidity">—</div>
+                    <div class="detail-label">Humidity</div>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-icon">💨</span>
+                    <div class="detail-value" id="windSpeed">—</div>
+                    <div class="detail-label">Wind Speed</div>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-icon">🌡️</span>
+                    <div class="detail-value" id="feelsLike">—</div>
+                    <div class="detail-label">Feels Like</div>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-icon">☀️</span>
+                    <div class="detail-value" id="uvIndex">—</div>
+                    <div class="detail-label">UV Index</div>
+                </div>
+            </div>
+
+            <div class="forecast-section">
+                <h3>📅 7-Day Forecast</h3>
+                <div class="forecast-grid" id="forecastGrid"></div>
+            </div>
+        </div>
+
+        <!-- DEMO SECTION -->
+        <div class="demo-section">
+            <h4>🧪 Optional Chaining & Nullish Coalescing Demo</h4>
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <span class="label">✅ Using ?. (safe access)</span>
+                    <span class="value success" id="demoSuccess">—</span>
+                </div>
+                <div class="demo-card">
+                    <span class="label">🟡 Using ?? (fallback value)</span>
+                    <span class="value fallback" id="demoFallback">—</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: CONFIGURATION
+         * ============================================================
+         */
+
+        const API_BASE = 'https://api.open-meteo.com/v1/forecast';
+        const GEO_BASE = 'https://geocoding-api.open-meteo.com/v1/search';
+        const STORAGE_KEY = 'weather_app_last_city';
+        const UNIT_KEY = 'weather_app_unit';
+
+        const WEATHER_CODES = {
+            0: { icon: '☀️', label: 'Clear sky' },
+            1: { icon: '🌤️', label: 'Mainly clear' },
+            2: { icon: '⛅', label: 'Partly cloudy' },
+            3: { icon: '☁️', label: 'Overcast' },
+            45: { icon: '🌫️', label: 'Fog' },
+            48: { icon: '🌫️', label: 'Depositing rime fog' },
+            51: { icon: '🌦️', label: 'Light drizzle' },
+            53: { icon: '🌦️', label: 'Moderate drizzle' },
+            55: { icon: '🌧️', label: 'Dense drizzle' },
+            56: { icon: '🌧️', label: 'Light freezing drizzle' },
+            57: { icon: '🌧️', label: 'Dense freezing drizzle' },
+            61: { icon: '🌧️', label: 'Slight rain' },
+            63: { icon: '🌧️', label: 'Moderate rain' },
+            65: { icon: '🌧️', label: 'Heavy rain' },
+            66: { icon: '🌧️', label: 'Light freezing rain' },
+            67: { icon: '🌧️', label: 'Heavy freezing rain' },
+            71: { icon: '🌨️', label: 'Slight snow fall' },
+            73: { icon: '🌨️', label: 'Moderate snow fall' },
+            75: { icon: '🌨️', label: 'Heavy snow fall' },
+            77: { icon: '🌨️', label: 'Snow grains' },
+            80: { icon: '🌧️', label: 'Slight rain showers' },
+            81: { icon: '🌧️', label: 'Moderate rain showers' },
+            82: { icon: '🌧️', label: 'Violent rain showers' },
+            85: { icon: '🌨️', label: 'Slight snow showers' },
+            86: { icon: '🌨️', label: 'Heavy snow showers' },
+            95: { icon: '⛈️', label: 'Thunderstorm' },
+            96: { icon: '⛈️', label: 'Thunderstorm with slight hail' },
+            99: { icon: '⛈️', label: 'Thunderstorm with heavy hail' }
+        };
+
+        /**
+         * ============================================================
+         * PART 2: STATE
+         * ============================================================
+         */
+
+        let isCelsius = true;
+        let lastWeatherData = null;
+        let lastLocation = null;
+
+        /**
+         * ============================================================
+         * PART 3: DOM REFERENCES
+         * ============================================================
+         */
+
+        const cityInput = document.getElementById('cityInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const locationBtn = document.getElementById('locationBtn');
+        const unitBtn = document.getElementById('unitBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const loading = document.getElementById('loading');
+        const errorBox = document.getElementById('errorBox');
+        const errorMessage = document.getElementById('errorMessage');
+        const weatherDisplay = document.getElementById('weatherDisplay');
+        const cityName = document.getElementById('cityName');
+        const cityCountry = document.getElementById('cityCountry');
+        const weatherIcon = document.getElementById('weatherIcon');
+        const temperature = document.getElementById('temperature');
+        const weatherDesc = document.getElementById('weatherDesc');
+        const updateTime = document.getElementById('updateTime');
+        const humidity = document.getElementById('humidity');
+        const windSpeed = document.getElementById('windSpeed');
+        const feelsLike = document.getElementById('feelsLike');
+        const uvIndex = document.getElementById('uvIndex');
+        const forecastGrid = document.getElementById('forecastGrid');
+        const demoSuccess = document.getElementById('demoSuccess');
+        const demoFallback = document.getElementById('demoFallback');
+
+        /**
+         * ============================================================
+         * PART 4: UI HELPERS
+         * ============================================================
+         */
+
+        function showLoading(visible) {
+            loading.classList.toggle('visible', visible);
+            cityInput.disabled = visible;
+            searchBtn.disabled = visible;
+            locationBtn.disabled = visible;
+            refreshBtn.disabled = visible;
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorBox.classList.add('visible');
+            clearTimeout(errorBox._timeout);
+            errorBox._timeout = setTimeout(() => {
+                errorBox.classList.remove('visible');
+            }, 6000);
+        }
+
+        function hideError() {
+            errorBox.classList.remove('visible');
+        }
+
+        function showWeather(visible) {
+            weatherDisplay.classList.toggle('visible', visible);
+        }
+
+        function getWeatherIcon(code) {
+            return WEATHER_CODES[code] || { icon: '❓', label: 'Unknown' };
+        }
+
+        function getDayName(dateStr) {
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const date = new Date(dateStr);
+            return days[date.getDay()];
+        }
+
+        function formatTime(date) {
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatTempValue(celsius, isCelsius) {
+            const value = isCelsius ? celsius : (celsius * 9 / 5) + 32;
+            return Math.round(value);
+        }
+
+        function getUnitSymbol(isCelsius) {
+            return isCelsius ? '°C' : '°F';
+        }
+
+        function getWindUnit(isCelsius) {
+            return isCelsius ? 'km/h' : 'mph';
+        }
+
+        /**
+         * ============================================================
+         * PART 5: API CALLS (Using ?. and ??)
+         * ============================================================
+         * These functions demonstrate safe data access with optional
+         * chaining and nullish coalescing.
+         */
+
+        async function geocodeCity(cityName) {
+            const url = `${GEO_BASE}?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`Geocoding API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // ============================================================
+            // 🔥 USING OPTIONAL CHAINING (?.) AND NULLISH COALESCING (??)
+            // ============================================================
+            // Instead of:
+            // if (data && data.results && data.results.length > 0) {
+            //     const result = data.results[0];
+            //     return { ... };
+            // } else {
+            //     throw new Error('City not found');
+            // }
+
+            // We use optional chaining to safely access nested properties
+            const result = data?.results?.[0];
+
+            if (!result) {
+                throw new Error(`City "${cityName}" not found.`);
+            }
+
+            return {
+                latitude: result.latitude ?? 0,
+                longitude: result.longitude ?? 0,
+                name: result.name ?? cityName,
+                // 🔥 Using ?? to provide fallback values
+                country: result.country ?? result.admin1 ?? 'Unknown'
+            };
+        }
+
+        async function fetchWeather(lat, lon) {
+            const params = new URLSearchParams({
+                latitude: lat,
+                longitude: lon,
+                current_weather: true,
+                daily: 'temperature_2m_max,temperature_2m_min,weathercode,uv_index_max',
+                timezone: 'auto',
+                forecast_days: 7
+            });
+
+            const url = `${API_BASE}?${params}`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`Weather API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // 🔥 Safely check if current_weather exists
+            if (!data?.current_weather) {
+                throw new Error('Invalid weather data received.');
+            }
+
+            return data;
+        }
+
+        /**
+         * ============================================================
+         * PART 6: RENDER FUNCTIONS (Using ?. and ??)
+         * ============================================================
+         */
+
+        function renderCurrentWeather(weather, location) {
+            // ============================================================
+            // 🔥 SAFE DATA ACCESS WITH ?. AND ??
+            // ============================================================
+
+            // Get temperature with fallback
+            const temp = weather?.current_weather?.temperature ?? 0;
+            temperature.innerHTML =
+                `${formatTempValue(temp, isCelsius)}<span class="degree">${getUnitSymbol(isCelsius)}</span>`;
+
+            // Get weather code with fallback
+            const code = weather?.current_weather?.weathercode ?? 0;
+            const weatherInfo = getWeatherIcon(code);
+            weatherIcon.textContent = weatherInfo.icon;
+            weatherDesc.textContent = weatherInfo.label;
+
+            // City name and country (already set from geocoding)
+            cityName.textContent = location?.name ?? 'Unknown';
+            cityCountry.textContent = location?.country ?? '';
+
+            // Update time
+            updateTime.textContent = `Last updated: ${formatTime(new Date())}`;
+
+            // ============================================================
+            // 🔥 HANDLING MISSING DATA WITH ?. AND ??
+            // ============================================================
+
+            // Humidity (with fallback)
+            const humidityValue = weather?.current_weather?.relative_humidity;
+            humidity.textContent = humidityValue !== undefined && humidityValue !== null ?
+                `${humidityValue}%` :
+                '—';
+
+            // Wind speed (with fallback and unit conversion)
+            const windKmh = weather?.current_weather?.windspeed ?? 0;
+            const windValue = isCelsius ? windKmh : windKmh * 0.621371;
+            windSpeed.textContent = `${windValue.toFixed(1)} ${getWindUnit(isCelsius)}`;
+
+            // Feels like (using temperature as fallback)
+            const feelsLikeTemp = weather?.current_weather?.temperature ?? 0;
+            feelsLike.textContent = `${formatTempValue(feelsLikeTemp, isCelsius)}${getUnitSymbol(isCelsius)}`;
+
+            // UV Index (nested data with fallback)
+            // 🔥 Multiple levels of optional chaining!
+            const uv = weather?.daily?.uv_index_max?.[0];
+            uvIndex.textContent = uv !== undefined && uv !== null ? uv.toFixed(1) : '—';
+
+            // Update page title
+            document.title = `Weather: ${location?.name ?? 'Unknown'} | Weather App`;
+
+            // ============================================================
+            // 🔥 DEMO SECTION: Show ?. and ?? in action
+            // ============================================================
+
+            // Demo 1: Optional Chaining (safe access)
+            const demoData = {
+                nested: {
+                    value: 'Successfully accessed!'
+                }
+            };
+            // Using ?. to safely access nested data
+            const safeResult = demoData?.nested?.value ?? 'No nested data found';
+            demoSuccess.textContent = safeResult;
+
+            // Demo 2: Nullish Coalescing (fallback values)
+            const testValues = [null, undefined, 0, '', false, NaN];
+            const fallbackResults = testValues.map(val => {
+                // 🔥 Using ?? to provide fallbacks
+                return `${String(val).padEnd(6)} → ${val ?? 'default'}`;
+            }).join(' | ');
+            demoFallback.textContent = fallbackResults;
+        }
+
+        function renderForecast(weather) {
+            if (!weather?.daily) {
+                forecastGrid.innerHTML = '<p style="color: #94a3b8;">No forecast data available.</p>';
+                return;
+            }
+
+            // 🔥 Safely get arrays with fallbacks
+            const days = weather?.daily?.time ?? [];
+            const maxTemps = weather?.daily?.temperature_2m_max ?? [];
+            const minTemps = weather?.daily?.temperature_2m_min ?? [];
+            const codes = weather?.daily?.weathercode ?? [];
+
+            const count = Math.min(days.length, 7);
+
+            if (count === 0) {
+                forecastGrid.innerHTML = '<p style="color: #94a3b8;">No forecast days available.</p>';
+                return;
+            }
+
+            let html = '';
+
+            for (let i = 0; i < count; i++) {
+                // 🔥 Safely get each value with fallbacks
+                const dayName = i === 0 ? 'Today' : getDayName(days[i] ?? '');
+                const weatherInfo = getWeatherIcon(codes[i] ?? 0);
+                const maxTemp = maxTemps[i] !== undefined && maxTemps[i] !== null ?
+                    formatTempValue(maxTemps[i], isCelsius) :
+                    '—';
+                const minTemp = minTemps[i] !== undefined && minTemps[i] !== null ?
+                    formatTempValue(minTemps[i], isCelsius) :
+                    '—';
+
+                html += `
+                    <div class="forecast-day">
+                        <div class="day-name">${dayName}</div>
+                        <span class="day-icon">${weatherInfo.icon}</span>
+                        <div class="day-temp">
+                            ${maxTemp}°<span class="temp-low">${minTemp}°</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            forecastGrid.innerHTML = html;
+        }
+
+        function renderAll(weather, location) {
+            renderCurrentWeather(weather, location);
+            renderForecast(weather);
+            showWeather(true);
+            lastWeatherData = weather;
+            lastLocation = location;
+        }
+
+        /**
+         * ============================================================
+         * PART 7: MAIN FUNCTIONS
+         * ============================================================
+         */
+
+        async function searchWeather(cityQuery) {
+            const query = (cityQuery || cityInput.value).trim();
+
+            if (!query) {
+                showError('Please enter a city name.');
+                return;
+            }
+
+            hideError();
+            showWeather(false);
+            showLoading(true);
+
+            try {
+                const location = await geocodeCity(query);
+                const weather = await fetchWeather(location.latitude, location.longitude);
+                renderAll(weather, location);
+                localStorage.setItem(STORAGE_KEY, location.name);
+                cityInput.value = location.name;
+            } catch (error) {
+                showError(error.message);
+                showWeather(false);
+                console.error('Error:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function getLocationWeather() {
+            if (!navigator.geolocation) {
+                showError('Geolocation is not supported.');
+                return;
+            }
+
+            hideError();
+            showWeather(false);
+            showLoading(true);
+
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 15000
+                    });
+                });
+
+                const { latitude, longitude } = position.coords;
+                const weather = await fetchWeather(latitude, longitude);
+
+                const location = {
+                    name: 'Current Location',
+                    country: '',
+                    latitude,
+                    longitude
+                };
+
+                renderAll(weather, location);
+                cityInput.value = 'Current Location';
+                localStorage.setItem(STORAGE_KEY, 'Current Location');
+
+            } catch (error) {
+                if (error.code === 1) {
+                    showError('Location access denied. Please allow location access or search manually.');
+                } else {
+                    showError(`Location error: ${error.message}`);
+                }
+                console.error('Geolocation error:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function refreshWeather() {
+            const city = cityInput.value.trim();
+            if (!city) {
+                showError('No city to refresh. Please search first.');
+                return;
+            }
+            await searchWeather(city);
+        }
+
+        function toggleUnit() {
+            isCelsius = !isCelsius;
+            localStorage.setItem(UNIT_KEY, isCelsius ? 'c' : 'f');
+            unitBtn.textContent = isCelsius ? '°F' : '°C';
+            unitBtn.classList.toggle('active');
+
+            if (lastWeatherData && lastLocation) {
+                renderAll(lastWeatherData, lastLocation);
+            }
+        }
+
+        /**
+         * ============================================================
+         * PART 8: EVENT HANDLING
+         * ============================================================
+         */
+
+        searchBtn.addEventListener('click', () => searchWeather());
+
+        cityInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                searchWeather();
+            }
+        });
+
+        locationBtn.addEventListener('click', getLocationWeather);
+        refreshBtn.addEventListener('click', refreshWeather);
+        unitBtn.addEventListener('click', toggleUnit);
+
+        /**
+         * ============================================================
+         * PART 9: INITIALIZATION
+         * ============================================================
+         */
+
+        async function init() {
+            // Load unit preference
+            const savedUnit = localStorage.getItem(UNIT_KEY);
+            if (savedUnit === 'f') {
+                isCelsius = false;
+                unitBtn.textContent = '°C';
+                unitBtn.classList.add('active');
+            }
+
+            // Load last city
+            const lastCity = localStorage.getItem(STORAGE_KEY);
+            if (lastCity) {
+                cityInput.value = lastCity;
+                await searchWeather(lastCity);
+            } else {
+                cityInput.value = 'London';
+                await searchWeather('London');
+            }
+        }
+
+        init();
+
+        /**
+         * ============================================================
+         * PART 10: DEMONSTRATION (Console Output)
+         * ============================================================
+         */
+
+        console.log('\n=== DAY 34: OPTIONAL CHAINING & NULLISH COALESCING ===\n');
+
+        // --- 1. Optional Chaining Demo ---
+        console.log('--- 1. Optional Chaining (?.) ---');
+
+        const user = {
+            name: 'Alice',
+            address: {
+                city: 'New York'
+            }
+        };
+
+        // Safe access with ?.
+        console.log('  user?.address?.city:', user?.address?.city); // 'New York'
+        console.log('  user?.profile?.name:', user?.profile?.name); // undefined (no error!)
+
+        // With arrays
+        const arr = [1, 2, 3];
+        console.log('  arr?.[0]:', arr?.[0]); // 1
+        console.log('  arr?.[10]:', arr?.[10]); // undefined
+
+        // With function calls
+        const obj = {
+            greet: () => 'Hello!'
+        };
+        console.log('  obj?.greet?.():', obj?.greet?.()); // 'Hello!'
+        console.log('  obj?.goodbye?.():', obj?.goodbye?.()); // undefined
+
+        // --- 2. Nullish Coalescing Demo ---
+        console.log('\n--- 2. Nullish Coalescing (??) ---');
+
+        const testValues = [
+            { value: null, label: 'null' },
+            { value: undefined, label: 'undefined' },
+            { value: 0, label: '0' },
+            { value: '', label: "'' (empty string)" },
+            { value: false, label: 'false' },
+            { value: NaN, label: 'NaN' }
+        ];
+
+        testValues.forEach(({ value, label }) => {
+            const orResult = value || 'default';
+            const nullishResult = value ?? 'default';
+            console.log(`  ${label.padEnd(10)} → ||: ${orResult}, ?? : ${nullishResult}`);
+        });
+
+        // --- 3. Combining ?. and ?? ---
+        console.log('\n--- 3. Combining ?. and ?? ---');
+
+        const apiResponse = {
+            data: {
+                user: {
+                    profile: {
+                        displayName: 'Alice'
+                    }
+                }
+            }
+        };
+
+        const name = apiResponse?.data?.user?.profile?.displayName ?? 'Anonymous';
+        console.log('  name:', name); // 'Alice'
+
+        const apiResponse2 = { data: {} };
+        const name2 = apiResponse2?.data?.user?.profile?.displayName ?? 'Anonymous';
+        console.log('  name2 (missing data):', name2); // 'Anonymous'
+
+        // --- 4. Real-world API Example ---
+        console.log('\n--- 4. Real-world API Example ---');
+
+        const weatherData = {
+            current_weather: {
+                temperature: 18.5,
+                weathercode: 0
+            }
+        };
+
+        // Safely access with ?. and ??
+        const temp = weatherData?.current_weather?.temperature ?? 0;
+        const code = weatherData?.current_weather?.weathercode ?? 0;
+        const humidityValue = weatherData?.current_weather?.relative_humidity ?? 'N/A';
+        const uv = weatherData?.daily?.uv_index_max?.[0] ?? 'N/A';
+
+        console.log('  Temperature:', temp, '°C');
+        console.log('  Weather code:', code);
+        console.log('  Humidity:', humidityValue);
+        console.log('  UV Index:', uv);
+
+        // --- 5. Comparison: Old vs New ---
+        console.log('\n--- 5. Old vs New ---');
+
+        console.log('  ❌ Old way (verbose):');
+        console.log('    const name = user && user.profile && user.profile.name ? user.profile.name : "Guest";');
+
+        console.log('  ✅ New way (clean):');
+        console.log('    const name = user?.profile?.name ?? "Guest";');
+
+        console.log('\n=== Weather App is ready! ===');
+        console.log('📌 Features:');
+        console.log('  ✅ Optional Chaining (?.) for safe nested access');
+        console.log('  ✅ Nullish Coalescing (??) for fallback values');
+        console.log('  ✅ Refactored API data access');
+        console.log('  ✅ Demo section showing ?. and ?? in action');
+    </script>
+
+</body>
+</html>
