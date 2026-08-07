@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JS Quiz - Closures & Event Loop</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 35px 30px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+            animation: fadeSlideUp 0.7s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .header .icon { font-size: 2.8rem; display: block; }
+        .header h1 { font-size: 2rem; font-weight: 800; color: #ffffff; }
+        .header p { color: #94a3b8; font-size: 0.95rem; }
+        .header .badge {
+            display: inline-block;
+            background: rgba(251, 191, 36, 0.15);
+            color: #fcd34d;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* ---------- STATS ---------- */
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .stats .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .stats .stat-item .label {
+            color: #94a3b8;
+        }
+
+        .stats .stat-item .value {
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .stats .stat-item .value.correct { color: #6ee7b7; }
+        .stats .stat-item .value.wrong { color: #fca5a5; }
+
+        .stats .progress-bar {
+            flex: 1;
+            min-width: 100px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+            align-self: center;
+        }
+
+        .stats .progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        /* ---------- QUIZ ---------- */
+        .question-container {
+            margin-bottom: 24px;
+        }
+
+        .question-container .question-number {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+
+        .question-container .question-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .question-container .question-text code {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            color: #93c5fd;
+        }
+
+        .question-container .question-text .highlight {
+            color: #fcd34d;
+        }
+
+        /* ---------- OPTIONS ---------- */
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .option {
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option:hover:not(.disabled) {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateX(4px);
+        }
+
+        .option .letter {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            flex-shrink: 0;
+        }
+
+        .option .text {
+            flex: 1;
+        }
+
+        .option .text code {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #93c5fd;
+        }
+
+        .option.selected {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.12);
+        }
+
+        .option.correct {
+            border-color: #16a34a;
+            background: rgba(22, 163, 74, 0.15);
+        }
+
+        .option.correct .letter {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        .option.wrong {
+            border-color: #dc2626;
+            background: rgba(220, 38, 38, 0.15);
+        }
+
+        .option.wrong .letter {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .option.disabled {
+            cursor: default;
+        }
+
+        .option.disabled:hover {
+            transform: none;
+        }
+
+        .option.reveal-correct {
+            border-color: #16a34a;
+            background: rgba(22, 163, 74, 0.08);
+        }
+
+        /* ---------- EXPLANATION ---------- */
+        .explanation {
+            display: none;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .explanation.visible {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .explanation .explanation-title {
+            font-weight: 700;
+            color: #93c5fd;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .explanation .explanation-text {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .explanation .explanation-text code {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #93c5fd;
+        }
+
+        .explanation .explanation-text .highlight {
+            color: #fcd34d;
+        }
+
+        /* ---------- BUTTONS ---------- */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-group button {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .btn-group button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .btn-group button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-next {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            background: #2563eb;
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .btn-reset:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .btn-show-answers {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fcd34d;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .btn-show-answers:hover:not(:disabled) {
+            background: rgba(251, 191, 36, 0.2);
+        }
+
+        /* ---------- RESULTS ---------- */
+        .results {
+            display: none;
+            text-align: center;
+            padding: 30px 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .results.visible {
+            display: block;
+        }
+
+        .results .result-icon {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .results .result-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .results .result-subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+        }
+
+        .results .result-stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 20px;
+        }
+
+        .results .result-stats .stat {
+            text-align: center;
+        }
+
+        .results .result-stats .stat .number {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .results .result-stats .stat .label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .results .result-stats .stat .number.correct {
+            color: #6ee7b7;
+        }
+        .results .result-stats .stat .number.wrong {
+            color: #fca5a5;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 600px) {
+            .container { padding: 24px 16px; border-radius: 24px; }
+            .header h1 { font-size: 1.6rem; }
+            .question-container .question-text { font-size: 1.1rem; }
+            .option { padding: 12px 14px; font-size: 0.9rem; }
+            .stats { font-size: 0.8rem; }
+            .btn-group { flex-direction: column; }
+            .btn-group button { width: 100%; justify-content: center; }
+            .results .result-stats { gap: 16px; }
+            .results .result-stats .stat .number { font-size: 1.5rem; }
+        }
+
+        @media (max-width: 380px) {
+            .option .letter { width: 24px; height: 24px; font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">🧠</span>
+            <h1>JS Knowledge Quiz</h1>
+            <p>Test your understanding of Closures, Event Loop & JavaScript fundamentals</p>
+            <span class="badge">📝 12 Questions • Closures • Event Loop • Scope</span>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats" id="stats">
+            <div class="stat-item">
+                <span class="label">📊 Question:</span>
+                <span class="value" id="currentQuestion">1/12</span>
+            </div>
+            <div class="stat-item">
+                <span class="label">✅ Correct:</span>
+                <span class="value correct" id="correctCount">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="label">❌ Wrong:</span>
+                <span class="value wrong" id="wrongCount">0</span>
+            </div>
+            <div class="progress-bar">
+                <div class="fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- QUIZ CONTAINER -->
+        <div id="quizContainer">
+
+            <!-- QUESTION -->
+            <div class="question-container">
+                <div class="question-number" id="questionNumber">Question 1 of 12</div>
+                <div class="question-text" id="questionText">
+                    Loading question...
+                </div>
+            </div>
+
+            <!-- OPTIONS -->
+            <div class="options" id="optionsContainer">
+                <!-- Options will be rendered here -->
+            </div>
+
+            <!-- EXPLANATION -->
+            <div class="explanation" id="explanation">
+                <span class="explanation-title">💡 Explanation</span>
+                <div class="explanation-text" id="explanationText">
+                    Explanation will appear here after you answer.
+                </div>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="btn-group">
+                <button class="btn-next" id="nextBtn">Next Question →</button>
+                <button class="btn-show-answers" id="showAnswersBtn" style="display:none;">📖 Show All Answers</button>
+                <button class="btn-reset" id="resetBtn">🔄 Restart Quiz</button>
+            </div>
+
+        </div>
+
+        <!-- RESULTS -->
+        <div class="results" id="results">
+            <span class="result-icon" id="resultIcon">🏆</span>
+            <div class="result-title" id="resultTitle">Quiz Complete!</div>
+            <div class="result-subtitle" id="resultSubtitle">Here's how you did.</div>
+            <div class="result-stats">
+                <div class="stat">
+                    <div class="number correct" id="resultCorrect">0</div>
+                    <div class="label">Correct</div>
+                </div>
+                <div class="stat">
+                    <div class="number wrong" id="resultWrong">0</div>
+                    <div class="label">Wrong</div>
+                </div>
+                <div class="stat">
+                    <div class="number" id="resultScore" style="color: #93c5fd;">0%</div>
+                    <div class="label">Score</div>
+                </div>
+            </div>
+            <div class="btn-group" style="justify-content: center;">
+                <button class="btn-reset" onclick="resetQuiz()">🔄 Try Again</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: QUIZ DATA
+         * ============================================================
+         * Each question has:
+         *   - id: unique identifier
+         *   - category: 'closures' or 'event-loop'
+         *   - question: the question text (can include HTML)
+         *   - options: array of answer choices
+         *   - correct: index of the correct answer
+         *   - explanation: detailed explanation of the answer
+         * ============================================================
+         */
+
+        const quizData = [{
+            id: 1,
+            category: 'closures',
+            question: `What will be logged to the console?<br/>
+                <code>
+                function createCounter() {<br/>
+                &nbsp;&nbsp;let count = 0;<br/>
+                &nbsp;&nbsp;return function() {<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;count++;<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;return count;<br/>
+                &nbsp;&nbsp;};<br/>
+                }<br/>
+                const counter = createCounter();<br/>
+                console.log(counter());<br/>
+                console.log(counter());<br/>
+                console.log(counter());
+                </code>`,
+            options: [
+                '0, 1, 2',
+                '1, 2, 3',
+                '0, 0, 0',
+                'undefined, undefined, undefined'
+            ],
+            correct: 1,
+            explanation: `This is a classic closure example. The <code>createCounter</code> function returns an inner function that "closes over" the <code>count</code> variable. Each call to <code>counter()</code> increments and returns the <code>count</code> variable, which persists between calls because of the closure.
+
+            <strong>Output:</strong> <span class="highlight">1, 2, 3</span>
+
+            <strong>Key takeaway:</strong> A closure allows a function to "remember" variables from its lexical scope even after the outer function has finished executing.`
+        }, {
+            id: 2,
+            category: 'event-loop',
+            question: `What will be logged to the console?<br/>
+                <code>
+                console.log('A');<br/>
+                setTimeout(() => console.log('B'), 0);<br/>
+                Promise.resolve().then(() => console.log('C'));<br/>
+                console.log('D');
+                </code>`,
+            options: [
+                'A, B, C, D',
+                'A, D, B, C',
+                'A, D, C, B',
+                'A, C, B, D'
+            ],
+            correct: 2,
+            explanation: `<strong>Event Loop Order:</strong>
+
+            1. <code>console.log('A')</code> runs synchronously → <span class="highlight">A</span>
+            2. <code>setTimeout</code> is a Web API → its callback goes to the <strong>Task Queue</strong>
+            3. <code>Promise.resolve().then()</code> creates a <strong>Microtask</strong> → higher priority than macrotasks
+            4. <code>console.log('D')</code> runs synchronously → <span class="highlight">D</span>
+            5. <strong>Microtasks</strong> run before macrotasks → <span class="highlight">C</span>
+            6. <strong>Macrotasks</strong> run next → <span class="highlight">B</span>
+
+            <strong>Output:</strong> <span class="highlight">A, D, C, B</span>`
+        }, {
+            id: 3,
+            category: 'closures',
+            question: `What will be logged to the console?<br/>
+                <code>
+                for (var i = 0; i < 3; i++) {<br/>
+                &nbsp;&nbsp;setTimeout(() => console.log(i), 100);<br/>
+                }
+                </code>`,
+            options: [
+                '0, 1, 2',
+                '1, 2, 3',
+                '3, 3, 3',
+                '0, 0, 0'
+            ],
+            correct: 2,
+            explanation: `This is the classic "loop closure" bug. <code>var i</code> is function-scoped, not block-scoped. All three setTimeout callbacks <strong>share</strong> the same <code>i</code> variable.
+
+            By the time the setTimeout callbacks execute (after 100ms), the loop has finished and <code>i</code> has the value <strong>3</strong>.
+
+            <strong>Output:</strong> <span class="highlight">3, 3, 3</span>
+
+            <strong>Fix:</strong> Use <code>let i</code> (block-scoped) or an IIFE to capture each iteration's value.`
+        }, {
+            id: 4,
+            category: 'event-loop',
+            question: `What will be logged to the console?<br/>
+                <code>
+                console.log('Start');<br/>
+                setTimeout(() => console.log('Timeout'), 0);<br/>
+                new Promise((resolve) => {<br/>
+                &nbsp;&nbsp;console.log('Promise');<br/>
+                &nbsp;&nbsp;resolve();<br/>
+                }).then(() => console.log('Resolved'));<br/>
+                console.log('End');
+                </code>`,
+            options: [
+                'Start, Timeout, Promise, Resolved, End',
+                'Start, Promise, Resolved, End, Timeout',
+                'Start, Promise, End, Resolved, Timeout',
+                'Start, Promise, Resolved, Timeout, End'
+            ],
+            correct: 2,
+            explanation: `<strong>Execution Order:</strong>
+
+            1. <code>console.log('Start')</code> → <span class="highlight">Start</span>
+            2. <code>setTimeout</code> callback goes to Task Queue
+            3. Promise executor runs <strong>synchronously</strong> → <code>console.log('Promise')</code> → <span class="highlight">Promise</span>
+            4. <code>resolve()</code> schedules a microtask
+            5. <code>console.log('End')</code> → <span class="highlight">End</span>
+            6. Microtask runs → <span class="highlight">Resolved</span>
+            7. Macrotask runs → <span class="highlight">Timeout</span>
+
+            <strong>Output:</strong> <span class="highlight">Start, Promise, End, Resolved, Timeout</span>`
+        }, {
+            id: 5,
+            category: 'closures',
+            question: `What will be logged to the console?<br/>
+                <code>
+                function outer() {<br/>
+                &nbsp;&nbsp;let x = 10;<br/>
+                &nbsp;&nbsp;return function inner() {<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;console.log(x);<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;x++;<br/>
+                &nbsp;&nbsp;};<br/>
+                }<br/>
+                const fn1 = outer();<br/>
+                const fn2 = outer();<br/>
+                fn1();<br/>
+                fn1();<br/>
+                fn2();<br/>
+                fn2();
+                </code>`,
+            options: [
+                '10, 11, 10, 11',
+                '10, 11, 12, 13',
+                '10, 10, 10, 10',
+                '10, 11, 10, 12'
+            ],
+            correct: 0,
+            explanation: `Each call to <code>outer()</code> creates a <strong>new closure</strong> with its own <code>x</code> variable.
+
+            - <code>fn1</code> has its own <code>x</code> starting at 10 → logs 10, then 11
+            - <code>fn2</code> has its own <code>x</code> starting at 10 → logs 10, then 11
+
+            <strong>Output:</strong> <span class="highlight">10, 11, 10, 11</span>
+
+            <strong>Key takeaway:</strong> Each closure is independent and maintains its own state.`
+        }, {
+            id: 6,
+            category: 'event-loop',
+            question: `What will be logged to the console?<br/>
+                <code>
+                setTimeout(() => console.log('A'), 100);<br/>
+                setTimeout(() => console.log('B'), 0);<br/>
+                setTimeout(() => console.log('C'), 50);<br/>
+                console.log('D');
+                </code>`,
+            options: [
+                'D, A, B, C',
+                'D, B, C, A',
+                'B, D, C, A',
+                'D, B, A, C'
+            ],
+            correct: 1,
+            explanation: `<strong>Execution Order:</strong>
+
+            1. <code>console.log('D')</code> runs synchronously → <span class="highlight">D</span>
+            2. All setTimeout callbacks are queued based on their delay:
+               - <code>B</code> (0ms) → first in queue
+               - <code>C</code> (50ms) → second
+               - <code>A</code> (100ms) → third
+            3. Event Loop processes them in order → <span class="highlight">B, C, A</span>
+
+            <strong>Output:</strong> <span class="highlight">D, B, C, A</span>
+
+            <strong>Key takeaway:</strong> setTimeout delays are minimum times. The Event Loop executes them in order of completion.`
+        }, {
+            id: 7,
+            category: 'closures',
+            question: `What will be logged to the console?<br/>
+                <code>
+                const obj = {<br/>
+                &nbsp;&nbsp;name: 'Alice',<br/>
+                &nbsp;&nbsp;getName: function() {<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;return this.name;<br/>
+                &nbsp;&nbsp;}<br/>
+                };<br/>
+                const get = obj.getName;<br/>
+                console.log(get());<br/>
+                console.log(obj.getName());
+                </code>`,
+            options: [
+                'Alice, Alice',
+                'undefined, Alice',
+                'Alice, undefined',
+                'undefined, undefined'
+            ],
+            correct: 1,
+            explanation: `This is about the <code>this</code> binding, which is closely related to closures.
+
+            - <code>const get = obj.getName</code> extracts the function <strong>without</strong> its context. When called as <code>get()</code>, <code>this</code> refers to the global object (or <code>undefined</code> in strict mode). → <span class="highlight">undefined</span>
+
+            - <code>obj.getName()</code> calls the function as a method of <code>obj</code>, so <code>this</code> refers to <code>obj</code>. → <span class="highlight">Alice</span>
+
+            <strong>Output:</strong> <span class="highlight">undefined, Alice</span>`
+        }, {
+            id: 8,
+            category: 'event-loop',
+            question: `What will be logged to the console?<br/>
+                <code>
+                async function test() {<br/>
+                &nbsp;&nbsp;console.log('A');<br/>
+                &nbsp;&nbsp;await Promise.resolve();<br/>
+                &nbsp;&nbsp;console.log('B');<br/>
+                }<br/>
+                console.log('C');<br/>
+                test();<br/>
+                console.log('D');
+                </code>`,
+            options: [
+                'C, A, B, D',
+                'A, C, B, D',
+                'C, A, D, B',
+                'A, C, D, B'
+            ],
+            correct: 2,
+            explanation: `<strong>Execution Order:</strong>
+
+            1. <code>console.log('C')</code> → <span class="highlight">C</span>
+            2. <code>test()</code> is called:
+               - <code>console.log('A')</code> runs synchronously → <span class="highlight">A</span>
+               - <code>await Promise.resolve()</code> schedules a microtask (the rest of the function)
+            3. <code>console.log('D')</code> → <span class="highlight">D</span>
+            4. The microtask (the rest of <code>test()</code>) runs → <code>console.log('B')</code> → <span class="highlight">B</span>
+
+            <strong>Output:</strong> <span class="highlight">C, A, D, B</span>`
+        }, {
+            id: 9,
+            category: 'closures',
+            question: `What will be logged to the console?<br/>
+                <code>
+                function createMultiplier(factor) {<br/>
+                &nbsp;&nbsp;return function(number) {<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;return number * factor;<br/>
+                &nbsp;&nbsp;};<br/>
+                }<br/>
+                const double = createMultiplier(2);<br/>
+                const triple = createMultiplier(3);<br/>
+                console.log(double(5));<br/>
+                console.log(triple(5));
+                </code>`,
+            options: [
+                '10, 15',
+                '5, 5',
+                '10, 10',
+                '15, 10'
+            ],
+            correct: 0,
+            explanation: `This is a <strong>function factory</strong> using closures.
+
+            - <code>createMultiplier(2)</code> returns a function that multiplies by 2. <code>double(5)</code> → <span class="highlight">10</span>
+            - <code>createMultiplier(3)</code> returns a function that multiplies by 3. <code>triple(5)</code> → <span class="highlight">15</span>
+
+            <strong>Output:</strong> <span class="highlight">10, 15</span>
+
+            <strong>Key takeaway:</strong> Each closure captures its own <code>factor</code> value, creating independent functions.`
+        }, {
+            id: 10,
+            category: 'event-loop',
+            question: `What will be logged to the console?<br/>
+                <code>
+                console.log('1');<br/>
+                setTimeout(() => console.log('2'), 0);<br/>
+                Promise.reject('3').catch(e => console.log(e));<br/>
+                console.log('4');
+                </code>`,
+            options: [
+                '1, 2, 3, 4',
+                '1, 4, 3, 2',
+                '1, 3, 2, 4',
+                '1, 4, 2, 3'
+            ],
+            correct: 1,
+            explanation: `<strong>Execution Order:</strong>
+
+            1. <code>console.log('1')</code> → <span class="highlight">1</span>
+            2. <code>setTimeout</code> callback → Task Queue
+            3. <code>Promise.reject('3').catch(...)</code> creates a microtask (the <code>.catch</code> callback)
+            4. <code>console.log('4')</code> → <span class="highlight">4</span>
+            5. Microtask runs → <span class="highlight">3</span>
+            6. Macrotask runs → <span class="highlight">2</span>
+
+            <strong>Output:</strong> <span class="highlight">1, 4, 3, 2</span>`
+        }, {
+            id: 11,
+            category: 'closures',
+            question: `What will be logged to the console?<br/>
+                <code>
+                let x = 1;<br/>
+                function outer() {<br/>
+                &nbsp;&nbsp;let x = 2;<br/>
+                &nbsp;&nbsp;return function inner() {<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;console.log(x);<br/>
+                &nbsp;&nbsp;};<br/>
+                }<br/>
+                const fn = outer();<br/>
+                fn();<br/>
+                console.log(x);
+                </code>`,
+            options: [
+                '2, 1',
+                '1, 2',
+                '2, 2',
+                '1, 1'
+            ],
+            correct: 0,
+            explanation: `This demonstrates <strong>lexical scoping</strong> and closures.
+
+            - The <code>inner</code> function logs the <code>x</code> from its lexical scope — which is the <code>x</code> inside <code>outer()</code> (value: <span class="highlight">2</span>)
+
+            - The <code>console.log(x)</code> at the end logs the global <code>x</code> (value: <span class="highlight">1</span>)
+
+            <strong>Output:</strong> <span class="highlight">2, 1</span>
+
+            <strong>Key takeaway:</strong> Inner functions look up variables in their lexical scope first, then outer scopes.`
+        }, {
+            id: 12,
+            category: 'event-loop',
+            question: `What will be logged to the console?<br/>
+                <code>
+                setTimeout(() => console.log('A'), 0);<br/>
+                setTimeout(() => {<br/>
+                &nbsp;&nbsp;console.log('B');<br/>
+                &nbsp;&nbsp;setTimeout(() => console.log('C'), 0);<br/>
+                }, 0);<br/>
+                setTimeout(() => console.log('D'), 0);
+                </code>`,
+            options: [
+                'A, B, C, D',
+                'A, B, D, C',
+                'A, D, B, C',
+                'B, A, D, C'
+            ],
+            correct: 1,
+            explanation: `<strong>Execution Order:</strong>
+
+            All three <code>setTimeout(..., 0)</code> callbacks are queued in order:
+
+            1. Task 1: <code>console.log('A')</code> → <span class="highlight">A</span>
+            2. Task 2: <code>console.log('B')</code> → then schedules <code>C</code> for later → <span class="highlight">B</span>
+            3. Task 3: <code>console.log('D')</code> → <span class="highlight">D</span>
+            4. The nested <code>setTimeout</code> from Task 2 now runs → <span class="highlight">C</span>
+
+            <strong>Output:</strong> <span class="highlight">A, B, D, C</span>
+
+            <strong>Key takeaway:</strong> Nested setTimeout calls are queued after the current task completes.`
+        }];
+
+        /**
+         * ============================================================
+         * PART 2: QUIZ STATE
+         * ============================================================
+         */
+
+        let currentQuestionIndex = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let isAnswered = false;
+        let quizCompleted = false;
+
+        // Track which questions were answered correctly/wrongly for the results view
+        let questionResults = [];
+
+        /**
+         * ============================================================
+         * PART 3: DOM REFERENCES
+         * ============================================================
+         */
+
+        const questionNumber = document.getElementById('questionNumber');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const explanation = document.getElementById('explanation');
+        const explanationText = document.getElementById('explanationText');
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const showAnswersBtn = document.getElementById('showAnswersBtn');
+        const currentQuestionEl = document.getElementById('currentQuestion');
+        const correctCountEl = document.getElementById('correctCount');
+        const wrongCountEl = document.getElementById('wrongCount');
+        const progressFill = document.getElementById('progressFill');
+        const quizContainer = document.getElementById('quizContainer');
+        const results = document.getElementById('results');
+
+        /**
+         * ============================================================
+         * PART 4: RENDER FUNCTIONS
+         * ============================================================
+         */
+
+        function renderQuestion() {
+            const question = quizData[currentQuestionIndex];
+            const total = quizData.length;
+
+            // Update question number
+            questionNumber.textContent = `Question ${currentQuestionIndex + 1} of ${total}`;
+            currentQuestionEl.textContent = `${currentQuestionIndex + 1}/${total}`;
+
+            // Update question text
+            questionText.innerHTML = question.question;
+
+            // Update progress
+            const progress = ((currentQuestionIndex + 1) / total) * 100;
+            progressFill.style.width = `${progress}%`;
+
+            // Render options
+            const letters = ['A', 'B', 'C', 'D'];
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.dataset.index = index;
+
+                // Check if this question has been answered before (for results view)
+                const result = questionResults[currentQuestionIndex];
+                if (result) {
+                    div.classList.add('disabled');
+                    if (result.selectedIndex === index) {
+                        div.classList.add('selected');
+                    }
+                    if (index === question.correct) {
+                        div.classList.add('correct');
+                    }
+                    if (result.selectedIndex === index && result.selectedIndex !== question.correct) {
+                        div.classList.add('wrong');
+                    }
+                }
+
+                div.innerHTML = `
+                    <span class="letter">${letters[index]}</span>
+                    <span class="text">${option}</span>
+                `;
+
+                if (!isAnswered && !quizCompleted) {
+                    div.addEventListener('click', () => selectOption(index));
+                }
+
+                optionsContainer.appendChild(div);
+            });
+
+            // Reset explanation
+            explanation.classList.remove('visible');
+            explanationText.innerHTML = '';
+
+            // Update button
+            if (quizCompleted) {
+                nextBtn.textContent = '📖 Review Answers';
+                nextBtn.disabled = false;
+            } else if (isAnswered) {
+                nextBtn.textContent = currentQuestionIndex < total - 1 ? 'Next Question →' : '📊 See Results';
+                nextBtn.disabled = false;
+            } else {
+                nextBtn.disabled = true;
+            }
+        }
+
+        function selectOption(index) {
+            if (isAnswered || quizCompleted) return;
+
+            const question = quizData[currentQuestionIndex];
+            const options = document.querySelectorAll('.option');
+
+            // Disable all options
+            options.forEach(opt => opt.classList.add('disabled'));
+
+            // Highlight selected
+            options[index].classList.add('selected');
+
+            // Check if correct
+            const isCorrect = index === question.correct;
+
+            if (isCorrect) {
+                options[index].classList.add('correct');
+                correctCount++;
+            } else {
+                options[index].classList.add('wrong');
+                // Show the correct answer
+                options[question.correct].classList.add('reveal-correct');
+                options[question.correct].classList.add('correct');
+                wrongCount++;
+            }
+
+            // Store result
+            questionResults[currentQuestionIndex] = {
+                selectedIndex: index,
+                isCorrect: isCorrect
+            };
+
+            // Update stats
+            correctCountEl.textContent = correctCount;
+            wrongCountEl.textContent = wrongCount;
+
+            // Show explanation
+            explanationText.innerHTML = question.explanation;
+            explanation.classList.add('visible');
+
+            isAnswered = true;
+
+            // Enable next button
+            nextBtn.disabled = false;
+        }
+
+        /**
+         * ============================================================
+         * PART 5: NAVIGATION
+         * ============================================================
+         */
+
+        function nextQuestion() {
+            if (quizCompleted) {
+                // If quiz is completed, show results
+                return;
+            }
+
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                isAnswered = false;
+                renderQuestion();
+                // Scroll to top of question
+                document.querySelector('.question-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                // Quiz complete!
+                completeQuiz();
+            }
+        }
+
+        function completeQuiz() {
+            quizCompleted = true;
+            quizContainer.style.display = 'none';
+            results.classList.add('visible');
+
+            const total = quizData.length;
+            const score = Math.round((correctCount / total) * 100);
+
+            document.getElementById('resultCorrect').textContent = correctCount;
+            document.getElementById('resultWrong').textContent = wrongCount;
+            document.getElementById('resultScore').textContent = `${score}%`;
+
+            let icon, title, subtitle;
+            if (score >= 90) {
+                icon = '🏆';
+                title = '🎉 Outstanding!';
+                subtitle = 'You truly understand closures and the event loop!';
+            } else if (score >= 70) {
+                icon = '🌟';
+                title = '👍 Great Job!';
+                subtitle = 'You have a solid understanding. Review the topics you missed.';
+            } else if (score >= 50) {
+                icon = '📚';
+                title = '📖 Keep Learning!';
+                subtitle = 'Review closures and the event loop. You\'re getting there!';
+            } else {
+                icon = '💪';
+                title = '🤔 Keep Going!';
+                subtitle = 'Revisit the theory and try the quiz again. You\'ve got this!';
+            }
+
+            document.getElementById('resultIcon').textContent = icon;
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultSubtitle').textContent = subtitle;
+
+            // Show the "Show All Answers" button
+            showAnswersBtn.style.display = 'inline-block';
+        }
+
+        function showAllAnswers() {
+            // Switch back to quiz view with all answers revealed
+            results.classList.remove('visible');
+            quizContainer.style.display = 'block';
+            showAnswersBtn.style.display = 'none';
+
+            // Set quiz to "review" mode
+            quizCompleted = true;
+            isAnswered = true;
+
+            // Render all questions in review mode
+            currentQuestionIndex = 0;
+            renderQuestion();
+
+            // Change next button to cycle through questions
+            nextBtn.textContent = 'Next Question →';
+            nextBtn.disabled = false;
+
+            // Add click handler to cycle through all questions
+            nextBtn.onclick = function() {
+                if (currentQuestionIndex < quizData.length - 1) {
+                    currentQuestionIndex++;
+                    renderQuestion();
+                    // Scroll to top of question
+                    document.querySelector('.question-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    // Go back to results
+                    quizContainer.style.display = 'none';
+                    results.classList.add('visible');
+                    showAnswersBtn.style.display = 'inline-block';
+                    nextBtn.onclick = null;
+                    nextBtn.textContent = '📊 Results';
+                    nextBtn.disabled = false;
+                }
+            };
+
+            // Update stats display
+            correctCountEl.textContent = correctCount;
+            wrongCountEl.textContent = wrongCount;
+        }
+
+        function resetQuiz() {
+            // Reset state
+            currentQuestionIndex = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            isAnswered = false;
+            quizCompleted = false;
+            questionResults = [];
+
+            // Reset UI
+            correctCountEl.textContent = '0';
+            wrongCountEl.textContent = '0';
+            results.classList.remove('visible');
+            quizContainer.style.display = 'block';
+            showAnswersBtn.style.display = 'none';
+
+            // Reset next button
+            nextBtn.textContent = 'Next Question →';
+            nextBtn.onclick = null;
+            nextBtn.disabled = true;
+
+            // Render first question
+            renderQuestion();
+        }
+
+        /**
+         * ============================================================
+         * PART 6: EVENT HANDLING
+         * ============================================================
+         */
+
+        nextBtn.addEventListener('click', nextQuestion);
+        resetBtn.addEventListener('click', resetQuiz);
+        showAnswersBtn.addEventListener('click', showAllAnswers);
+
+        /**
+         * ============================================================
+         * PART 7: INITIALIZATION
+         * ============================================================
+         */
+
+        function init() {
+            // Initialize question results array
+            questionResults = new Array(quizData.length).fill(null);
+            renderQuestion();
+            console.log('🧠 JS Quiz loaded!');
+            console.log(`📝 ${quizData.length} questions about Closures & Event Loop`);
+        }
+
+        init();
+
+        /**
+         * ============================================================
+         * PART 8: CONSOLE DEMONSTRATION
+         * ============================================================
+         */
+
+        console.log('\n=== DAY 35: JS QUIZ ===\n');
+        console.log('📌 Quiz Categories:');
+        console.log('  🔒 Closures: 6 questions');
+        console.log('  🔄 Event Loop: 6 questions');
+        console.log('\n🎯 Topics Covered:');
+        console.log('  ✅ Lexical scoping & closure behavior');
+        console.log('  ✅ Event loop order (microtasks vs macrotasks)');
+        console.log('  ✅ setTimeout & Promise execution order');
+        console.log('  ✅ Async/await and the event loop');
+        console.log('  ✅ Function factories and private state');
+        console.log('  ✅ this binding and closures');
+        console.log('\n💡 How to use:');
+        console.log('  1. Read each question carefully');
+        console.log('  2. Select the answer you think is correct');
+        console.log('  3. Read the explanation to reinforce your understanding');
+        console.log('  4. Review your results at the end');
+    </script>
+
+</body>
+</html>
