@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Countdown Timer - Day 24</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 35px 30px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: fadeSlideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header .icon {
+            font-size: 2.8rem;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        /* ---------- TIMER DISPLAY ---------- */
+        .timer-display {
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 30px 20px;
+            margin-bottom: 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timer-display .time {
+            font-size: 4.5rem;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            color: #e2e8f0;
+            letter-spacing: 4px;
+            transition: color 0.3s ease;
+        }
+
+        .timer-display .time.warning {
+            color: #f59e0b;
+            animation: pulse 0.5s ease-in-out infinite alternate;
+        }
+
+        .timer-display .time.danger {
+            color: #ef4444;
+            animation: pulse 0.3s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0.7;
+                transform: scale(1.02);
+            }
+        }
+
+        .timer-display .label {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .timer-display .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: #3b82f6;
+            transition: width 1s linear;
+            width: 100%;
+        }
+
+        .timer-display .progress-bar.warning {
+            background: #f59e0b;
+        }
+
+        .timer-display .progress-bar.danger {
+            background: #ef4444;
+        }
+
+        /* ---------- SETTINGS ---------- */
+        .settings {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .settings input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .settings input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .settings input:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
+        }
+
+        .settings button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            background: #0f172a;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .settings button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+        }
+
+        .settings button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ---------- CONTROLS ---------- */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .controls button {
+            padding: 12px 0;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .controls button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .controls button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-start {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            background: #15803d;
+        }
+
+        .btn-pause {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+        .btn-pause:hover:not(:disabled) {
+            background: #d97706;
+        }
+
+        .btn-reset {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .btn-reset:hover:not(:disabled) {
+            background: #cbd5e1;
+        }
+
+        /* ---------- STATUS ---------- */
+        .status {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9rem;
+            color: #64748b;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .status .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #94a3b8;
+            transition: background 0.3s ease;
+        }
+
+        .status .dot.running {
+            background: #16a34a;
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        .status .dot.paused {
+            background: #f59e0b;
+        }
+
+        .status .dot.idle {
+            background: #94a3b8;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* ---------- COMPLETION ANIMATION ---------- */
+        .completion-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .completion-overlay.visible {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .completion-modal {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 40px 50px;
+            text-align: center;
+            max-width: 400px;
+            animation: bounceIn 0.5s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.7);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .completion-modal .big-emoji {
+            font-size: 4.5rem;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .completion-modal h2 {
+            color: #0f172a;
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+
+        .completion-modal p {
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .completion-modal button {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 12px;
+            background: #0f172a;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.25s ease;
+        }
+
+        .completion-modal button:hover {
+            transform: scale(1.05);
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 500px) {
+            .container {
+                padding: 24px 16px;
+            }
+            .timer-display .time {
+                font-size: 3rem;
+            }
+            .settings {
+                flex-direction: column;
+            }
+            .settings button {
+                width: 100%;
+            }
+            .controls {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .completion-modal {
+                padding: 30px 24px;
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">⏱️</span>
+            <h1>Countdown Timer</h1>
+            <p>Set a duration and watch the countdown.</p>
+        </div>
+
+        <!-- TIMER DISPLAY -->
+        <div class="timer-display">
+            <div class="time" id="timerDisplay">00:00</div>
+            <div class="label" id="timerLabel">Set a time and start</div>
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="settings">
+            <input
+                type="number"
+                id="durationInput"
+                placeholder="Seconds (e.g., 60)"
+                min="1"
+                max="3600"
+                value="60"
+            />
+            <button id="setDurationBtn">Set Duration</button>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <button class="btn-start" id="startBtn">▶ Start</button>
+            <button class="btn-pause" id="pauseBtn" disabled>⏸ Pause</button>
+            <button class="btn-reset" id="resetBtn">🔄 Reset</button>
+        </div>
+
+        <!-- STATUS -->
+        <div class="status" id="statusDisplay">
+            <span class="dot idle" id="statusDot"></span>
+            <span id="statusText">Ready</span>
+        </div>
+
+    </div>
+
+    <!-- COMPLETION OVERLAY -->
+    <div class="completion-overlay" id="completionOverlay">
+        <div class="completion-modal">
+            <span class="big-emoji">🎉</span>
+            <h2>Time's Up!</h2>
+            <p>The countdown has finished.</p>
+            <button id="completionDismiss">OK, Got it!</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: STATE MANAGEMENT
+         * ============================================================
+         */
+
+        /** @type {number} Total duration in seconds */
+        let totalSeconds = 60;
+
+        /** @type {number} Remaining seconds */
+        let remainingSeconds = 60;
+
+        /** @type {number|null} Interval ID for the timer */
+        let intervalId = null;
+
+        /** @type {boolean} Whether the timer is paused */
+        let isPaused = false;
+
+        /** @type {boolean} Whether the timer is running */
+        let isRunning = false;
+
+        /** @type {boolean} Whether the timer has completed */
+        let isComplete = false;
+
+        /** @type {number} The timestamp when the timer started (for accuracy) */
+        let startTimestamp = 0;
+
+        /** @type {number} The remaining seconds at the time of pause */
+        let pausedRemaining = 0;
+
+
+        /**
+         * ============================================================
+         * PART 2: DOM REFERENCES
+         * ============================================================
+         */
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerLabel = document.getElementById('timerLabel');
+        const progressBar = document.getElementById('progressBar');
+        const durationInput = document.getElementById('durationInput');
+        const setDurationBtn = document.getElementById('setDurationBtn');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const completionOverlay = document.getElementById('completionOverlay');
+        const completionDismiss = document.getElementById('completionDismiss');
+
+
+        /**
+         * ============================================================
+         * PART 3: CORE TIMER FUNCTIONS
+         * ============================================================
+         */
+
+        /**
+         * formatTime
+         * Formats seconds into MM:SS
+         * @param {number} seconds - Total seconds
+         * @returns {string} Formatted time string
+         */
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        /**
+         * updateDisplay
+         * Updates the timer display and progress bar
+         */
+        function updateDisplay() {
+            const timeString = formatTime(remainingSeconds);
+            timerDisplay.textContent = timeString;
+
+            // Update progress bar
+            const progress = totalSeconds > 0 ? (remainingSeconds / totalSeconds) * 100 : 0;
+            progressBar.style.width = `${progress}%`;
+
+            // Update color based on remaining time
+            timerDisplay.className = 'time';
+            progressBar.className = 'progress-bar';
+
+            const ratio = remainingSeconds / totalSeconds;
+            if (ratio <= 0.2 && isRunning) {
+                timerDisplay.classList.add('danger');
+                progressBar.classList.add('danger');
+            } else if (ratio <= 0.4 && isRunning) {
+                timerDisplay.classList.add('warning');
+                progressBar.classList.add('warning');
+            }
+        }
+
+        /**
+         * timerTick
+         * Called on each interval tick
+         * Uses the timestamp for accuracy
+         */
+        function timerTick() {
+            // Calculate elapsed time since start
+            const now = Date.now();
+            const elapsed = (now - startTimestamp) / 1000;
+
+            // Calculate remaining seconds based on elapsed time
+            const newRemaining = Math.max(0, pausedRemaining - elapsed);
+
+            // Only update if the value has changed (prevents unnecessary DOM updates)
+            if (Math.floor(newRemaining) !== Math.floor(remainingSeconds)) {
+                remainingSeconds = Math.floor(newRemaining);
+                updateDisplay();
+            }
+
+            // Check if time is up
+            if (remainingSeconds <= 0) {
+                completeTimer();
+                return;
+            }
+
+            // Update status text with remaining time
+            statusText.textContent = `Running... ${formatTime(remainingSeconds)} remaining`;
+        }
+
+        /**
+         * startTimer
+         * Starts the countdown timer
+         */
+        function startTimer() {
+            // Prevent multiple intervals
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+
+            // If the timer is complete, reset first
+            if (isComplete) {
+                resetTimer();
+                // Small delay to allow reset to complete
+                setTimeout(() => startTimer(), 50);
+                return;
+            }
+
+            // If the timer is paused, resume from paused state
+            if (isPaused) {
+                // Resume from paused state
+                isPaused = false;
+                isRunning = true;
+                startTimestamp = Date.now();
+                pausedRemaining = remainingSeconds;
+
+                // Start the interval
+                intervalId = setInterval(timerTick, 100);
+
+                // Update UI
+                updateUIState();
+                return;
+            }
+
+            // Fresh start
+            if (remainingSeconds <= 0) {
+                // Reset to total duration
+                remainingSeconds = totalSeconds;
+                pausedRemaining = totalSeconds;
+            }
+
+            isRunning = true;
+            isPaused = false;
+            isComplete = false;
+            startTimestamp = Date.now();
+            pausedRemaining = remainingSeconds;
+
+            // Start the interval (tick every 100ms for smooth updates)
+            intervalId = setInterval(timerTick, 100);
+
+            // Update UI
+            updateDisplay();
+            updateUIState();
+            timerLabel.textContent = 'Countdown in progress...';
+
+            // Hide completion overlay if visible
+            completionOverlay.classList.remove('visible');
+
+            console.log(`⏱️ Timer started: ${formatTime(remainingSeconds)} remaining`);
+        }
+
+        /**
+         * pauseTimer
+         * Pauses the countdown timer
+         */
+        function pauseTimer() {
+            if (!isRunning || isPaused) return;
+
+            // Clear the interval
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+
+            // Store the current state
+            isPaused = true;
+            isRunning = true; // Running but paused
+            pausedRemaining = remainingSeconds;
+
+            // Update UI
+            updateUIState();
+            statusText.textContent = `Paused at ${formatTime(remainingSeconds)}`;
+
+            console.log(`⏸️ Timer paused at ${formatTime(remainingSeconds)}`);
+        }
+
+        /**
+         * resetTimer
+         * Resets the timer to the initial duration
+         */
+        function resetTimer() {
+            // Clear the interval
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+
+            // Reset state
+            isRunning = false;
+            isPaused = false;
+            isComplete = false;
+            remainingSeconds = totalSeconds;
+            pausedRemaining = totalSeconds;
+
+            // Update UI
+            updateDisplay();
+            updateUIState();
+            timerLabel.textContent = 'Set a time and start';
+            statusText.textContent = 'Ready';
+
+            // Hide completion overlay
+            completionOverlay.classList.remove('visible');
+
+            console.log(`🔄 Timer reset to ${formatTime(totalSeconds)}`);
+        }
+
+        /**
+         * completeTimer
+         * Called when the timer reaches 0
+         */
+        function completeTimer() {
+            // Clear the interval
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+
+            // Update state
+            isRunning = false;
+            isPaused = false;
+            isComplete = true;
+            remainingSeconds = 0;
+            pausedRemaining = 0;
+
+            // Update display
+            updateDisplay();
+            updateUIState();
+
+            // Show completion overlay
+            completionOverlay.classList.add('visible');
+
+            // Play a notification sound if available
+            playNotificationSound();
+
+            console.log('🎉 Timer completed!');
+            statusText.textContent = '✅ Time\'s Up!';
+            timerLabel.textContent = '🎉 Complete!';
+
+            // Log the event loop demonstration
+            console.log('📊 Event Loop Demo: The timer completed on the main thread,');
+            console.log('   but the completion overlay was shown asynchronously.');
+        }
+
+
+        /**
+         * ============================================================
+         * PART 4: UI HELPERS
+         * ============================================================
+         */
+
+        /**
+         * updateUIState
+         * Updates button states and status indicator
+         */
+        function updateUIState() {
+            // Start button
+            if (isRunning && !isPaused) {
+                startBtn.disabled = true;
+            } else {
+                startBtn.disabled = false;
+            }
+
+            // Pause button
+            if (isRunning && !isPaused && !isComplete) {
+                pauseBtn.disabled = false;
+            } else {
+                pauseBtn.disabled = true;
+            }
+
+            // Duration input
+            durationInput.disabled = isRunning;
+
+            // Set duration button
+            setDurationBtn.disabled = isRunning;
+
+            // Status dot
+            statusDot.className = 'dot';
+            if (isRunning && !isPaused) {
+                statusDot.classList.add('running');
+                statusText.textContent = `Running... ${formatTime(remainingSeconds)} remaining`;
+            } else if (isPaused) {
+                statusDot.classList.add('paused');
+                statusText.textContent = `Paused at ${formatTime(remainingSeconds)}`;
+            } else if (isComplete) {
+                statusDot.className = 'dot idle';
+                statusText.textContent = '✅ Complete!';
+            } else {
+                statusDot.classList.add('idle');
+                statusText.textContent = 'Ready';
+            }
+        }
+
+        /**
+         * setDuration
+         * Sets the total duration from the input field
+         */
+        function setDuration() {
+            if (isRunning) return;
+
+            const value = parseInt(durationInput.value);
+            if (isNaN(value) || value < 1) {
+                alert('Please enter a valid number (1 second minimum).');
+                durationInput.value = totalSeconds;
+                return;
+            }
+
+            if (value > 3600) {
+                alert('Maximum duration is 3600 seconds (1 hour).');
+                durationInput.value = 3600;
+                return;
+            }
+
+            totalSeconds = value;
+            remainingSeconds = value;
+            pausedRemaining = value;
+            isComplete = false;
+
+            updateDisplay();
+            timerLabel.textContent = `Ready: ${formatTime(totalSeconds)}`;
+            statusText.textContent = 'Duration set';
+
+            console.log(`📝 Duration set to ${totalSeconds} seconds`);
+        }
+
+        /**
+         * playNotificationSound
+         * Plays a notification sound using Web Audio API
+         * (Falls back silently if not supported)
+         */
+        function playNotificationSound() {
+            try {
+                // Use Web Audio API for a simple beep
+                const audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+
+                // Create oscillator for a beep sound
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.frequency.value = 880; // A5 note
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.5);
+
+                // Second beep after a short delay
+                setTimeout(() => {
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.frequency.value = 1100;
+                    osc2.type = 'sine';
+                    gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc2.start(audioCtx.currentTime);
+                    osc2.stop(audioCtx.currentTime + 0.4);
+                }, 300);
+            } catch (e) {
+                // Silently fail if audio is not supported
+                console.log('🔇 Audio notification not available');
+            }
+        }
+
+
+        /**
+         * ============================================================
+         * PART 5: EVENT HANDLING
+         * ============================================================
+         */
+
+        // --- Start button ---
+        startBtn.addEventListener('click', startTimer);
+
+        // --- Pause button ---
+        pauseBtn.addEventListener('click', pauseTimer);
+
+        // --- Reset button ---
+        resetBtn.addEventListener('click', resetTimer);
+
+        // --- Set duration button ---
+        setDurationBtn.addEventListener('click', setDuration);
+
+        // --- Enter key on duration input ---
+        durationInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                setDuration();
+            }
+        });
+
+        // --- Completion overlay dismiss ---
+        completionDismiss.addEventListener('click', () => {
+            completionOverlay.classList.remove('visible');
+            resetTimer();
+        });
+
+        // --- Click on overlay to dismiss ---
+        completionOverlay.addEventListener('click', (event) => {
+            if (event.target === completionOverlay) {
+                completionOverlay.classList.remove('visible');
+                resetTimer();
+            }
+        });
+
+        // --- Keyboard shortcut: Space to start/pause ---
+        document.addEventListener('keydown', (event) => {
+            // Don't trigger if typing in an input
+            if (event.target.tagName === 'INPUT') return;
+
+            if (event.key === ' ' || event.key === 'Space') {
+                event.preventDefault();
+                if (isRunning && !isPaused) {
+                    pauseTimer();
+                } else if (!isRunning && !isComplete) {
+                    startTimer();
+                } else if (isComplete) {
+                    resetTimer();
+                }
+            }
+
+            if (event.key === 'r' || event.key === 'R') {
+                resetTimer();
+            }
+        });
+
+
+        /**
+         * ============================================================
+         * PART 6: INITIALIZATION
+         * ============================================================
+         */
+
+        function init() {
+            // Set initial values
+            totalSeconds = 60;
+            remainingSeconds = 60;
+            pausedRemaining = 60;
+            durationInput.value = 60;
+
+            // Update display
+            updateDisplay();
+            timerLabel.textContent = `Ready: 01:00`;
+            statusText.textContent = 'Ready';
+
+            console.log('✅ Countdown Timer initialized!');
+            console.log(`📊 Total duration: ${totalSeconds} seconds`);
+            console.log('🎮 Controls: Start, Pause, Reset');
+            console.log('⌨️  Keyboard: Space = Start/Pause, R = Reset');
+        }
+
+        init();
+
+
+        /**
+         * ============================================================
+         * PART 7: DEMONSTRATION (Console Output)
+         * ============================================================
+         * These examples show the Event Loop in action.
+         * (Open the browser console to see the output!)
+         */
+
+        console.log('\n=== DAY 24: EVENT LOOP, CALL STACK & WEB APIS ===\n');
+
+        // --- 1. Call Stack Demo ---
+        console.log('--- 1. Call Stack (Synchronous) ---');
+
+        function syncFunction1() {
+            console.log('  Function 1: Start');
+            syncFunction2();
+            console.log('  Function 1: End');
+        }
+
+        function syncFunction2() {
+            console.log('  Function 2: Start');
+            console.log('  Function 2: End');
+        }
+
+        console.log('Synchronous execution:');
+        syncFunction1();
+
+        // --- 2. Event Loop Demo (setTimeout) ---
+        console.log('\n--- 2. Event Loop (setTimeout) ---');
+
+        console.log('  Start of script');
+
+        setTimeout(() => {
+            console.log('  🟢 setTimeout callback (0ms)');
+        }, 0);
+
+        setTimeout(() => {
+            console.log('  🟡 setTimeout callback (10ms)');
+        }, 10);
+
+        // A synchronous loop to simulate work
+        console.log('  Synchronous work starting...');
+        for (let i = 0; i < 1000000; i++) {
+            // Simulating heavy work
+            if (i === 0) console.log('  ...work in progress (blocking the main thread)');
+        }
+        console.log('  Synchronous work finished');
+
+        console.log('  End of script');
+
+        // --- 3. setInterval Demo ---
+        console.log('\n--- 3. setInterval Example ---');
+
+        let intervalCounter = 0;
+        const demoInterval = setInterval(() => {
+            intervalCounter++;
+            console.log(`  Tick ${intervalCounter}`);
+            if (intervalCounter >= 3) {
+                clearInterval(demoInterval);
+                console.log('  ⏹️ Interval stopped');
+            }
+        }, 1000);
+
+        // --- 4. Call Stack vs Task Queue ---
+        console.log('\n--- 4. Call Stack vs Task Queue ---');
+
+        console.log('  1. Main thread execution starts');
+        console.log('  2. Web API (setTimeout) registers callback');
+        console.log('  3. Call Stack is cleared');
+        console.log('  4. Event Loop moves callback from Task Queue to Call Stack');
+        console.log('  5. Callback executes');
+
+        // --- 5. Microtasks vs Macrotasks ---
+        console.log('\n--- 5. Microtasks vs Macrotasks ---');
+
+        console.log('  Start');
+
+        setTimeout(() => {
+            console.log('  🔵 Macrotask: setTimeout');
+        }, 0);
+
+        Promise.resolve().then(() => {
+            console.log('  🟢 Microtask: Promise');
+        });
+
+        queueMicrotask(() => {
+            console.log('  🟢 Microtask: queueMicrotask');
+        });
+
+        console.log('  End');
+
+        // --- 6. Event Loop Visual Summary ---
+        console.log('\n--- 6. Event Loop Summary ---');
+        console.log('📊 The Event Loop coordinates:');
+        console.log('  1. Call Stack (synchronous code)');
+        console.log('  2. Web APIs (async operations)');
+        console.log('  3. Task Queue (callbacks waiting)');
+        console.log('  4. Microtask Queue (higher priority)');
+
+        console.log('\n=== Countdown Timer is ready! ===');
+        console.log('📌 Set a duration and click Start.');
+        console.log('📌 Observe the timer updating every 100ms.');
+        console.log('📌 The timer uses setInterval() under the hood.');
+        console.log('📌 Pause, Resume, and Reset demonstrate state management.');
+        console.log('📌 The completion overlay shows the Event Loop in action.');
+    </script>
+
+</body>
+</html>
