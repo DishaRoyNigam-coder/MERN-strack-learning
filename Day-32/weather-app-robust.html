@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App - Robust Error Handling</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 720px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 35px 30px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+            animation: fadeSlideUp 0.7s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header .icon { font-size: 2.6rem; display: block; }
+        .header h1 { font-size: 1.8rem; font-weight: 800; color: #ffffff; }
+        .header p { color: #94a3b8; font-size: 0.9rem; }
+        .header .badge {
+            display: inline-block;
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* ---------- SEARCH ---------- */
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-box .input-wrapper {
+            flex: 1;
+            position: relative;
+            min-width: 180px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #e2e8f0;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        .search-box input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .search-box .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .search-box button {
+            padding: 14px 18px;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-box button:hover:not(:disabled) { transform: translateY(-2px); }
+        .search-box button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-search {
+            background: #3b82f6;
+            color: #fff;
+        }
+        .btn-search:hover:not(:disabled) {
+            background: #2563eb;
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-location {
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-location:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .btn-unit {
+            background: rgba(255, 255, 255, 0.06);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.85rem;
+            padding: 14px 16px;
+        }
+        .btn-unit.active {
+            background: #3b82f6;
+            color: #fff;
+            border-color: #3b82f6;
+        }
+
+        .btn-refresh {
+            background: rgba(255, 255, 255, 0.06);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 1.2rem;
+            padding: 14px 18px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: transform 0.25s ease, background 0.25s ease;
+        }
+        .btn-refresh:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.12);
+            transform: rotate(45deg);
+        }
+
+        /* ---------- LOADING ---------- */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .loading.visible {
+            display: block;
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading .spinner {
+            display: inline-block;
+            width: 44px;
+            height: 44px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading p { color: #94a3b8; }
+
+        /* ---------- ERROR BOX ---------- */
+        .error-box {
+            display: none;
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .error-box.visible { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-box.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .error-box.warning {
+            background: rgba(251, 191, 36, 0.12);
+            border: 2px solid rgba(251, 191, 36, 0.25);
+            color: #fcd34d;
+        }
+
+        .error-box.info {
+            background: rgba(59, 130, 246, 0.12);
+            border: 2px solid rgba(59, 130, 246, 0.25);
+            color: #93c5fd;
+        }
+
+        .error-box .error-title {
+            font-weight: 700;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .error-box .error-details {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        /* ---------- WEATHER DISPLAY ---------- */
+        .weather-display {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .weather-display.visible { display: block; }
+
+        .current-weather {
+            text-align: center;
+            padding: 20px 0 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 20px;
+        }
+
+        .current-weather .city-name { font-size: 2rem; font-weight: 700; color: #ffffff; }
+        .current-weather .city-country { font-size: 0.9rem; color: #94a3b8; margin-bottom: 12px; }
+        .current-weather .weather-icon { font-size: 4.5rem; margin-bottom: 4px; transition: transform 0.5s ease; }
+        .current-weather .weather-icon:hover { transform: scale(1.1) rotate(-5deg); }
+        .current-weather .temperature { font-size: 4rem; font-weight: 800; color: #ffffff; letter-spacing: -2px; }
+        .current-weather .temperature .degree { font-size: 2rem; font-weight: 400; color: #94a3b8; }
+        .current-weather .weather-desc { font-size: 1.1rem; color: #94a3b8; margin-top: 2px; }
+        .current-weather .update-time { font-size: 0.75rem; color: #64748b; margin-top: 8px; }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 14px 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .detail-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .detail-card .detail-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+        .detail-card .detail-value { font-size: 1.1rem; font-weight: 700; color: #ffffff; }
+        .detail-card .detail-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .forecast-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+        }
+
+        .forecast-day {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            padding: 12px 8px;
+            text-align: center;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .forecast-day:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .forecast-day .day-name { font-size: 0.8rem; font-weight: 600; color: #94a3b8; }
+        .forecast-day .day-icon { font-size: 2rem; display: block; margin: 4px 0; }
+        .forecast-day .day-temp { font-size: 1rem; font-weight: 700; color: #ffffff; }
+        .forecast-day .day-temp .temp-low { font-weight: 400; color: #94a3b8; font-size: 0.85rem; }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 600px) {
+            .container { padding: 24px 16px; border-radius: 24px; }
+            .search-box { flex-direction: column; }
+            .search-box .input-wrapper { min-width: unset; }
+            .search-box .btn-group { justify-content: stretch; }
+            .search-box .btn-group button { flex: 1; justify-content: center; }
+            .current-weather .city-name { font-size: 1.6rem; }
+            .current-weather .temperature { font-size: 3rem; }
+            .current-weather .weather-icon { font-size: 3.5rem; }
+            .weather-details { grid-template-columns: repeat(2, 1fr); }
+            .forecast-grid { grid-template-columns: repeat(auto-fit, minmax(65px, 1fr)); gap: 6px; }
+            .forecast-day { padding: 8px 4px; }
+            .forecast-day .day-icon { font-size: 1.5rem; }
+            .forecast-day .day-temp { font-size: 0.85rem; }
+        }
+
+        @media (max-width: 380px) {
+            .weather-details { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .forecast-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <span class="icon">🌤️</span>
+            <h1>Weather App</h1>
+            <p>Robust error handling — try/catch/finally, custom errors</p>
+            <span class="badge">🧪 Error Handling Demo</span>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="search-box">
+            <div class="input-wrapper">
+                <input type="text" id="cityInput" placeholder="Enter city name..." value="London" />
+            </div>
+            <div class="btn-group">
+                <button class="btn-search" id="searchBtn">🔍 Search</button>
+                <button class="btn-location" id="locationBtn">📍 My Location</button>
+                <button class="btn-unit" id="unitBtn">°F</button>
+                <button class="btn-refresh" id="refreshBtn" title="Refresh weather">🔄</button>
+            </div>
+        </div>
+
+        <!-- LOADING -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Fetching weather data...</p>
+        </div>
+
+        <!-- ERROR BOX -->
+        <div class="error-box error" id="errorBox">
+            <span class="error-title">❌ Error</span>
+            <span id="errorMessage">Something went wrong.</span>
+            <div class="error-details" id="errorDetails"></div>
+        </div>
+
+        <!-- WEATHER DISPLAY -->
+        <div class="weather-display" id="weatherDisplay">
+            <div class="current-weather">
+                <div class="city-name" id="cityName">London</div>
+                <div class="city-country" id="cityCountry">United Kingdom</div>
+                <div class="weather-icon" id="weatherIcon">☀️</div>
+                <div class="temperature" id="temperature">18<span class="degree">°C</span></div>
+                <div class="weather-desc" id="weatherDesc">Clear sky</div>
+                <div class="update-time" id="updateTime">Last updated: now</div>
+            </div>
+
+            <div class="weather-details" id="weatherDetails">
+                <div class="detail-card">
+                    <span class="detail-icon">💧</span>
+                    <div class="detail-value" id="humidity">—</div>
+                    <div class="detail-label">Humidity</div>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-icon">💨</span>
+                    <div class="detail-value" id="windSpeed">—</div>
+                    <div class="detail-label">Wind Speed</div>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-icon">🌡️</span>
+                    <div class="detail-value" id="feelsLike">—</div>
+                    <div class="detail-label">Feels Like</div>
+                </div>
+                <div class="detail-card">
+                    <span class="detail-icon">☀️</span>
+                    <div class="detail-value" id="uvIndex">—</div>
+                    <div class="detail-label">UV Index</div>
+                </div>
+            </div>
+
+            <div class="forecast-section">
+                <h3>📅 7-Day Forecast</h3>
+                <div class="forecast-grid" id="forecastGrid">
+                    <!-- Forecast days rendered here -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: CUSTOM ERROR CLASSES
+         * ============================================================
+         */
+
+        /**
+         * AppError
+         * Base class for all application-specific errors
+         */
+        class AppError extends Error {
+            constructor(message, code = 'UNKNOWN_ERROR', details = null) {
+                super(message);
+                this.name = this.constructor.name;
+                this.code = code;
+                this.details = details;
+                this.timestamp = new Date().toISOString();
+                // Captures the stack trace, excluding the constructor
+                Error.captureStackTrace(this, this.constructor);
+            }
+        }
+
+        /**
+         * NetworkError
+         * Thrown when network requests fail
+         */
+        class NetworkError extends AppError {
+            constructor(message, details = null) {
+                super(message, 'NETWORK_ERROR', details);
+            }
+        }
+
+        /**
+         * ValidationError
+         * Thrown when user input is invalid
+         */
+        class ValidationError extends AppError {
+            constructor(message, details = null) {
+                super(message, 'VALIDATION_ERROR', details);
+            }
+        }
+
+        /**
+         * NotFoundError
+         * Thrown when a resource (city, user, etc.) is not found
+         */
+        class NotFoundError extends AppError {
+            constructor(message, details = null) {
+                super(message, 'NOT_FOUND_ERROR', details);
+            }
+        }
+
+        /**
+         * APIError
+         * Thrown when an API returns an error response
+         */
+        class APIError extends AppError {
+            constructor(message, statusCode = null, details = null) {
+                super(message, 'API_ERROR', details);
+                this.statusCode = statusCode;
+            }
+        }
+
+        /**
+         * LocationError
+         * Thrown when geolocation fails
+         */
+        class LocationError extends AppError {
+            constructor(message, code = 'LOCATION_ERROR', details = null) {
+                super(message, code, details);
+            }
+        }
+
+        /**
+         * ============================================================
+         * PART 2: CONFIGURATION
+         * ============================================================
+         */
+
+        const API_BASE = 'https://api.open-meteo.com/v1/forecast';
+        const GEO_BASE = 'https://geocoding-api.open-meteo.com/v1/search';
+        const STORAGE_KEY = 'weather_app_last_city';
+        const UNIT_KEY = 'weather_app_unit';
+
+        const WEATHER_CODES = {
+            0: { icon: '☀️', label: 'Clear sky' },
+            1: { icon: '🌤️', label: 'Mainly clear' },
+            2: { icon: '⛅', label: 'Partly cloudy' },
+            3: { icon: '☁️', label: 'Overcast' },
+            45: { icon: '🌫️', label: 'Fog' },
+            48: { icon: '🌫️', label: 'Depositing rime fog' },
+            51: { icon: '🌦️', label: 'Light drizzle' },
+            53: { icon: '🌦️', label: 'Moderate drizzle' },
+            55: { icon: '🌧️', label: 'Dense drizzle' },
+            56: { icon: '🌧️', label: 'Light freezing drizzle' },
+            57: { icon: '🌧️', label: 'Dense freezing drizzle' },
+            61: { icon: '🌧️', label: 'Slight rain' },
+            63: { icon: '🌧️', label: 'Moderate rain' },
+            65: { icon: '🌧️', label: 'Heavy rain' },
+            66: { icon: '🌧️', label: 'Light freezing rain' },
+            67: { icon: '🌧️', label: 'Heavy freezing rain' },
+            71: { icon: '🌨️', label: 'Slight snow fall' },
+            73: { icon: '🌨️', label: 'Moderate snow fall' },
+            75: { icon: '🌨️', label: 'Heavy snow fall' },
+            77: { icon: '🌨️', label: 'Snow grains' },
+            80: { icon: '🌧️', label: 'Slight rain showers' },
+            81: { icon: '🌧️', label: 'Moderate rain showers' },
+            82: { icon: '🌧️', label: 'Violent rain showers' },
+            85: { icon: '🌨️', label: 'Slight snow showers' },
+            86: { icon: '🌨️', label: 'Heavy snow showers' },
+            95: { icon: '⛈️', label: 'Thunderstorm' },
+            96: { icon: '⛈️', label: 'Thunderstorm with slight hail' },
+            99: { icon: '⛈️', label: 'Thunderstorm with heavy hail' }
+        };
+
+        /**
+         * ============================================================
+         * PART 3: STATE
+         * ============================================================
+         */
+
+        let isCelsius = true;
+        let lastWeatherData = null;
+        let lastLocation = null;
+
+        /**
+         * ============================================================
+         * PART 4: DOM REFERENCES
+         * ============================================================
+         */
+
+        const cityInput = document.getElementById('cityInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const locationBtn = document.getElementById('locationBtn');
+        const unitBtn = document.getElementById('unitBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const loading = document.getElementById('loading');
+        const errorBox = document.getElementById('errorBox');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorDetails = document.getElementById('errorDetails');
+        const weatherDisplay = document.getElementById('weatherDisplay');
+        const cityName = document.getElementById('cityName');
+        const cityCountry = document.getElementById('cityCountry');
+        const weatherIcon = document.getElementById('weatherIcon');
+        const temperature = document.getElementById('temperature');
+        const weatherDesc = document.getElementById('weatherDesc');
+        const updateTime = document.getElementById('updateTime');
+        const humidity = document.getElementById('humidity');
+        const windSpeed = document.getElementById('windSpeed');
+        const feelsLike = document.getElementById('feelsLike');
+        const uvIndex = document.getElementById('uvIndex');
+        const forecastGrid = document.getElementById('forecastGrid');
+
+        /**
+         * ============================================================
+         * PART 5: ERROR HANDLING UTILITIES
+         * ============================================================
+         */
+
+        /**
+         * showError
+         * Displays a user-friendly error message
+         */
+        function showError(message, details = null, type = 'error') {
+            errorBox.className = `error-box ${type}`;
+            errorMessage.textContent = message;
+            if (details) {
+                errorDetails.textContent = details;
+                errorDetails.style.display = 'block';
+            } else {
+                errorDetails.style.display = 'none';
+            }
+            errorBox.classList.add('visible');
+            clearTimeout(errorBox._timeout);
+            errorBox._timeout = setTimeout(() => {
+                errorBox.classList.remove('visible');
+            }, 8000);
+        }
+
+        function hideError() {
+            errorBox.classList.remove('visible');
+        }
+
+        /**
+         * handleError
+         * Centralized error handler for the app
+         */
+        function handleError(error) {
+            console.error('❌ Error caught:', error);
+
+            // Log the error with details
+            console.error({
+                name: error.name,
+                message: error.message,
+                code: error.code || 'UNKNOWN',
+                timestamp: error.timestamp || new Date().toISOString(),
+                stack: error.stack,
+                details: error.details,
+                statusCode: error.statusCode
+            });
+
+            // Determine user-friendly message based on error type
+            let userMessage = 'Something went wrong. Please try again.';
+            let details = null;
+            let type = 'error';
+
+            if (error instanceof NetworkError) {
+                userMessage = '🌐 Network error. Please check your internet connection.';
+                details = error.message;
+            } else if (error instanceof NotFoundError) {
+                userMessage = '🔍 City not found. Please check the spelling.';
+                details = error.message;
+            } else if (error instanceof ValidationError) {
+                userMessage = '⚠️ Invalid input. ' + error.message;
+                type = 'warning';
+            } else if (error instanceof APIError) {
+                userMessage = `🌐 API error${error.statusCode ? ` (${error.statusCode})` : ''}. Please try again later.`;
+                details = error.message;
+            } else if (error instanceof LocationError) {
+                userMessage = '📍 ' + error.message;
+                type = 'info';
+            } else if (error instanceof AppError) {
+                userMessage = error.message;
+            } else if (error instanceof TypeError) {
+                userMessage = '⚠️ A data type error occurred. Please try again.';
+            } else if (error instanceof SyntaxError) {
+                userMessage = '⚠️ Invalid data received from the server.';
+            } else {
+                // Unknown error
+                userMessage = '⚠️ An unexpected error occurred. Please try again.';
+            }
+
+            showError(userMessage, details, type);
+        }
+
+        /**
+         * safeAsync
+         * Wraps an async function with error handling
+         */
+        function safeAsync(fn) {
+            return async function(...args) {
+                try {
+                    return await fn.apply(this, args);
+                } catch (error) {
+                    handleError(error);
+                    return null;
+                }
+            };
+        }
+
+        /**
+         * ============================================================
+         * PART 6: UI HELPERS
+         * ============================================================
+         */
+
+        function showLoading(visible) {
+            loading.classList.toggle('visible', visible);
+            cityInput.disabled = visible;
+            searchBtn.disabled = visible;
+            locationBtn.disabled = visible;
+            refreshBtn.disabled = visible;
+        }
+
+        function showWeather(visible) {
+            weatherDisplay.classList.toggle('visible', visible);
+        }
+
+        function getWeatherIcon(code) {
+            return WEATHER_CODES[code] || { icon: '❓', label: 'Unknown' };
+        }
+
+        function getDayName(dateStr) {
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const date = new Date(dateStr);
+            return days[date.getDay()];
+        }
+
+        function formatTime(date) {
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function convertTemp(celsius) {
+            return isCelsius ? celsius : (celsius * 9 / 5) + 32;
+        }
+
+        function formatTemp(celsius) {
+            const value = convertTemp(celsius);
+            const unit = isCelsius ? '°C' : '°F';
+            return `${Math.round(value)}<span class="degree">${unit}</span>`;
+        }
+
+        function formatTempValue(celsius) {
+            return Math.round(convertTemp(celsius));
+        }
+
+        function getUnitSymbol() {
+            return isCelsius ? '°C' : '°F';
+        }
+
+        function getWindUnit() {
+            return isCelsius ? 'km/h' : 'mph';
+        }
+
+        /**
+         * ============================================================
+         * PART 7: API CALLS (With Validation & Error Handling)
+         * ============================================================
+         */
+
+        /**
+         * validateCityInput
+         * Validates the city input
+         */
+        function validateCityInput(city) {
+            const trimmed = city.trim();
+            if (!trimmed) {
+                throw new ValidationError('Please enter a city name.');
+            }
+            if (trimmed.length < 2) {
+                throw new ValidationError('City name must be at least 2 characters.');
+            }
+            if (trimmed.length > 100) {
+                throw new ValidationError('City name is too long (max 100 characters).');
+            }
+            return trimmed;
+        }
+
+        /**
+         * geocodeCity
+         * Converts a city name to coordinates
+         */
+        async function geocodeCity(cityName) {
+            try {
+                const url = `${GEO_BASE}?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`;
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new APIError(
+                        `Geocoding API returned status ${response.status}`,
+                        response.status
+                    );
+                }
+
+                const data = await response.json();
+
+                if (!data.results || data.results.length === 0) {
+                    throw new NotFoundError(`City "${cityName}" not found. Please check the spelling.`);
+                }
+
+                const result = data.results[0];
+                return {
+                    latitude: result.latitude,
+                    longitude: result.longitude,
+                    name: result.name,
+                    country: result.country || result.admin1 || 'Unknown'
+                };
+            } catch (error) {
+                if (error instanceof NotFoundError || error instanceof APIError) {
+                    throw error;
+                }
+                throw new NetworkError('Failed to connect to the geocoding service.', error.message);
+            }
+        }
+
+        /**
+         * fetchWeather
+         * Fetches weather data from Open-Meteo
+         */
+        async function fetchWeather(lat, lon) {
+            try {
+                const params = new URLSearchParams({
+                    latitude: lat,
+                    longitude: lon,
+                    current_weather: true,
+                    daily: 'temperature_2m_max,temperature_2m_min,weathercode,uv_index_max',
+                    timezone: 'auto',
+                    forecast_days: 7
+                });
+
+                const url = `${API_BASE}?${params}`;
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new APIError(
+                        `Weather API returned status ${response.status}`,
+                        response.status
+                    );
+                }
+
+                const data = await response.json();
+
+                if (!data.current_weather) {
+                    throw new APIError('Invalid weather data received.', 500);
+                }
+
+                return data;
+            } catch (error) {
+                if (error instanceof APIError) {
+                    throw error;
+                }
+                if (error instanceof TypeError) {
+                    throw new NetworkError('Network error. Please check your internet connection.', error.message);
+                }
+                throw new NetworkError('Failed to fetch weather data.', error.message);
+            }
+        }
+
+        /**
+         * ============================================================
+         * PART 8: RENDER FUNCTIONS
+         * ============================================================
+         */
+
+        function renderCurrentWeather(weather, location) {
+            const current = weather.current_weather;
+            const now = new Date();
+
+            cityName.textContent = location.name;
+            cityCountry.textContent = location.country;
+            temperature.innerHTML = formatTemp(current.temperature);
+
+            const weatherInfo = getWeatherIcon(current.weathercode);
+            weatherIcon.textContent = weatherInfo.icon;
+            weatherDesc.textContent = weatherInfo.label;
+
+            updateTime.textContent = `Last updated: ${formatTime(now)}`;
+
+            humidity.textContent = weather.current_weather.relative_humidity !== undefined ?
+                `${weather.current_weather.relative_humidity}%` :
+                '—';
+
+            const windKmh = current.windspeed || 0;
+            const windValue = isCelsius ? windKmh : windKmh * 0.621371;
+            windSpeed.textContent = `${windValue.toFixed(1)} ${getWindUnit()}`;
+
+            feelsLike.textContent = `${formatTempValue(current.temperature)}${getUnitSymbol()}`;
+
+            if (weather.daily && weather.daily.uv_index_max && weather.daily.uv_index_max.length > 0) {
+                uvIndex.textContent = weather.daily.uv_index_max[0] !== undefined ?
+                    weather.daily.uv_index_max[0].toFixed(1) :
+                    '—';
+            } else {
+                uvIndex.textContent = '—';
+            }
+
+            // Update page title
+            document.title = `Weather: ${location.name} | Weather App`;
+        }
+
+        function renderForecast(weather) {
+            if (!weather.daily) {
+                forecastGrid.innerHTML = '<p style="color: #94a3b8;">No forecast data available.</p>';
+                return;
+            }
+
+            const days = weather.daily.time.length;
+            const maxTemps = weather.daily.temperature_2m_max || [];
+            const minTemps = weather.daily.temperature_2m_min || [];
+            const codes = weather.daily.weathercode || [];
+
+            let html = '';
+
+            for (let i = 0; i < Math.min(days, 7); i++) {
+                const dayName = i === 0 ? 'Today' : getDayName(weather.daily.time[i]);
+                const weatherInfo = getWeatherIcon(codes[i] || 0);
+                const maxTemp = maxTemps[i] !== undefined ? formatTempValue(maxTemps[i]) : '—';
+                const minTemp = minTemps[i] !== undefined ? formatTempValue(minTemps[i]) : '—';
+
+                html += `
+                    <div class="forecast-day">
+                        <div class="day-name">${dayName}</div>
+                        <span class="day-icon">${weatherInfo.icon}</span>
+                        <div class="day-temp">
+                            ${maxTemp}°<span class="temp-low">${minTemp}°</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            forecastGrid.innerHTML = html;
+        }
+
+        function renderAll(weather, location) {
+            renderCurrentWeather(weather, location);
+            renderForecast(weather);
+            showWeather(true);
+            lastWeatherData = weather;
+            lastLocation = location;
+        }
+
+        /**
+         * ============================================================
+         * PART 9: MAIN FUNCTIONS (With Error Handling)
+         * ============================================================
+         */
+
+        /**
+         * searchWeather
+         * Main search function with comprehensive error handling
+         */
+        async function searchWeather(cityQuery) {
+            const query = (cityQuery || cityInput.value).trim();
+
+            try {
+                // Validate input
+                const validatedCity = validateCityInput(query);
+
+                // Reset UI
+                hideError();
+                showWeather(false);
+                showLoading(true);
+
+                // Step 1: Geocode
+                const location = await geocodeCity(validatedCity);
+
+                // Step 2: Fetch weather
+                const weather = await fetchWeather(location.latitude, location.longitude);
+
+                // Step 3: Render
+                renderAll(weather, location);
+
+                // Step 4: Save to localStorage
+                localStorage.setItem(STORAGE_KEY, location.name);
+                cityInput.value = location.name;
+
+            } catch (error) {
+                handleError(error);
+                showWeather(false);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /**
+         * getLocationWeather
+         * Uses Geolocation API with comprehensive error handling
+         */
+        async function getLocationWeather() {
+            if (!navigator.geolocation) {
+                throw new LocationError('Geolocation is not supported by your browser.', 'NOT_SUPPORTED');
+            }
+
+            try {
+                hideError();
+                showWeather(false);
+                showLoading(true);
+
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 60000
+                    });
+                });
+
+                const { latitude, longitude } = position.coords;
+
+                // Fetch weather directly with coordinates
+                const weather = await fetchWeather(latitude, longitude);
+
+                const location = {
+                    name: 'Current Location',
+                    country: '',
+                    latitude,
+                    longitude
+                };
+
+                renderAll(weather, location);
+                cityInput.value = 'Current Location';
+                localStorage.setItem(STORAGE_KEY, 'Current Location');
+
+            } catch (error) {
+                if (error.code === 1) {
+                    throw new LocationError('Location access denied. Please allow location access or search manually.', 'PERMISSION_DENIED');
+                } else if (error.code === 2) {
+                    throw new LocationError('Location unavailable. Please try again or search manually.', 'UNAVAILABLE');
+                } else if (error.code === 3) {
+                    throw new LocationError('Location request timed out. Please try again or search manually.', 'TIMEOUT');
+                } else {
+                    throw new LocationError(`Location error: ${error.message}`, 'UNKNOWN');
+                }
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /**
+         * refreshWeather
+         * Refreshes the current weather
+         */
+        async function refreshWeather() {
+            const city = cityInput.value.trim();
+
+            if (!city) {
+                showError('No city to refresh. Please search first.', null, 'warning');
+                return;
+            }
+
+            // Re-fetch the weather using the current city
+            await searchWeather(city);
+        }
+
+        /**
+         * toggleUnit
+         * Toggles between Celsius and Fahrenheit
+         */
+        function toggleUnit() {
+            isCelsius = !isCelsius;
+            localStorage.setItem(UNIT_KEY, isCelsius ? 'c' : 'f');
+
+            unitBtn.textContent = isCelsius ? '°F' : '°C';
+            unitBtn.classList.toggle('active');
+
+            // Re-render if we have data
+            if (lastWeatherData && lastLocation) {
+                renderAll(lastWeatherData, lastLocation);
+            }
+        }
+
+        /**
+         * ============================================================
+         * PART 10: EVENT HANDLING
+         * ============================================================
+         */
+
+        // Wrap event handlers with safeAsync for automatic error handling
+        searchBtn.addEventListener('click', safeAsync(() => searchWeather()));
+        locationBtn.addEventListener('click', safeAsync(getLocationWeather));
+        refreshBtn.addEventListener('click', safeAsync(refreshWeather));
+        unitBtn.addEventListener('click', toggleUnit);
+
+        cityInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                safeAsync(() => searchWeather())();
+            }
+        });
+
+        /**
+         * ============================================================
+         * PART 11: GLOBAL ERROR HANDLERS
+         * ============================================================
+         */
+
+        // Catch unhandled errors
+        window.onerror = function(message, source, line, column, error) {
+            console.error('🚨 Global error caught:', { message, source, line, column, error });
+            // Show a fallback error message
+            showError('An unexpected error occurred. Please refresh the page and try again.', null, 'error');
+            return true; // Prevents default browser error handling
+        };
+
+        // Catch unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('🚨 Unhandled rejection:', event.reason);
+            handleError(event.reason);
+            event.preventDefault();
+        });
+
+        /**
+         * ============================================================
+         * PART 12: INITIALIZATION
+         * ============================================================
+         */
+
+        async function init() {
+            // Load unit preference
+            const savedUnit = localStorage.getItem(UNIT_KEY);
+            if (savedUnit === 'f') {
+                isCelsius = false;
+                unitBtn.textContent = '°C';
+                unitBtn.classList.add('active');
+            }
+
+            // Load last searched city
+            const lastCity = localStorage.getItem(STORAGE_KEY);
+            if (lastCity) {
+                cityInput.value = lastCity;
+                await searchWeather(lastCity);
+            } else {
+                cityInput.value = 'London';
+                await searchWeather('London');
+            }
+        }
+
+        // Start the app with error handling
+        init().catch(error => {
+            console.error('Failed to initialize app:', error);
+            showError('Failed to load the app. Please refresh the page.', null, 'error');
+        });
+
+        /**
+         * ============================================================
+         * PART 13: DEMONSTRATION (Console Output)
+         * ============================================================
+         */
+
+        console.log('\n=== DAY 32: ERROR HANDLING DEMO ===\n');
+        console.log('🧪 Custom Error Classes:');
+        console.log('  ✅ AppError (base)');
+        console.log('  ✅ NetworkError');
+        console.log('  ✅ ValidationError');
+        console.log('  ✅ NotFoundError');
+        console.log('  ✅ APIError');
+        console.log('  ✅ LocationError');
+        console.log('\n📌 Features:');
+        console.log('  ✅ try/catch/finally in all async functions');
+        console.log('  ✅ Centralized error handler (handleError)');
+        console.log('  ✅ User-friendly error messages');
+        console.log('  ✅ Error logging to console');
+        console.log('  ✅ Global error handlers (window.onerror, unhandledrejection)');
+        console.log('  ✅ Error type detection for custom messages');
+        console.log('\n🔍 Try:');
+        console.log('  1. Search for a non-existent city (NotFoundError)');
+        console.log('  2. Turn off WiFi and search (NetworkError)');
+        console.log('  3. Search with empty input (ValidationError)');
+        console.log('  4. Click "My Location" without permission (LocationError)');
+    </script>
+
+</body>
+</html>
