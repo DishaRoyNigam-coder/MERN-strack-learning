@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debugging Scope - Day 23</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 35px 30px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            animation: fadeSlideUp 0.6s ease-out;
+            margin-top: 20px;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .header .icon {
+            font-size: 2.8rem;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        /* ---------- SNIPPET GRID ---------- */
+        .snippet-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 16px;
+        }
+
+        .snippet-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 18px 20px 20px;
+            transition: border-color 0.3s ease;
+        }
+
+        .snippet-card:hover {
+            border-color: #94a3b8;
+        }
+
+        .snippet-card h3 {
+            font-size: 0.95rem;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .snippet-card .question {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .snippet-card pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 14px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .snippet-card pre .keyword {
+            color: #60a5fa;
+        }
+        .snippet-card pre .string {
+            color: #34d399;
+        }
+        .snippet-card pre .comment {
+            color: #64748b;
+        }
+        .snippet-card pre .error {
+            color: #f87171;
+        }
+        .snippet-card pre .highlight {
+            background: #fef08a;
+            color: #0f172a;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        .snippet-card .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .snippet-card .btn-group button {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .snippet-card .btn-group button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-run {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .btn-run:hover {
+            background: #1e293b;
+        }
+
+        .btn-explain {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .btn-explain:hover {
+            background: #bfdbfe;
+        }
+
+        .snippet-card .output {
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
+            min-height: 40px;
+            border: 1px solid #e2e8f0;
+            white-space: pre-wrap;
+            word-break: break-all;
+            display: none;
+        }
+
+        .snippet-card .output.visible {
+            display: block;
+        }
+
+        .snippet-card .output.success {
+            border-color: #16a34a;
+            background: #f0fdf4;
+            color: #166534;
+        }
+
+        .snippet-card .output.error {
+            border-color: #dc2626;
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .snippet-card .output.info {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        .snippet-card .output .label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* ---------- EXPLANATION PANEL ---------- */
+        .explanation-panel {
+            margin-top: 16px;
+            padding: 16px 20px;
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .explanation-panel.visible {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .explanation-panel h4 {
+            color: #92400e;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+
+        .explanation-panel p {
+            color: #78350f;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .explanation-panel code {
+            background: #fef3c7;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #92400e;
+        }
+
+        /* ---------- SUMMARY TABLE ---------- */
+        .summary-section {
+            margin-top: 28px;
+            padding: 20px;
+            background: #f1f5f9;
+            border-radius: 16px;
+        }
+
+        .summary-section h2 {
+            font-size: 1.2rem;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .summary-section table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .summary-section th {
+            background: #0f172a;
+            color: #fff;
+            padding: 10px 14px;
+            text-align: left;
+        }
+
+        .summary-section td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .summary-section tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .summary-section .check {
+            color: #16a34a;
+        }
+        .summary-section .cross {
+            color: #dc2626;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 768px) {
+            .snippet-grid {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 24px 16px;
+            }
+            .summary-section table {
+                font-size: 0.75rem;
+            }
+            .summary-section th,
+            .summary-section td {
+                padding: 6px 8px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .snippet-card pre {
+                font-size: 0.7rem;
+                padding: 10px 12px;
+            }
+            .summary-section table {
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">🐛</span>
+            <h1>Debugging Scope & Hoisting</h1>
+            <p>Understand hoisting, scope, and the Temporal Dead Zone by debugging real code.</p>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SNIPPET 1: var Hoisting                                       -->
+        <!-- ============================================================ -->
+        <div class="snippet-grid">
+
+            <!-- Snippet 1 -->
+            <div class="snippet-card" data-snippet="1">
+                <h3>🔍 Snippet 1: var Hoisting</h3>
+                <div class="question">What will be logged? Why?</div>
+                <pre>
+<span class="keyword">console</span>.<span class="keyword">log</span>(x); <span class="comment">// ???</span>
+<span class="keyword">var</span> x = <span class="string">5</span>;
+<span class="keyword">console</span>.<span class="keyword">log</span>(x); <span class="comment">// ???</span></pre>
+                <div class="btn-group">
+                    <button class="btn-run" onclick="runSnippet(1)">▶ Run</button>
+                    <button class="btn-explain" onclick="explainSnippet(1)">💡 Explain</button>
+                </div>
+                <div class="output" id="output-1"></div>
+            </div>
+
+            <!-- Snippet 2 -->
+            <div class="snippet-card" data-snippet="2">
+                <h3>🔍 Snippet 2: let TDZ</h3>
+                <div class="question">What will happen? Why?</div>
+                <pre>
+<span class="keyword">console</span>.<span class="keyword">log</span>(y); <span class="comment">// ???</span>
+<span class="keyword">let</span> y = <span class="string">10</span>;
+<span class="keyword">console</span>.<span class="keyword">log</span>(y); <span class="comment">// ???</span></pre>
+                <div class="btn-group">
+                    <button class="btn-run" onclick="runSnippet(2)">▶ Run</button>
+                    <button class="btn-explain" onclick="explainSnippet(2)">💡 Explain</button>
+                </div>
+                <div class="output" id="output-2"></div>
+            </div>
+
+            <!-- Snippet 3 -->
+            <div class="snippet-card" data-snippet="3">
+                <h3>🔍 Snippet 3: Function Hoisting</h3>
+                <div class="question">What will be logged? Why?</div>
+                <pre>
+<span class="keyword">greet</span>(); <span class="comment">// ???</span>
+
+<span class="keyword">function</span> <span class="keyword">greet</span>() {
+    <span class="keyword">console</span>.<span class="keyword">log</span>(<span class="string">'Hello!'</span>);
+}</pre>
+                <div class="btn-group">
+                    <button class="btn-run" onclick="runSnippet(3)">▶ Run</button>
+                    <button class="btn-explain" onclick="explainSnippet(3)">💡 Explain</button>
+                </div>
+                <div class="output" id="output-3"></div>
+            </div>
+
+            <!-- Snippet 4 -->
+            <div class="snippet-card" data-snippet="4">
+                <h3>🔍 Snippet 4: Function Expression</h3>
+                <div class="question">What will happen? Why?</div>
+                <pre>
+<span class="keyword">greet2</span>(); <span class="comment">// ???</span>
+
+<span class="keyword">const</span> greet2 = <span class="keyword">function</span>() {
+    <span class="keyword">console</span>.<span class="keyword">log</span>(<span class="string">'Hello!'</span>);
+};</pre>
+                <div class="btn-group">
+                    <button class="btn-run" onclick="runSnippet(4)">▶ Run</button>
+                    <button class="btn-explain" onclick="explainSnippet(4)">💡 Explain</button>
+                </div>
+                <div class="output" id="output-4"></div>
+            </div>
+
+            <!-- Snippet 5 -->
+            <div class="snippet-card" data-snippet="5">
+                <h3>🔍 Snippet 5: Block Scope</h3>
+                <div class="question">What will be logged? Why?</div>
+                <pre>
+<span class="keyword">if</span> (<span class="keyword">true</span>) {
+    <span class="keyword">var</span> a = <span class="string">1</span>;
+    <span class="keyword">let</span> b = <span class="string">2</span>;
+    <span class="keyword">const</span> c = <span class="string">3</span>;
+}
+<span class="keyword">console</span>.<span class="keyword">log</span>(a); <span class="comment">// ???</span>
+<span class="keyword">console</span>.<span class="keyword">log</span>(b); <span class="comment">// ???</span>
+<span class="keyword">console</span>.<span class="keyword">log</span>(c); <span class="comment">// ???</span></pre>
+                <div class="btn-group">
+                    <button class="btn-run" onclick="runSnippet(5)">▶ Run</button>
+                    <button class="btn-explain" onclick="explainSnippet(5)">💡 Explain</button>
+                </div>
+                <div class="output" id="output-5"></div>
+            </div>
+
+            <!-- Snippet 6 -->
+            <div class="snippet-card" data-snippet="6">
+                <h3>🔍 Snippet 6: Loop Closure Bug</h3>
+                <div class="question">What will be logged? Why?</div>
+                <pre>
+<span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="string">1</span>; i <= <span class="string">3</span>; i++) {
+    <span class="keyword">setTimeout</span>(<span class="keyword">function</span>() {
+        <span class="keyword">console</span>.<span class="keyword">log</span>(i); <span class="comment">// ???</span>
+    }, <span class="string">100</span>);
+}</pre>
+                <div class="btn-group">
+                    <button class="btn-run" onclick="runSnippet(6)">▶ Run</button>
+                    <button class="btn-explain" onclick="explainSnippet(6)">💡 Explain</button>
+                </div>
+                <div class="output" id="output-6"></div>
+            </div>
+
+            <!-- Snippet 7 -->
+            <div class="snippet-card" data-snippet="7">
+                <h3>🔍 Snippet 7: Loop with let</h3>
+                <div class="question">What will be logged? Why?</div>
+                <pre>
+<span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="string">1</span>; i <= <span class="string">3</span>; i++) {
+    <span class="keyword">setTimeout</span>(<span class="keyword">function</span>() {
+        <span class="keyword">console</span>.<span class="keyword">log</span>(i); <span class="comment">// ???</span>
+    }, <span class="string">100</span>);
+}</pre>
+                <div class="btn-group">
+                    <button class="btn-run" onclick="runSnippet(7)">▶ Run</button>
+                    <button class="btn-explain" onclick="explainSnippet(7)">💡 Explain</button>
+                </div>
+                <div class="output" id="output-7"></div>
+            </div>
+
+            <!-- Snippet 8 -->
+            <div class="snippet-card" data-snippet="8">
+                <h3>🔍 Snippet 8: const Reassignment</h3>
+                <div class="question">What will happen? Why?</div>
+                <pre>
+<span class="keyword">const</span> PI = <span class="string">3.14</span>;
+PI = <span class="string">3.14159</span>; <span class="comment">// ???</span>
+<span class="keyword">console</span>.<span class="keyword">log</span>(PI); <span class="comment">// ???</span></pre>
+                <div class="btn-group">
+                    <button class="btn-run" onclick="runSnippet(8)">▶ Run</button>
+                    <button class="btn-explain" onclick="explainSnippet(8)">💡 Explain</button>
+                </div>
+                <div class="output" id="output-8"></div>
+            </div>
+
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- EXPLANATION PANEL                                            -->
+        <!-- ============================================================ -->
+        <div class="explanation-panel" id="explanationPanel">
+            <h4>💡 Explanation</h4>
+            <p id="explanationText">Click "Explain" on any snippet to see the explanation here.</p>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SUMMARY TABLE                                                -->
+        <!-- ============================================================ -->
+        <div class="summary-section">
+            <h2>📊 Quick Reference: var vs let vs const</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>var</th>
+                        <th>let</th>
+                        <th>const</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Scope</strong></td>
+                        <td>Function</td>
+                        <td>Block</td>
+                        <td>Block</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hoisting</strong></td>
+                        <td>Yes (undefined)</td>
+                        <td>Yes (TDZ)</td>
+                        <td>Yes (TDZ)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Redeclaration</strong></td>
+                        <td><span class="check">✅ Allowed</span></td>
+                        <td><span class="cross">❌ Not allowed</span></td>
+                        <td><span class="cross">❌ Not allowed</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Reassignment</strong></td>
+                        <td><span class="check">✅ Allowed</span></td>
+                        <td><span class="check">✅ Allowed</span></td>
+                        <td><span class="cross">❌ Not allowed</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>TDZ</strong></td>
+                        <td><span class="cross">❌ No</span></td>
+                        <td><span class="check">✅ Yes</span></td>
+                        <td><span class="check">✅ Yes</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Global object property</strong></td>
+                        <td><span class="check">✅ Yes</span></td>
+                        <td><span class="cross">❌ No</span></td>
+                        <td><span class="cross">❌ No</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: SNIPPET DEFINITIONS
+         * ============================================================
+         * Each snippet has a run function and an explanation.
+         */
+
+        const snippets = {
+            1: {
+                run: function() {
+                    // Snippet 1: var hoisting
+                    let output = '';
+                    try {
+                        // Simulating the actual behavior
+                        output += 'console.log(x); // undefined (hoisted, not initialized)\n';
+                        output += 'var x = 5;\n';
+                        output += 'console.log(x); // 5\n';
+                        output += '\n✅ Result: undefined then 5';
+                    } catch (e) {
+                        output = '❌ Error: ' + e.message;
+                    }
+                    return output;
+                },
+                explanation: `🔍 **var Hoisting Explained:**
+
+                The variable declaration <code>var x</code> is hoisted to the top of its scope.
+                However, the initialization <code>x = 5</code> stays in place.
+
+                This is how JavaScript interprets the code:
+
+                <code>
+                var x; // Declaration is hoisted<br>
+                console.log(x); // undefined (x exists but has no value)<br>
+                x = 5; // Initialization stays here<br>
+                console.log(x); // 5
+                </code>
+
+                📌 <strong>Key takeaway:</strong> <code>var</code> declarations are hoisted and initialized with <code>undefined</code>.`
+            },
+
+            2: {
+                run: function() {
+                    let output = '';
+                    try {
+                        // This would throw an error in real execution
+                        output += 'console.log(y); // ❌ ReferenceError\n';
+                        output += 'let y = 10;\n';
+                        output += 'console.log(y); // Never reached\n';
+                        output += '\n❌ Error: Cannot access "y" before initialization';
+                    } catch (e) {
+                        output = '❌ Error: ' + e.message;
+                    }
+                    return output;
+                },
+                explanation: `🔍 **let TDZ (Temporal Dead Zone) Explained:**
+
+                <code>let</code> and <code>const</code> are hoisted, but they are NOT initialized.
+                They enter a Temporal Dead Zone (TDZ) from the start of the block until the declaration is encountered.
+
+                During the TDZ, any access to the variable throws a <code>ReferenceError</code>.
+
+                📌 <strong>Key takeaway:</strong> Always declare <code>let</code> and <code>const</code> at the top of their scope to avoid TDZ errors.`
+            },
+
+            3: {
+                run: function() {
+                    let output = '';
+                    try {
+                        greet();
+                        output += '✅ "Hello!" (function declaration is fully hoisted)\n';
+                        output += '\n✅ Result: Hello!';
+                    } catch (e) {
+                        output = '❌ Error: ' + e.message;
+                    }
+                    return output;
+                },
+                explanation: `🔍 **Function Declaration Hoisting Explained:**
+
+                Function <strong>declarations</strong> are fully hoisted — both the name and the function body.
+
+                This means you can call a function <em>before</em> it's defined in the code.
+
+                📌 <strong>Key takeaway:</strong> Function declarations are hoisted completely. Use them freely!`
+            },
+
+            4: {
+                run: function() {
+                    let output = '';
+                    try {
+                        // This would throw an error
+                        output += 'greet2(); // ❌ TypeError\n';
+                        output += 'const greet2 = function() { ... };\n';
+                        output += '\n❌ Error: greet2 is not a function (or not defined)';
+                    } catch (e) {
+                        output = '❌ Error: ' + e.message;
+                    }
+                    return output;
+                },
+                explanation: `🔍 **Function Expression Hoisting Explained:**
+
+                Function <strong>expressions</strong> (including arrow functions) are NOT hoisted.
+
+                Only the <code>const</code> (or <code>var</code>) declaration is hoisted — the function assignment stays in place.
+
+                📌 <strong>Key takeaway:</strong> Always define function expressions before calling them.`
+            },
+
+            5: {
+                run: function() {
+                    let output = '';
+                    try {
+                        let result = '';
+                        if (true) {
+                            var a = 1;
+                            let b = 2;
+                            const c = 3;
+                            result += 'Inside block: a=1, b=2, c=3\n';
+                        }
+                        result += 'console.log(a); // 1 (var escapes the block)\n';
+                        result += 'console.log(b); // ❌ ReferenceError\n';
+                        result += 'console.log(c); // ❌ ReferenceError\n';
+                        output = result + '\n✅ a=1, ❌ b and c are not defined';
+                    } catch (e) {
+                        output = '❌ Error: ' + e.message;
+                    }
+                    return output;
+                },
+                explanation: `🔍 **Block Scope Explained:**
+
+                <code>var</code> is <strong>function-scoped</strong>, not block-scoped. It ignores block boundaries (like <code>if</code>, <code>for</code>, <code>{}</code>).
+
+                <code>let</code> and <code>const</code> are <strong>block-scoped</strong>. They are only accessible within the block where they're defined.
+
+                📌 <strong>Key takeaway:</strong> Use <code>let</code> and <code>const</code> to limit variable accessibility to the block.`
+            },
+
+            6: {
+                run: function() {
+                    let output = '';
+                    try {
+                        let results = [];
+                        // Simulate the setTimeout behavior
+                        for (var i = 1; i <= 3; i++) {
+                            // In real code, setTimeout would run later
+                            // All closures capture the same 'i' variable
+                            results.push(i);
+                        }
+                        // After the loop, i = 4
+                        output = 'for (var i = 1; i <= 3; i++) {\n';
+                        output += '  setTimeout(() => console.log(i), 100);\n';
+                        output += '}\n';
+                        output += '\nAll three setTimeout callbacks log: 4, 4, 4\n';
+                        output += '\n✅ Result: 4, 4, 4 (not 1, 2, 3)';
+                    } catch (e) {
+                        output = '❌ Error: ' + e.message;
+                    }
+                    return output;
+                },
+                explanation: `🔍 **Loop Closure Bug Explained:**
+
+                When using <code>var</code> in a loop, all closures created in the loop share the <strong>same</strong> <code>i</code> variable.
+
+                By the time the setTimeout callbacks run, the loop has finished and <code>i</code> has the value 4.
+
+                📌 <strong>Key takeaway:</strong> Use <code>let</code> in loops instead of <code>var</code>. Each iteration gets its own block-scoped variable.`
+            },
+
+            7: {
+                run: function() {
+                    let output = '';
+                    try {
+                        output = 'for (let i = 1; i <= 3; i++) {\n';
+                        output += '  setTimeout(() => console.log(i), 100);\n';
+                        output += '}\n';
+                        output += '\nEach iteration has its own block-scoped i\n';
+                        output += '✅ Result: 1, 2, 3 (each setTimeout logs the correct value)';
+                    } catch (e) {
+                        output = '❌ Error: ' + e.message;
+                    }
+                    return output;
+                },
+                explanation: `🔍 **Loop with let Explained:**
+
+                When using <code>let</code> in a loop, each iteration creates a new <strong>block scope</strong> with its own <code>i</code> variable.
+
+                Each setTimeout callback captures its own <code>i</code> from the iteration it was created in.
+
+                📌 <strong>Key takeaway:</strong> <code>let</code> in loops creates a new binding for each iteration. This fixes the classic loop closure bug.`
+            },
+
+            8: {
+                run: function() {
+                    let output = '';
+                    try {
+                        // This would throw an error
+                        output += 'const PI = 3.14;\n';
+                        output += 'PI = 3.14159; // ❌ TypeError\n';
+                        output += 'console.log(PI); // Never reached\n';
+                        output += '\n❌ Error: Assignment to constant variable';
+                    } catch (e) {
+                        output = '❌ Error: ' + e.message;
+                    }
+                    return output;
+                },
+                explanation: `🔍 **const Reassignment Explained:**
+
+                <code>const</code> stands for <strong>constant</strong>. Once a <code>const</code> variable is assigned a value, it cannot be reassigned.
+
+                Attempting to reassign a <code>const</code> throws a <code>TypeError</code>.
+
+                📌 <strong>Key takeaway:</strong> Use <code>const</code> for values that should never change. Use <code>let</code> for values that might change.`
+            }
+        };
+
+
+        /**
+         * ============================================================
+         * PART 2: RUN AND EXPLAIN FUNCTIONS
+         * ============================================================
+         */
+
+        function runSnippet(id) {
+            const outputElement = document.getElementById(`output-${id}`);
+            const snippet = snippets[id];
+
+            if (!snippet) {
+                outputElement.textContent = '❌ Snippet not found';
+                outputElement.className = 'output visible error';
+                return;
+            }
+
+            try {
+                const result = snippet.run();
+                outputElement.textContent = result;
+                outputElement.className = 'output visible success';
+
+                // Check if it contains an error indicator
+                if (result.includes('❌')) {
+                    outputElement.className = 'output visible error';
+                }
+                if (result.includes('✅')) {
+                    outputElement.className = 'output visible success';
+                }
+            } catch (e) {
+                outputElement.textContent = '❌ Error running snippet: ' + e.message;
+                outputElement.className = 'output visible error';
+            }
+        }
+
+        function explainSnippet(id) {
+            const snippet = snippets[id];
+            const panel = document.getElementById('explanationPanel');
+            const textElement = document.getElementById('explanationText');
+
+            if (!snippet) {
+                textElement.textContent = '❌ Snippet not found';
+                panel.classList.add('visible');
+                return;
+            }
+
+            textElement.innerHTML = snippet.explanation;
+            panel.classList.add('visible');
+
+            // Scroll to the explanation
+            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+
+        /**
+         * ============================================================
+         * PART 3: DEMONSTRATION (Console Output)
+         * ============================================================
+         * Showing all concepts in action.
+         * (Open the browser console to see the output!)
+         */
+
+        console.log('\n=== DAY 23: HOISTING, SCOPE & TDZ ===\n');
+
+        // --- 1. Hoisting Demo ---
+        console.log('--- 1. Hoisting ---');
+
+        // var hoisting
+        console.log('var hoisting:');
+        console.log('  var x before declaration:', typeof x !== 'undefined' ? x : 'not defined');
+        var x = 5;
+        console.log('  var x after declaration:', x);
+
+        // let hoisting (TDZ)
+        console.log('\nlet hoisting (TDZ):');
+        try {
+            console.log('  let y before declaration:', y);
+        } catch (e) {
+            console.log('  let y before declaration:', e.message);
+        }
+        let y = 10;
+        console.log('  let y after declaration:', y);
+
+        // --- 2. Scope Demo ---
+        console.log('\n--- 2. Scope ---');
+
+        // Global scope
+        const globalVar = 'Global';
+        console.log('Global variable:', globalVar);
+
+        // Function scope
+        function testFunctionScope() {
+            var functionVar = 'Function scope';
+            console.log('  Inside function:', functionVar);
+        }
+        testFunctionScope();
+        try {
+            console.log('  Outside function:', functionVar);
+        } catch (e) {
+            console.log('  Outside function:', e.message);
+        }
+
+        // Block scope
+        if (true) {
+            let blockVar = 'Block scope';
+            console.log('  Inside block:', blockVar);
+        }
+        try {
+            console.log('  Outside block:', blockVar);
+        } catch (e) {
+            console.log('  Outside block:', e.message);
+        }
+
+        // --- 3. TDZ Demo ---
+        console.log('\n--- 3. TDZ ---');
+
+        console.log('TDZ example:');
+        try {
+            console.log('  Accessing z before declaration:', z);
+        } catch (e) {
+            console.log('  Accessing z before declaration:', e.message);
+        }
+        let z = 30;
+        console.log('  Accessing z after declaration:', z);
+
+        // --- 4. var vs let vs const ---
+        console.log('\n--- 4. var vs let vs const ---');
+
+        // var: can be redeclared
+        var testVar = 1;
+        var testVar = 2; // ✅ Allowed
+        console.log('var redeclaration:', testVar);
+
+        // let: cannot be redeclared
+        let testLet = 1;
+        try {
+            let testLet = 2; // ❌ SyntaxError
+        } catch (e) {
+            console.log('let redeclaration:', e.message);
+        }
+
+        // const: cannot be reassigned
+        const testConst = 1;
+        try {
+            testConst = 2; // ❌ TypeError
+        } catch (e) {
+            console.log('const reassignment:', e.message);
+        }
+
+        // --- 5. Strict Mode ---
+        console.log('\n--- 5. Strict Mode ---');
+
+        console.log('💡 Strict mode catches common mistakes:');
+        console.log('  - Prevents accidental global variables');
+        console.log('  - Throws errors for silent failures');
+        console.log('  - Disables features that will be removed');
+
+        console.log('\n=== Debugging playground is ready! ===');
+        console.log('📌 Click "Run" on any snippet to see the output.');
+        console.log('📌 Click "Explain" to understand what\'s happening.');
+    </script>
+
+</body>
+</html>
