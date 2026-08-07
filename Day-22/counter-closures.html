@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Counter with Closures - Day 22</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 35px 30px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            animation: fadeSlideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .header .icon {
+            font-size: 2.8rem;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .header .closure-badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* ---------- COUNTER CONTROLS ---------- */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .controls .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 150px;
+        }
+
+        .controls .form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+
+        .controls .form-group input {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .controls .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .controls button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            align-self: flex-end;
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+        }
+
+        .controls .btn-danger {
+            background: #dc2626;
+        }
+
+        .controls .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        /* ---------- COUNTERS GRID ---------- */
+        .counters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .counter-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px 16px 18px;
+            text-align: center;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            position: relative;
+        }
+
+        .counter-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .counter-card .counter-id {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 0.65rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .counter-card .counter-value {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+            margin: 4px 0 8px;
+            transition: color 0.3s ease;
+        }
+
+        .counter-card .counter-value.positive {
+            color: #16a34a;
+        }
+
+        .counter-card .counter-value.negative {
+            color: #dc2626;
+        }
+
+        .counter-card .counter-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 12px;
+            word-break: break-word;
+        }
+
+        .counter-card .btn-group {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .counter-card .btn-group button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            min-width: 40px;
+        }
+
+        .counter-card .btn-group button:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-increment {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .btn-increment:hover {
+            background: #bfdbfe;
+        }
+
+        .btn-decrement {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .btn-decrement:hover {
+            background: #fee2e2;
+        }
+
+        .btn-reset {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-reset:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-delete-counter {
+            background: #fef2f2;
+            color: #dc2626;
+            font-size: 0.7rem;
+            padding: 4px 10px;
+        }
+
+        .btn-delete-counter:hover {
+            background: #fee2e2;
+        }
+
+        /* ---------- TOTAL STATS ---------- */
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 20px;
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .stats .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stats .stat-item .value {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* ---------- CLOSURE DEMO ---------- */
+        .demo-section {
+            margin-top: 24px;
+            padding: 16px 20px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: #166534;
+        }
+
+        .demo-section code {
+            background: #dcfce7;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 500px) {
+            .container {
+                padding: 24px 16px;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            .controls .form-group {
+                flex: 1 1 auto;
+            }
+            .controls button {
+                align-self: stretch;
+            }
+            .counters-grid {
+                grid-template-columns: 1fr;
+            }
+            .counter-card .counter-value {
+                font-size: 2.4rem;
+            }
+            .stats {
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">🔒</span>
+            <h1>Counter with Closures</h1>
+            <p>Each counter has its own private state via closures.</p>
+            <span class="closure-badge">🧠 Each counter = independent closure</span>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <div class="form-group">
+                <label for="counterName">Counter Name</label>
+                <input type="text" id="counterName" placeholder="e.g., Counter 1" value="Counter" />
+            </div>
+            <button id="addCounterBtn">➕ Add Counter</button>
+            <button id="resetAllBtn" class="btn-danger">🔄 Reset All</button>
+        </div>
+
+        <!-- COUNTERS -->
+        <div class="counters-grid" id="countersGrid">
+            <!-- Counters will be rendered here -->
+        </div>
+
+        <!-- STATS -->
+        <div class="stats" id="statsContainer">
+            <span class="stat-item">📊 Total Counters: <span class="value" id="totalCounters">0</span></span>
+            <span class="stat-item">📈 Total Sum: <span class="value" id="totalSum">0</span></span>
+            <span class="stat-item">🔢 Average: <span class="value" id="averageValue">0</span></span>
+        </div>
+
+        <!-- CLOSURE DEMO -->
+        <div class="demo-section">
+            <strong>🧠 How Closures Work Here:</strong><br />
+            Each counter is created by <code>createCounter()</code>.
+            The inner functions (<code>increment</code>, <code>decrement</code>, etc.)
+            <strong>"remember"</strong> their own <code>count</code> variable
+            even after <code>createCounter()</code> has finished executing.
+            This is a <strong>closure</strong> in action!
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: THE CLOSURE - createCounter()
+         * ============================================================
+         * This function creates a counter with its own private state.
+         * Each counter is an INDEPENDENT closure.
+         */
+
+        /**
+         * createCounter
+         * @param {string} name - The name of the counter
+         * @param {number} initialValue - Starting value (default 0)
+         * @returns {object} Counter object with methods
+         *
+         * 🧠 CLOSURE EXPLANATION:
+         * - 'count' is a private variable inside the closure.
+         * - The returned methods (increment, decrement, etc.) capture
+         *   'count' in their lexical scope.
+         * - Each call to createCounter() creates a NEW closure with its
+         *   OWN 'count' variable.
+         */
+        function createCounter(name = 'Counter', initialValue = 0) {
+            // --- Private variable (captured by the closure) ---
+            let count = initialValue;
+
+            // --- Private methods (also captured) ---
+            function validateName(newName) {
+                return newName && newName.trim().length > 0;
+            }
+
+            // --- Return public API (the closure) ---
+            return {
+                // Getters
+                getValue: function() {
+                    return count;
+                },
+
+                getName: function() {
+                    return name;
+                },
+
+                // Mutators
+                increment: function(amount = 1) {
+                    count += amount;
+                    return count;
+                },
+
+                decrement: function(amount = 1) {
+                    count -= amount;
+                    return count;
+                },
+
+                reset: function() {
+                    count = 0;
+                    return count;
+                },
+
+                setValue: function(newValue) {
+                    if (typeof newValue === 'number' && !isNaN(newValue)) {
+                        count = newValue;
+                        return count;
+                    }
+                    throw new Error('Value must be a number');
+                },
+
+                setName: function(newName) {
+                    if (validateName(newName)) {
+                        name = newName.trim();
+                        return name;
+                    }
+                    throw new Error('Name must be a non-empty string');
+                },
+
+                // Utility
+                getState: function() {
+                    return {
+                        name: name,
+                        value: count,
+                        type: 'closure-counter'
+                    };
+                }
+            };
+        }
+
+
+        /**
+         * ============================================================
+         * PART 2: STATE MANAGEMENT
+         * ============================================================
+         * We store all counters in an array.
+         * Each counter is a closure (object with methods).
+         */
+
+        /** @type {Array<ReturnType<createCounter>>} */
+        let counters = [];
+
+        // --- ID counter for unique IDs ---
+        let nextId = 1;
+
+        // --- Load from localStorage ---
+        function loadCounters() {
+            try {
+                const stored = localStorage.getItem('counters_data');
+                if (stored) {
+                    const data = JSON.parse(stored);
+                    if (Array.isArray(data)) {
+                        // Recreate counters from stored data
+                        counters = data.map(item =>
+                            createCounter(item.name, item.value)
+                        );
+                        nextId = counters.length + 1;
+                        renderAll();
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to load counters:', e);
+            }
+
+            // Default counters
+            counters = [
+                createCounter('Counter 1', 0),
+                createCounter('Counter 2', 5),
+                createCounter('Counter 3', -3)
+            ];
+            nextId = counters.length + 1;
+            renderAll();
+        }
+
+        // --- Save to localStorage ---
+        function saveCounters() {
+            try {
+                const data = counters.map(counter => ({
+                    name: counter.getName(),
+                    value: counter.getValue()
+                }));
+                localStorage.setItem('counters_data', JSON.stringify(data));
+            } catch (e) {
+                console.warn('Failed to save counters:', e);
+            }
+        }
+
+
+        /**
+         * ============================================================
+         * PART 3: RENDER FUNCTION (Using DOM methods)
+         * ============================================================
+         * Renders all counters to the grid.
+         * Uses event delegation for click handling.
+         */
+
+        function renderAll() {
+            const grid = document.getElementById('countersGrid');
+
+            // --- Clear the grid ---
+            while (grid.firstChild) {
+                grid.removeChild(grid.firstChild);
+            }
+
+            // --- No counters ---
+            if (counters.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.style.cssText = `
+                    grid-column: 1 / -1;
+                    text-align: center;
+                    padding: 40px 20px;
+                    color: #94a3b8;
+                `;
+                emptyState.innerHTML = `
+                    <span style="font-size: 3rem; display: block;">📭</span>
+                    <h3 style="color: #475569;">No counters yet</h3>
+                    <p>Click "Add Counter" to create one.</p>
+                `;
+                grid.appendChild(emptyState);
+                updateStats();
+                return;
+            }
+
+            // --- Render each counter ---
+            counters.forEach((counter, index) => {
+                const id = index + 1;
+                const name = counter.getName();
+                const value = counter.getValue();
+
+                const card = document.createElement('div');
+                card.className = 'counter-card';
+                card.dataset.index = index;
+
+                // ID badge
+                const idBadge = document.createElement('span');
+                idBadge.className = 'counter-id';
+                idBadge.textContent = `#${id}`;
+
+                // Value display
+                const valueDisplay = document.createElement('div');
+                valueDisplay.className = `counter-value ${value > 0 ? 'positive' : value < 0 ? 'negative' : ''}`;
+                valueDisplay.textContent = value;
+
+                // Label
+                const label = document.createElement('div');
+                label.className = 'counter-label';
+                label.textContent = name;
+
+                // Button group
+                const btnGroup = document.createElement('div');
+                btnGroup.className = 'btn-group';
+
+                // Increment button
+                const incBtn = document.createElement('button');
+                incBtn.className = 'btn-increment';
+                incBtn.textContent = '+1';
+                incBtn.dataset.action = 'increment';
+
+                // Decrement button
+                const decBtn = document.createElement('button');
+                decBtn.className = 'btn-decrement';
+                decBtn.textContent = '-1';
+                decBtn.dataset.action = 'decrement';
+
+                // Reset button
+                const resetBtn = document.createElement('button');
+                resetBtn.className = 'btn-reset';
+                resetBtn.textContent = '↺';
+                resetBtn.dataset.action = 'reset';
+
+                // Delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn-delete-counter';
+                deleteBtn.textContent = '✕';
+                deleteBtn.dataset.action = 'delete';
+
+                // Assemble
+                btnGroup.appendChild(incBtn);
+                btnGroup.appendChild(decBtn);
+                btnGroup.appendChild(resetBtn);
+                btnGroup.appendChild(deleteBtn);
+
+                card.appendChild(idBadge);
+                card.appendChild(valueDisplay);
+                card.appendChild(label);
+                card.appendChild(btnGroup);
+
+                grid.appendChild(card);
+            });
+
+            // --- Update stats ---
+            updateStats();
+            saveCounters();
+        }
+
+
+        /**
+         * ============================================================
+         * PART 4: EVENT DELEGATION
+         * ============================================================
+         * One listener on the grid handles all counter interactions.
+         * This is more efficient and works for dynamically added items.
+         */
+
+        document.getElementById('countersGrid').addEventListener('click', function(event) {
+            // --- Find the clicked button ---
+            const button = event.target.closest('button');
+            if (!button) return;
+
+            // --- Find the parent counter card ---
+            const card = button.closest('.counter-card');
+            if (!card) return;
+
+            const index = Number(card.dataset.index);
+            const counter = counters[index];
+            if (!counter) return;
+
+            const action = button.dataset.action;
+
+            // --- Perform the action ---
+            switch (action) {
+                case 'increment':
+                    counter.increment();
+                    break;
+                case 'decrement':
+                    counter.decrement();
+                    break;
+                case 'reset':
+                    counter.reset();
+                    break;
+                case 'delete':
+                    if (confirm(`Delete counter "${counter.getName()}"?`)) {
+                        counters.splice(index, 1);
+                    }
+                    break;
+                default:
+                    return;
+            }
+
+            // --- Re-render ---
+            renderAll();
+        });
+
+
+        /**
+         * ============================================================
+         * PART 5: STATS UPDATE
+         * ============================================================
+         * Uses array methods to calculate aggregate stats.
+         */
+
+        function updateStats() {
+            const total = counters.length;
+            const sum = counters.reduce((acc, c) => acc + c.getValue(), 0);
+            const avg = total > 0 ? sum / total : 0;
+
+            document.getElementById('totalCounters').textContent = total;
+            document.getElementById('totalSum').textContent = sum;
+            document.getElementById('averageValue').textContent = avg.toFixed(1);
+        }
+
+
+        /**
+         * ============================================================
+         * PART 6: CONTROLS (Add Counter, Reset All)
+         * ============================================================
+         */
+
+        // --- Add Counter ---
+        document.getElementById('addCounterBtn').addEventListener('click', function() {
+            const nameInput = document.getElementById('counterName');
+            const name = nameInput.value.trim() || `Counter ${nextId}`;
+
+            const newCounter = createCounter(name, 0);
+            counters.push(newCounter);
+            nextId++;
+
+            renderAll();
+            nameInput.value = '';
+            nameInput.focus();
+
+            // Show feedback
+            console.log(`✅ Added counter: "${name}"`);
+        });
+
+        // --- Reset All ---
+        document.getElementById('resetAllBtn').addEventListener('click', function() {
+            if (counters.length === 0) return;
+
+            if (confirm('Reset ALL counters to 0?')) {
+                counters.forEach(counter => counter.reset());
+                renderAll();
+                console.log('🔄 All counters reset to 0');
+            }
+        });
+
+        // --- Enter key in name input adds a counter ---
+        document.getElementById('counterName').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById('addCounterBtn').click();
+            }
+        });
+
+
+        /**
+         * ============================================================
+         * PART 7: DEMONSTRATION (Console Output)
+         * ============================================================
+         * Showing closures in action with detailed examples.
+         * (Open the browser console to see the output!)
+         */
+
+        console.log('\n=== DAY 22: CLOSURES & LEXICAL SCOPING ===\n');
+
+        // --- 1. Basic Closure Example ---
+        console.log('--- 1. Basic Closure ---');
+
+        function outerFunction(outerParam) {
+            const outerVar = `Hello ${outerParam}`;
+
+            return function innerFunction(innerParam) {
+                console.log(`${outerVar} and ${innerParam}`);
+            };
+        }
+
+        const closure1 = outerFunction('World');
+        closure1('Universe'); // "Hello World and Universe"
+
+        // --- 2. Counter Factory ---
+        console.log('\n--- 2. Counter Factory ---');
+
+        const demoCounter1 = createCounter('Demo 1', 10);
+        const demoCounter2 = createCounter('Demo 2', 100);
+
+        console.log(`Demo 1: ${demoCounter1.getValue()}`);
+        console.log(`Demo 2: ${demoCounter2.getValue()}`);
+
+        demoCounter1.increment();
+        demoCounter2.increment(5);
+
+        console.log(`Demo 1 after increment: ${demoCounter1.getValue()}`);
+        console.log(`Demo 2 after increment(5): ${demoCounter2.getValue()}`);
+
+        console.log('✅ Both counters have independent state!');
+
+        // --- 3. Private Variables ---
+        console.log('\n--- 3. Private Variables ---');
+
+        const person = (function() {
+            let age = 30;
+
+            return {
+                getAge() { return age; },
+                setAge(newAge) {
+                    if (newAge > 0) age = newAge;
+                }
+            };
+        })();
+
+        console.log(`Age: ${person.getAge()}`);
+        person.setAge(35);
+        console.log(`Age after setAge(35): ${person.getAge()}`);
+        console.log(`Direct access: ${person.age}`); // undefined
+
+        // --- 4. Loop Closure Bug Fix ---
+        console.log('\n--- 4. Loop Closure Bug Fix ---');
+
+        console.log('Demonstrating loop closure with let (ES6):');
+        for (let i = 1; i <= 3; i++) {
+            setTimeout(() => {
+                console.log(`  i = ${i}`);
+            }, 100);
+        }
+
+        // --- 5. Memoization ---
+        console.log('\n--- 5. Memoization with Closures ---');
+
+        function expensiveFunction(x) {
+            console.log(`  Computing for ${x}...`);
+            return x * x;
+        }
+
+        function memoize(fn) {
+            const cache = {};
+            return function(x) {
+                if (x in cache) {
+                    console.log(`  Returning cached result for ${x}`);
+                    return cache[x];
+                }
+                const result = fn(x);
+                cache[x] = result;
+                return result;
+            };
+        }
+
+        const memoized = memoize(expensiveFunction);
+        console.log('First call:', memoized(5)); // Computes
+        console.log('Second call:', memoized(5)); // Cached
+        console.log('New value:', memoized(10)); // Computes
+
+        // --- 6. Module Pattern ---
+        console.log('\n--- 6. Module Pattern with Closures ---');
+
+        const counterModule = (function() {
+            let count = 0;
+
+            return {
+                increment() { return ++count; },
+                decrement() { return --count; },
+                getCount() { return count; },
+                reset() { count = 0; return count; }
+            };
+        })();
+
+        console.log(`Module count: ${counterModule.getCount()}`);
+        counterModule.increment();
+        counterModule.increment();
+        console.log(`After 2 increments: ${counterModule.getCount()}`);
+
+        console.log('\n=== Counter app is ready! Each counter is an independent closure. ===');
+        console.log('📌 Add counters, increment/decrement, and watch them work independently.');
+        console.log('📌 Each counter has its own private "count" variable.');
+        console.log('📌 This is the power of closures!');
+    </script>
+
+</body>
+</html>
