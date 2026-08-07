@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Promises - Day 26</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 750px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 35px 30px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: fadeSlideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header .icon {
+            font-size: 2.8rem;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* ---------- CONTROLS ---------- */
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .controls button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 0;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .controls button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-promise {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .btn-promise:hover:not(:disabled) {
+            background: #1e293b;
+        }
+
+        .btn-all {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        .btn-all:hover:not(:disabled) {
+            background: #15803d;
+        }
+
+        .btn-race {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+        .btn-race:hover:not(:disabled) {
+            background: #d97706;
+        }
+
+        .btn-clear {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .btn-clear:hover:not(:disabled) {
+            background: #cbd5e1;
+        }
+
+        /* ---------- LOG ---------- */
+        .log-container {
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 20px;
+            min-height: 350px;
+            max-height: 550px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        .log-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .log-container::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 3px;
+        }
+
+        .log-entry {
+            padding: 2px 0;
+            animation: slideIn 0.3s ease-out;
+            color: #e2e8f0;
+            display: flex;
+            gap: 8px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .log-entry .timestamp {
+            color: #64748b;
+            flex-shrink: 0;
+            min-width: 70px;
+        }
+
+        .log-entry .message {
+            flex: 1;
+        }
+
+        .log-entry .message .highlight {
+            background: #fef08a;
+            color: #0f172a;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        .log-entry.info .message {
+            color: #93c5fd;
+        }
+
+        .log-entry.success .message {
+            color: #6ee7b7;
+        }
+
+        .log-entry.error .message {
+            color: #fca5a5;
+        }
+
+        .log-entry.warning .message {
+            color: #fcd34d;
+        }
+
+        .log-entry .depth-indicator {
+            display: inline-block;
+            width: 16px;
+            color: #475569;
+        }
+
+        /* ---------- COMPARISON ---------- */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 12px;
+            padding: 16px;
+            background: #f1f5f9;
+            border-radius: 12px;
+        }
+
+        .comparison h4 {
+            font-size: 0.85rem;
+            color: #0f172a;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        .comparison .code-snippet {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .comparison .code-snippet .bad {
+            color: #fca5a5;
+        }
+
+        .comparison .code-snippet .good {
+            color: #6ee7b7;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 600px) {
+            .container {
+                padding: 24px 16px;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            .controls button {
+                min-width: unset;
+            }
+            .log-container {
+                font-size: 0.75rem;
+                padding: 14px;
+                min-height: 250px;
+            }
+            .log-entry .timestamp {
+                min-width: 55px;
+            }
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">🤝</span>
+            <h1>Promises</h1>
+            <p>From Callback Hell to Promise Heaven.</p>
+            <span class="badge">✨ .then() .catch() .finally()</span>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <button class="btn-promise" id="promiseBtn">🚀 Run Promise Chain</button>
+            <button class="btn-all" id="allBtn">📦 Promise.all</button>
+            <button class="btn-race" id="raceBtn">🏎️ Promise.race</button>
+            <button class="btn-clear" id="clearBtn">🗑️ Clear</button>
+        </div>
+
+        <!-- LOG -->
+        <div class="log-container" id="logContainer">
+            <div class="log-entry info">
+                <span class="timestamp">[Ready]</span>
+                <span class="message">Click "Run Promise Chain" to see Promises in action!</span>
+            </div>
+        </div>
+
+        <!-- COMPARISON -->
+        <div class="comparison">
+            <div>
+                <h4>❌ Callback Hell</h4>
+                <div class="code-snippet bad">
+fetchUser(1, (user) => {<br />
+&nbsp;&nbsp;fetchPosts(user.id, (posts) => {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;fetchComments(posts[0].id, (comments) => {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 4 levels deep 😱<br />
+&nbsp;&nbsp;&nbsp;&nbsp;});<br />
+&nbsp;&nbsp;});<br />
+});
+                </div>
+            </div>
+            <div>
+                <h4>✅ Promise Chain</h4>
+                <div class="code-snippet good">
+fetchUser(1)<br />
+&nbsp;&nbsp;.then(user => fetchPosts(user.id))<br />
+&nbsp;&nbsp;.then(posts => fetchComments(posts[0].id))<br />
+&nbsp;&nbsp;.then(comments => console.log(comments))<br />
+&nbsp;&nbsp;.catch(error => console.error(error));
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: DATA GENERATORS (Same as Day 25)
+         * ============================================================
+         */
+
+        function generateUsers(count = 5) {
+            const users = [];
+            for (let i = 1; i <= count; i++) {
+                users.push({ id: i, name: `User ${i}`, age: 20 + i, email: `user${i}@example.com` });
+            }
+            return users;
+        }
+
+        function generatePosts(userId, count = 3) {
+            const posts = [];
+            const titles = ['Hello World!', 'My First Post', 'Learning JavaScript', 'React is Awesome', 'Node.js Tips'];
+            for (let i = 1; i <= count; i++) {
+                posts.push({
+                    id: userId * 100 + i,
+                    userId: userId,
+                    title: titles[(i - 1) % titles.length],
+                    body: `This is post ${i} from user ${userId}.`,
+                    likes: Math.floor(Math.random() * 100)
+                });
+            }
+            return posts;
+        }
+
+        function generateComments(postId, count = 3) {
+            const comments = [];
+            const commenters = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'];
+            for (let i = 1; i <= count; i++) {
+                comments.push({
+                    id: postId * 1000 + i,
+                    postId: postId,
+                    author: commenters[i % commenters.length],
+                    text: `Comment ${i} on post ${postId}. Great content!`,
+                });
+            }
+            return comments;
+        }
+
+        function generateReactions(commentId, count = 4) {
+            const reactions = [];
+            const emojis = ['👍', '❤️', '😂', '😮', '👏'];
+            const users = ['Alice', 'Bob', 'Charlie', 'Diana'];
+            for (let i = 1; i <= count; i++) {
+                reactions.push({
+                    id: commentId * 10000 + i,
+                    commentId: commentId,
+                    user: users[i % users.length],
+                    emoji: emojis[i % emojis.length]
+                });
+            }
+            return reactions;
+        }
+
+        function simulateDelay(min = 300, max = 800) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+
+        /**
+         * ============================================================
+         * PART 2: PROMISE-BASED API FUNCTIONS
+         * ============================================================
+         * Each function returns a Promise instead of accepting a callback.
+         * This is the key difference from Day 25!
+         */
+
+        /**
+         * fetchUser
+         * Returns a Promise that resolves with user data
+         */
+        function fetchUser(userId) {
+            return new Promise((resolve, reject) => {
+                const delay = simulateDelay(500, 1200);
+                log(`⏳ Fetching user ${userId}...`, 'info');
+
+                setTimeout(() => {
+                    const users = generateUsers(10);
+                    const user = users.find(u => u.id === userId) || users[0];
+
+                    // Simulate random failure (10% chance)
+                    if (Math.random() < 0.1) {
+                        const error = new Error(`Failed to fetch user ${userId}`);
+                        log(`❌ Error fetching user: ${error.message}`, 'error');
+                        reject(error);
+                        return;
+                    }
+
+                    log(`✅ User ${user.id} fetched: ${user.name}`, 'success');
+                    resolve(user);
+                }, delay);
+            });
+        }
+
+        /**
+         * fetchPosts
+         * Returns a Promise that resolves with posts
+         */
+        function fetchPosts(userId) {
+            return new Promise((resolve, reject) => {
+                const delay = simulateDelay(400, 900);
+                log(`⏳ Fetching posts for user ${userId}...`, 'info');
+
+                setTimeout(() => {
+                    const posts = generatePosts(userId, 3);
+
+                    if (Math.random() < 0.1) {
+                        const error = new Error(`Failed to fetch posts for user ${userId}`);
+                        log(`❌ Error fetching posts: ${error.message}`, 'error');
+                        reject(error);
+                        return;
+                    }
+
+                    log(`✅ ${posts.length} posts fetched for user ${userId}`, 'success');
+                    resolve(posts);
+                }, delay);
+            });
+        }
+
+        /**
+         * fetchComments
+         * Returns a Promise that resolves with comments
+         */
+        function fetchComments(postId) {
+            return new Promise((resolve, reject) => {
+                const delay = simulateDelay(300, 700);
+                log(`⏳ Fetching comments for post ${postId}...`, 'info');
+
+                setTimeout(() => {
+                    const comments = generateComments(postId, 3);
+
+                    if (Math.random() < 0.1) {
+                        const error = new Error(`Failed to fetch comments for post ${postId}`);
+                        log(`❌ Error fetching comments: ${error.message}`, 'error');
+                        reject(error);
+                        return;
+                    }
+
+                    log(`✅ ${comments.length} comments fetched for post ${postId}`, 'success');
+                    resolve(comments);
+                }, delay);
+            });
+        }
+
+        /**
+         * fetchReactions
+         * Returns a Promise that resolves with reactions
+         */
+        function fetchReactions(commentId) {
+            return new Promise((resolve, reject) => {
+                const delay = simulateDelay(200, 600);
+                log(`⏳ Fetching reactions for comment ${commentId}...`, 'info');
+
+                setTimeout(() => {
+                    const reactions = generateReactions(commentId, 4);
+
+                    if (Math.random() < 0.1) {
+                        const error = new Error(`Failed to fetch reactions for comment ${commentId}`);
+                        log(`❌ Error fetching reactions: ${error.message}`, 'error');
+                        reject(error);
+                        return;
+                    }
+
+                    log(`✅ ${reactions.length} reactions fetched for comment ${commentId}`, 'success');
+                    resolve(reactions);
+                }, delay);
+            });
+        }
+
+
+        /**
+         * ============================================================
+         * PART 3: LOGGING SYSTEM
+         * ============================================================
+         */
+
+        let logEntries = [];
+        const logContainer = document.getElementById('logContainer');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            logEntries.push({ timestamp, message, type });
+            renderLog();
+            setTimeout(() => {
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }, 50);
+        }
+
+        function renderLog() {
+            const scrollPos = logContainer.scrollTop;
+            logContainer.innerHTML = '';
+
+            logEntries.forEach(entry => {
+                const div = document.createElement('div');
+                div.className = `log-entry ${entry.type}`;
+
+                const ts = document.createElement('span');
+                ts.className = 'timestamp';
+                ts.textContent = `[${entry.timestamp}]`;
+
+                const msg = document.createElement('span');
+                msg.className = 'message';
+                msg.innerHTML = entry.message;
+
+                div.appendChild(ts);
+                div.appendChild(msg);
+                logContainer.appendChild(div);
+            });
+
+            logContainer.scrollTop = scrollPos;
+        }
+
+        function clearLog() {
+            logEntries = [];
+            logContainer.innerHTML = `
+                <div class="log-entry info">
+                    <span class="timestamp">[Ready]</span>
+                    <span class="message">Log cleared. Click a button to start.</span>
+                </div>
+            `;
+        }
+
+
+        /**
+         * ============================================================
+         * PART 4: PROMISE CHAIN (The Clean Version!)
+         * ============================================================
+         * This is the PROMISE version of the callback hell from Day 25.
+         * Notice how flat and readable it is!
+         */
+
+        function runPromiseChain() {
+            clearLog();
+
+            // Small delay to let the clear finish
+            setTimeout(() => {
+                log('🚀 Starting Promise Chain...', 'info');
+                log('📊 Fetching: User → Posts → Comments → Reactions', 'info');
+                log('', 'info');
+
+                // ✅ THE PROMISE CHAIN (No nesting!)
+                fetchUser(1)
+                    .then(user => {
+                        log(`👤 User: ${user.name} (${user.age})`, 'success');
+                        return fetchPosts(user.id);
+                    })
+                    .then(posts => {
+                        log(`📝 First Post: "${posts[0].title}" (${posts[0].likes} likes)`, 'success');
+                        return fetchComments(posts[0].id);
+                    })
+                    .then(comments => {
+                        log(`💬 First Comment: "${comments[0].text}" by ${comments[0].author}`, 'success');
+                        return fetchReactions(comments[0].id);
+                    })
+                    .then(reactions => {
+                        log(`❤️ Reactions: ${reactions.map(r => r.emoji).join(' ')}`, 'success');
+                        log('', 'info');
+                        log('🎉 PROMISE CHAIN COMPLETE!', 'success');
+                        log('✨ Flat, readable, maintainable!', 'success');
+                    })
+                    .catch(error => {
+                        log(`❌ Promise chain failed: ${error.message}`, 'error');
+                    })
+                    .finally(() => {
+                        log('🔚 .finally() always runs (cleanup)', 'warning');
+                    });
+
+            }, 200);
+        }
+
+
+        /**
+         * ============================================================
+         * PART 5: Promise.all()
+         * ============================================================
+         * Wait for multiple promises to resolve in parallel.
+         * Fails fast if any promise rejects.
+         */
+
+        function runPromiseAll() {
+            clearLog();
+
+            setTimeout(() => {
+                log('📦 Running Promise.all()...', 'info');
+                log('Fetching users 1, 2, and 3 in parallel', 'info');
+                log('', 'info');
+
+                const startTime = Date.now();
+
+                Promise.all([
+                    fetchUser(1),
+                    fetchUser(2),
+                    fetchUser(3)
+                ])
+                .then(users => {
+                    const elapsed = Date.now() - startTime;
+                    log('', 'info');
+                    log(`✅ All users fetched in ${elapsed}ms!`, 'success');
+                    users.forEach(user => {
+                        log(`  👤 ${user.name} (${user.age})`, 'success');
+                    });
+                    log('📌 Promise.all() resolves when ALL succeed', 'info');
+                })
+                .catch(error => {
+                    log(`❌ Promise.all() failed: ${error.message}`, 'error');
+                    log('📌 Promise.all() fails fast — one failure = all fail', 'warning');
+                });
+            }, 200);
+        }
+
+
+        /**
+         * ============================================================
+         * PART 6: Promise.race()
+         * ============================================================
+         * Returns the first promise that settles (fulfills or rejects).
+         */
+
+        function runPromiseRace() {
+            clearLog();
+
+            setTimeout(() => {
+                log('🏎️ Running Promise.race()...', 'info');
+                log('Creating 3 promises with different delays', 'info');
+                log('', 'info');
+
+                const slow = new Promise(resolve => {
+                    setTimeout(() => resolve('🐢 Slow (500ms)'), 500);
+                });
+
+                const medium = new Promise(resolve => {
+                    setTimeout(() => resolve('🐇 Medium (300ms)'), 300);
+                });
+
+                const fast = new Promise((resolve, reject) => {
+                    setTimeout(() => resolve('🚀 Fast (100ms)'), 100);
+                });
+
+                Promise.race([fast, medium, slow])
+                    .then(result => {
+                        log(`🏆 Winner: ${result}`, 'success');
+                        log('📌 Promise.race() resolves with the first settled promise', 'info');
+                    })
+                    .catch(error => {
+                        log(`❌ Promise.race() failed: ${error.message}`, 'error');
+                    });
+
+            }, 200);
+        }
+
+
+        /**
+         * ============================================================
+         * PART 7: EVENT HANDLING
+         * ============================================================
+         */
+
+        document.getElementById('promiseBtn').addEventListener('click', runPromiseChain);
+        document.getElementById('allBtn').addEventListener('click', runPromiseAll);
+        document.getElementById('raceBtn').addEventListener('click', runPromiseRace);
+        document.getElementById('clearBtn').addEventListener('click', clearLog);
+
+
+        /**
+         * ============================================================
+         * PART 8: DEMONSTRATION (Console Output)
+         * ============================================================
+         * (Open the browser console to see the output!)
+         */
+
+        console.log('\n=== DAY 26: PROMISES ===\n');
+
+        // --- 1. Creating a Promise ---
+        console.log('--- 1. Creating a Promise ---');
+
+        const simplePromise = new Promise((resolve, reject) => {
+            const success = Math.random() > 0.3;
+            if (success) {
+                resolve('✅ Promise resolved!');
+            } else {
+                reject('❌ Promise rejected!');
+            }
+        });
+
+        simplePromise
+            .then(result => console.log('  Result:', result))
+            .catch(error => console.log('  Error:', error));
+
+        // --- 2. Promise Chain ---
+        console.log('\n--- 2. Promise Chain ---');
+
+        function step1() {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    console.log('  Step 1 complete');
+                    resolve('Data from step 1');
+                }, 200);
+            });
+        }
+
+        function step2(data) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    console.log('  Step 2 complete with:', data);
+                    resolve('Data from step 2');
+                }, 200);
+            });
+        }
+
+        step1()
+            .then(result => step2(result))
+            .then(result => console.log('  Final result:', result));
+
+        // --- 3. Promise.all() ---
+        console.log('\n--- 3. Promise.all() ---');
+
+        const p1 = new Promise(resolve => setTimeout(() => resolve('One'), 300));
+        const p2 = new Promise(resolve => setTimeout(() => resolve('Two'), 200));
+        const p3 = new Promise(resolve => setTimeout(() => resolve('Three'), 100));
+
+        Promise.all([p1, p2, p3])
+            .then(results => console.log('  Promise.all results:', results));
+
+        // --- 4. Promise.race() ---
+        console.log('\n--- 4. Promise.race() ---');
+
+        const r1 = new Promise(resolve => setTimeout(() => resolve('Fast'), 150));
+        const r2 = new Promise(resolve => setTimeout(() => resolve('Slow'), 400));
+
+        Promise.race([r1, r2])
+            .then(result => console.log('  Promise.race winner:', result));
+
+        // --- 5. Promise.allSettled() ---
+        console.log('\n--- 5. Promise.allSettled() ---');
+
+        const settledPromises = [
+            Promise.resolve('Success 1'),
+            Promise.reject('Failure 1'),
+            Promise.resolve('Success 2')
+        ];
+
+        Promise.allSettled(settledPromises)
+            .then(results => {
+                results.forEach((result, i) => {
+                    if (result.status === 'fulfilled') {
+                        console.log(`  Promise ${i + 1}: ✅ ${result.value}`);
+                    } else {
+                        console.log(`  Promise ${i + 1}: ❌ ${result.reason}`);
+                    }
+                });
+            });
+
+        // --- 6. Comparison: Callbacks vs Promises ---
+        console.log('\n--- 6. Callbacks vs Promises ---');
+
+        console.log('  ❌ Callback Hell:');
+        console.log('    fetchUser(1, (user) => {');
+        console.log('      fetchPosts(user.id, (posts) => {');
+        console.log('        fetchComments(posts[0].id, (comments) => {');
+        console.log('          // Deep nesting!');
+        console.log('        });');
+        console.log('      });');
+        console.log('    });');
+
+        console.log('\n  ✅ Promises:');
+        console.log('    fetchUser(1)');
+        console.log('      .then(user => fetchPosts(user.id))');
+        console.log('      .then(posts => fetchComments(posts[0].id))');
+        console.log('      .then(comments => console.log(comments))');
+        console.log('      .catch(error => console.error(error));');
+
+        console.log('\n=== Click "Run Promise Chain" to see it in action! ===');
+    </script>
+
+</body>
+</html>
