@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Callback Hell - Day 25</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 35px 30px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: fadeSlideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header .icon {
+            font-size: 2.8rem;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* ---------- CONTROLS ---------- */
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .controls button {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .controls button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-run {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .btn-run:hover:not(:disabled) {
+            background: #1e293b;
+        }
+
+        .btn-clear {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .btn-clear:hover:not(:disabled) {
+            background: #cbd5e1;
+        }
+
+        .btn-refactor {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .btn-refactor:hover:not(:disabled) {
+            background: #bfdbfe;
+        }
+
+        /* ---------- LOG OUTPUT ---------- */
+        .log-container {
+            background: #0f172a;
+            border-radius: 16px;
+            padding: 20px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .log-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .log-container::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 3px;
+        }
+
+        .log-entry {
+            padding: 2px 0;
+            animation: slideIn 0.3s ease-out;
+            color: #e2e8f0;
+            display: flex;
+            gap: 8px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .log-entry .timestamp {
+            color: #64748b;
+            flex-shrink: 0;
+            min-width: 70px;
+        }
+
+        .log-entry .message {
+            flex: 1;
+        }
+
+        .log-entry .message .highlight {
+            background: #fef08a;
+            color: #0f172a;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        .log-entry .message .emoji {
+            margin-right: 4px;
+        }
+
+        .log-entry.info .message {
+            color: #93c5fd;
+        }
+
+        .log-entry.success .message {
+            color: #6ee7b7;
+        }
+
+        .log-entry.error .message {
+            color: #fca5a5;
+        }
+
+        .log-entry.warning .message {
+            color: #fcd34d;
+        }
+
+        .log-entry.depth-1 .prefix { color: #60a5fa; }
+        .log-entry.depth-2 .prefix { color: #34d399; }
+        .log-entry.depth-3 .prefix { color: #fbbf24; }
+        .log-entry.depth-4 .prefix { color: #f472b6; }
+        .log-entry.depth-5 .prefix { color: #a78bfa; }
+
+        .log-entry .depth-indicator {
+            display: inline-block;
+            width: 16px;
+            font-weight: 700;
+        }
+
+        .log-entry .arrow {
+            color: #475569;
+            margin: 0 4px;
+        }
+
+        /* ---------- STATS ---------- */
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .stats .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stats .stat-item .value {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* ---------- HELL METER ---------- */
+        .hell-meter {
+            margin-top: 12px;
+            padding: 10px 16px;
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .hell-meter.visible {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hell-meter h4 {
+            color: #991b1b;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .hell-meter p {
+            color: #7f1d1d;
+            font-size: 0.85rem;
+        }
+
+        .hell-meter .score {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 500px) {
+            .container {
+                padding: 24px 16px;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            .log-container {
+                font-size: 0.75rem;
+                padding: 14px;
+                min-height: 300px;
+            }
+            .log-entry .timestamp {
+                min-width: 55px;
+            }
+            .stats {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">😱</span>
+            <h1>Callback Hell</h1>
+            <p>Simulating nested callbacks with user data fetching.</p>
+            <span class="badge">🔥 Pyramid of Doom</span>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <button class="btn-run" id="runBtn">🚀 Run Callback Hell</button>
+            <button class="btn-refactor" id="refactorBtn">🧹 Run Refactored</button>
+            <button class="btn-clear" id="clearBtn">🗑️ Clear Log</button>
+        </div>
+
+        <!-- LOG -->
+        <div class="log-container" id="logContainer">
+            <div class="log-entry info">
+                <span class="timestamp">[Ready]</span>
+                <span class="message">Click "Run Callback Hell" to see the pyramid in action!</span>
+            </div>
+        </div>
+
+        <!-- HELL METER -->
+        <div class="hell-meter" id="hellMeter">
+            <h4>🔥 Callback Hell Detected!</h4>
+            <p>
+                Nesting depth: <span class="score" id="hellScore">0</span> levels.
+                The deeper the nesting, the harder the code is to read and maintain.
+            </p>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats">
+            <span class="stat-item">📊 Total Operations: <span class="value" id="totalOps">0</span></span>
+            <span class="stat-item">⏱️ Total Time: <span class="value" id="totalTime">0ms</span></span>
+            <span class="stat-item">📈 Max Depth: <span class="value" id="maxDepth">0</span></span>
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: DATA GENERATORS (Simulating API Responses)
+         * ============================================================
+         */
+
+        /**
+         * generateUsers
+         * Creates a list of mock users
+         */
+        function generateUsers(count = 5) {
+            const users = [];
+            for (let i = 1; i <= count; i++) {
+                users.push({
+                    id: i,
+                    name: `User ${i}`,
+                    age: 20 + i,
+                    email: `user${i}@example.com`,
+                    bio: `Bio for user ${i}`
+                });
+            }
+            return users;
+        }
+
+        /**
+         * generatePosts
+         * Creates mock posts for a user
+         */
+        function generatePosts(userId, count = 3) {
+            const posts = [];
+            const titles = [
+                'Hello World!',
+                'My First Post',
+                'Learning JavaScript',
+                'React is Awesome',
+                'Node.js Tips',
+                'CSS Tricks',
+                'The Future of Web Dev'
+            ];
+            for (let i = 1; i <= count; i++) {
+                posts.push({
+                    id: userId * 100 + i,
+                    userId: userId,
+                    title: titles[(i - 1) % titles.length],
+                    body: `This is post ${i} from user ${userId}. Lorem ipsum dolor sit amet.`,
+                    likes: Math.floor(Math.random() * 100)
+                });
+            }
+            return posts;
+        }
+
+        /**
+         * generateComments
+         * Creates mock comments for a post
+         */
+        function generateComments(postId, count = 3) {
+            const comments = [];
+            const commenters = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace'];
+            for (let i = 1; i <= count; i++) {
+                comments.push({
+                    id: postId * 1000 + i,
+                    postId: postId,
+                    author: commenters[i % commenters.length],
+                    text: `Comment ${i} on post ${postId}. This is great content!`,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            return comments;
+        }
+
+        /**
+         * generateReactions
+         * Creates mock reactions for a comment
+         */
+        function generateReactions(commentId, count = 4) {
+            const reactions = [];
+            const emojis = ['👍', '❤️', '😂', '😮', '👏', '🔥', '💯'];
+            const users = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'];
+            for (let i = 1; i <= count; i++) {
+                reactions.push({
+                    id: commentId * 10000 + i,
+                    commentId: commentId,
+                    user: users[i % users.length],
+                    emoji: emojis[i % emojis.length]
+                });
+            }
+            return reactions;
+        }
+
+
+        /**
+         * ============================================================
+         * PART 2: SIMULATED API FUNCTIONS (Using Callbacks)
+         * ============================================================
+         */
+
+        /**
+         * simulateDelay
+         * Utility to simulate network delay with random variation
+         */
+        function simulateDelay(min = 300, max = 800) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        /**
+         * fetchUser
+         * Simulates fetching a user profile
+         */
+        function fetchUser(userId, callback) {
+            const delay = simulateDelay(500, 1200);
+            log(`⏳ Fetching user ${userId}...`, 'info', 1);
+
+            setTimeout(() => {
+                const users = generateUsers(10);
+                const user = users.find(u => u.id === userId) || users[0];
+
+                // Randomly fail
+                if (Math.random() < 0.1) {
+                    const error = new Error('Failed to fetch user');
+                    log(`❌ Error fetching user: ${error.message}`, 'error', 1);
+                    callback(error, null);
+                    return;
+                }
+
+                log(`✅ User ${user.id} fetched: ${user.name}`, 'success', 1);
+                callback(null, user);
+            }, delay);
+        }
+
+        /**
+         * fetchPosts
+         * Simulates fetching posts for a user
+         */
+        function fetchPosts(userId, callback) {
+            const delay = simulateDelay(400, 900);
+            log(`⏳ Fetching posts for user ${userId}...`, 'info', 2);
+
+            setTimeout(() => {
+                const posts = generatePosts(userId, 3);
+
+                if (Math.random() < 0.08) {
+                    const error = new Error('Failed to fetch posts');
+                    log(`❌ Error fetching posts: ${error.message}`, 'error', 2);
+                    callback(error, null);
+                    return;
+                }
+
+                log(`✅ ${posts.length} posts fetched for user ${userId}`, 'success', 2);
+                callback(null, posts);
+            }, delay);
+        }
+
+        /**
+         * fetchComments
+         * Simulates fetching comments for a post
+         */
+        function fetchComments(postId, callback) {
+            const delay = simulateDelay(300, 700);
+            log(`⏳ Fetching comments for post ${postId}...`, 'info', 3);
+
+            setTimeout(() => {
+                const comments = generateComments(postId, 3);
+
+                if (Math.random() < 0.08) {
+                    const error = new Error('Failed to fetch comments');
+                    log(`❌ Error fetching comments: ${error.message}`, 'error', 3);
+                    callback(error, null);
+                    return;
+                }
+
+                log(`✅ ${comments.length} comments fetched for post ${postId}`, 'success', 3);
+                callback(null, comments);
+            }, delay);
+        }
+
+        /**
+         * fetchReactions
+         * Simulates fetching reactions for a comment
+         */
+        function fetchReactions(commentId, callback) {
+            const delay = simulateDelay(200, 600);
+            log(`⏳ Fetching reactions for comment ${commentId}...`, 'info', 4);
+
+            setTimeout(() => {
+                const reactions = generateReactions(commentId, 4);
+
+                if (Math.random() < 0.08) {
+                    const error = new Error('Failed to fetch reactions');
+                    log(`❌ Error fetching reactions: ${error.message}`, 'error', 4);
+                    callback(error, null);
+                    return;
+                }
+
+                log(`✅ ${reactions.length} reactions fetched for comment ${commentId}`, 'success', 4);
+                callback(null, reactions);
+            }, delay);
+        }
+
+
+        /**
+         * ============================================================
+         * PART 3: LOGGING SYSTEM
+         * ============================================================
+         */
+
+        let logEntries = [];
+        let currentDepth = 0;
+        let maxDepthReached = 0;
+        let operationCount = 0;
+        let startTime = 0;
+
+        const logContainer = document.getElementById('logContainer');
+        const hellMeter = document.getElementById('hellMeter');
+        const hellScore = document.getElementById('hellScore');
+        const totalOpsEl = document.getElementById('totalOps');
+        const totalTimeEl = document.getElementById('totalTime');
+        const maxDepthEl = document.getElementById('maxDepth');
+
+        /**
+         * log
+         * Adds a log entry to the container
+         */
+        function log(message, type = 'info', depth = 0) {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = '>'.repeat(depth) || '';
+
+            logEntries.push({
+                timestamp,
+                message,
+                type,
+                depth,
+                prefix
+            });
+
+            // Update depth tracking
+            currentDepth = depth;
+            if (depth > maxDepthReached) {
+                maxDepthReached = depth;
+            }
+
+            // Count operations (excluding "Ready" and "⏳" messages)
+            if (!message.includes('Ready') && !message.includes('Click')) {
+                operationCount++;
+            }
+
+            renderLog();
+            updateStats();
+
+            // Auto-scroll to bottom
+            setTimeout(() => {
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }, 50);
+        }
+
+        /**
+         * renderLog
+         * Renders all log entries
+         */
+        function renderLog() {
+            // Clear container but keep scroll position
+            const scrollPos = logContainer.scrollTop;
+            logContainer.innerHTML = '';
+
+            logEntries.forEach(entry => {
+                const div = document.createElement('div');
+                div.className = `log-entry ${entry.type} depth-${Math.min(entry.depth, 5)}`;
+
+                const timestampSpan = document.createElement('span');
+                timestampSpan.className = 'timestamp';
+                timestampSpan.textContent = `[${entry.timestamp}]`;
+
+                const messageSpan = document.createElement('span');
+                messageSpan.className = 'message';
+
+                if (entry.depth > 0) {
+                    const depthSpan = document.createElement('span');
+                    depthSpan.className = 'depth-indicator';
+                    depthSpan.textContent = entry.prefix;
+                    messageSpan.appendChild(depthSpan);
+                    messageSpan.appendChild(document.createTextNode(' '));
+                }
+
+                // Parse message for emojis and formatting
+                let messageText = entry.message;
+                messageSpan.innerHTML = messageText;
+
+                div.appendChild(timestampSpan);
+                div.appendChild(messageSpan);
+                logContainer.appendChild(div);
+            });
+
+            // Restore scroll position
+            logContainer.scrollTop = scrollPos;
+        }
+
+        /**
+         * updateStats
+         * Updates the statistics display
+         */
+        function updateStats() {
+            totalOpsEl.textContent = operationCount;
+            const elapsed = Date.now() - startTime;
+            if (startTime > 0) {
+                totalTimeEl.textContent = `${elapsed}ms`;
+            }
+            maxDepthEl.textContent = maxDepthReached;
+
+            // Update hell meter
+            if (maxDepthReached >= 3) {
+                hellMeter.classList.add('visible');
+                hellScore.textContent = maxDepthReached;
+
+                // Color based on depth
+                const score = hellScore;
+                if (maxDepthReached >= 5) {
+                    score.style.color = '#dc2626';
+                } else if (maxDepthReached >= 3) {
+                    score.style.color = '#f59e0b';
+                } else {
+                    score.style.color = '#0f172a';
+                }
+            } else {
+                hellMeter.classList.remove('visible');
+            }
+        }
+
+        /**
+         * clearLog
+         * Clears all log entries
+         */
+        function clearLog() {
+            logEntries = [];
+            currentDepth = 0;
+            maxDepthReached = 0;
+            operationCount = 0;
+            startTime = 0;
+
+            logContainer.innerHTML = `
+                <div class="log-entry info">
+                    <span class="timestamp">[Ready]</span>
+                    <span class="message">Log cleared. Click "Run Callback Hell" to start.</span>
+                </div>
+            `;
+
+            hellMeter.classList.remove('visible');
+            totalOpsEl.textContent = '0';
+            totalTimeEl.textContent = '0ms';
+            maxDepthEl.textContent = '0';
+        }
+
+
+        /**
+         * ============================================================
+         * PART 4: CALLBACK HELL (The Pyramid of Doom)
+         * ============================================================
+         * 😱 This is the classic "pyramid of doom" pattern.
+         * Each level depends on the previous one, creating deep nesting.
+         */
+
+        function runCallbackHell() {
+            // Reset state
+            clearLog();
+            startTime = Date.now();
+
+            // Small delay to let the clear finish
+            setTimeout(() => {
+                log('🔥 Starting Callback Hell Simulation...', 'warning', 0);
+                log('📊 Fetching: User → Posts → Comments → Reactions', 'info', 0);
+                log('', 'info', 0);
+
+                // 😱 THE PYRAMID OF DOOM STARTS HERE
+                // Level 1: Fetch user
+                fetchUser(1, function(error, user) {
+                    if (error) {
+                        log(`❌ Failed at user level: ${error.message}`, 'error', 1);
+                        return;
+                    }
+
+                    // Level 2: Fetch posts
+                    fetchPosts(user.id, function(error, posts) {
+                        if (error) {
+                            log(`❌ Failed at posts level: ${error.message}`, 'error', 2);
+                            return;
+                        }
+
+                        if (!posts || posts.length === 0) {
+                            log('⚠️ No posts found for this user', 'warning', 2);
+                            return;
+                        }
+
+                        // Level 3: Fetch comments on the first post
+                        fetchComments(posts[0].id, function(error, comments) {
+                            if (error) {
+                                log(`❌ Failed at comments level: ${error.message}`, 'error', 3);
+                                return;
+                            }
+
+                            if (!comments || comments.length === 0) {
+                                log('⚠️ No comments found for this post', 'warning', 3);
+                                return;
+                            }
+
+                            // Level 4: Fetch reactions on the first comment
+                            fetchReactions(comments[0].id, function(error, reactions) {
+                                if (error) {
+                                    log(`❌ Failed at reactions level: ${error.message}`, 'error', 4);
+                                    return;
+                                }
+
+                                // Level 5: Success! We have all the data!
+                                log('', 'info', 0);
+                                log('🎉 DATA FETCH COMPLETE!', 'success', 0);
+                                log('', 'info', 0);
+
+                                log(`👤 User: ${user.name} (${user.age})`, 'success', 1);
+                                log(`📝 First Post: "${posts[0].title}" (${posts[0].likes} likes)`, 'success', 2);
+                                log(`💬 First Comment: "${comments[0].text}" by ${comments[0].author}`, 'success', 3);
+                                log(`❤️ Reactions: ${reactions.map(r => r.emoji).join(' ')}`, 'success', 4);
+
+                                log('', 'info', 0);
+                                log(`📊 Nested ${maxDepthReached} levels deep!`, 'warning', 0);
+                                log('😱 This is Callback Hell!', 'error', 0);
+
+                                // Update final stats
+                                setTimeout(() => updateStats(), 100);
+                            });
+                        });
+                    });
+                });
+
+                // 😱 THE PYRAMID ENDS HERE
+
+            }, 200);
+        }
+
+
+        /**
+         * ============================================================
+         * PART 5: REFACTORED VERSION (Using Named Functions)
+         * ============================================================
+         * This version uses modularization to flatten the pyramid.
+         * Each step is a named function, making the code more readable.
+         */
+
+        function runRefactored() {
+            // Reset state
+            clearLog();
+            startTime = Date.now();
+
+            setTimeout(() => {
+                log('🧹 Running Refactored Version (Named Functions)', 'info', 0);
+                log('📊 This is cleaner and more maintainable', 'info', 0);
+                log('', 'info', 0);
+
+                let userData = null;
+                let postsData = null;
+                let commentsData = null;
+
+                // Step 1: Fetch user
+                function handleUser(error, user) {
+                    if (error) {
+                        log(`❌ Failed at user level: ${error.message}`, 'error', 1);
+                        return;
+                    }
+                    userData = user;
+                    log(`👤 User: ${user.name} (${user.age}) fetched`, 'success', 1);
+                    fetchPosts(user.id, handlePosts);
+                }
+
+                // Step 2: Fetch posts
+                function handlePosts(error, posts) {
+                    if (error) {
+                        log(`❌ Failed at posts level: ${error.message}`, 'error', 2);
+                        return;
+                    }
+                    postsData = posts;
+                    log(`📝 ${posts.length} posts fetched`, 'success', 2);
+
+                    if (posts.length === 0) {
+                        log('⚠️ No posts found, stopping', 'warning', 2);
+                        return;
+                    }
+
+                    fetchComments(posts[0].id, handleComments);
+                }
+
+                // Step 3: Fetch comments
+                function handleComments(error, comments) {
+                    if (error) {
+                        log(`❌ Failed at comments level: ${error.message}`, 'error', 3);
+                        return;
+                    }
+                    commentsData = comments;
+                    log(`💬 ${comments.length} comments fetched`, 'success', 3);
+
+                    if (comments.length === 0) {
+                        log('⚠️ No comments found, stopping', 'warning', 3);
+                        return;
+                    }
+
+                    fetchReactions(comments[0].id, handleReactions);
+                }
+
+                // Step 4: Fetch reactions
+                function handleReactions(error, reactions) {
+                    if (error) {
+                        log(`❌ Failed at reactions level: ${error.message}`, 'error', 4);
+                        return;
+                    }
+
+                    // Success! Display all data
+                    log('', 'info', 0);
+                    log('🎉 DATA FETCH COMPLETE! (Refactored)', 'success', 0);
+                    log('', 'info', 0);
+
+                    log(`👤 User: ${userData.name} (${userData.age})`, 'success', 1);
+                    log(`📝 First Post: "${postsData[0].title}" (${postsData[0].likes} likes)`, 'success', 2);
+                    log(`💬 First Comment: "${commentsData[0].text}" by ${commentsData[0].author}`, 'success', 3);
+                    log(`❤️ Reactions: ${reactions.map(r => r.emoji).join(' ')}`, 'success', 4);
+
+                    log('', 'info', 0);
+                    log('✅ Code is much cleaner with named functions!', 'success', 0);
+                    log('📌 Even better: Use Promises or Async/Await (coming soon!)', 'info', 0);
+                }
+
+                // Start the chain
+                fetchUser(1, handleUser);
+
+            }, 200);
+        }
+
+
+        /**
+         * ============================================================
+         * PART 6: EVENT HANDLING
+         * ============================================================
+         */
+
+        document.getElementById('runBtn').addEventListener('click', runCallbackHell);
+        document.getElementById('refactorBtn').addEventListener('click', runRefactored);
+        document.getElementById('clearBtn').addEventListener('click', clearLog);
+
+
+        /**
+         * ============================================================
+         * PART 7: DEMONSTRATION (Console Output)
+         * ============================================================
+         * (Open the browser console to see the output!)
+         */
+
+        console.log('\n=== DAY 25: CALLBACKS & CALLBACK HELL ===\n');
+
+        // --- 1. Simple Callback Example ---
+        console.log('--- 1. Simple Callback ---');
+
+        function simpleGreet(name, callback) {
+            console.log(`  Hello, ${name}!`);
+            callback();
+        }
+
+        function sayGoodbye() {
+            console.log('  Goodbye!');
+        }
+
+        simpleGreet('Alice', sayGoodbye);
+
+        // --- 2. Async Callback ---
+        console.log('\n--- 2. Async Callback ---');
+
+        function asyncGreet(name, callback) {
+            console.log(`  ⏳ Greeting ${name}...`);
+            setTimeout(() => {
+                console.log(`  Hello, ${name}!`);
+                callback();
+            }, 500);
+        }
+
+        asyncGreet('Bob', () => {
+            console.log('  ✅ Done!');
+        });
+
+        // --- 3. Callback Hell Example ---
+        console.log('\n--- 3. Callback Hell Structure ---');
+
+        console.log('  😱 Nested callbacks create a pyramid:');
+        console.log('  fetchUser((user) => {');
+        console.log('    fetchPosts(user.id, (posts) => {');
+        console.log('      fetchComments(posts[0].id, (comments) => {');
+        console.log('        fetchReactions(comments[0].id, (reactions) => {');
+        console.log('          // 5 levels deep!');
+        console.log('        });');
+        console.log('      });');
+        console.log('    });');
+        console.log('  });');
+
+        // --- 4. Error-First Callback Pattern ---
+        console.log('\n--- 4. Error-First Callback Pattern ---');
+
+        function errorFirstExample(callback) {
+            setTimeout(() => {
+                const error = Math.random() > 0.7 ? 'Something went wrong!' : null;
+                const data = { id: 1, name: 'Example Data' };
+                callback(error, data);
+            }, 200);
+        }
+
+        errorFirstExample((error, data) => {
+            if (error) {
+                console.log('  ❌ Error:', error);
+                return;
+            }
+            console.log('  ✅ Data:', data);
+        });
+
+        // --- 5. Problems with Callback Hell ---
+        console.log('\n--- 5. Problems with Callback Hell ---');
+
+        console.log('  🔴 Readability: Hard to follow the flow');
+        console.log('  🔴 Maintainability: Difficult to add/remove steps');
+        console.log('  🔴 Error Handling: Each level needs its own error handler');
+        console.log('  🔴 Debugging: Stack traces are confusing');
+        console.log('  🔴 Reusability: Logic is tightly coupled');
+
+        // --- 6. Solutions Preview ---
+        console.log('\n--- 6. Solutions (Preview) ---');
+
+        console.log('  ✅ Named Functions (modularization)');
+        console.log('  ✅ Promises (next lesson)');
+        console.log('  ✅ Async/Await (future lesson)');
+
+        console.log('\n=== Click "Run Callback Hell" to see it in action! ===');
+    </script>
+
+</body>
+</html>
