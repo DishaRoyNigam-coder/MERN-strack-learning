@@ -1,0 +1,379 @@
+/* src/components/TemperatureConverter.css */
+
+.converter-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ---- Header ---- */
+.converter-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.converter-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.converter-header p {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.converter-header .badge {
+  display: inline-block;
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 4px 16px;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+/* ---- Converter Card ---- */
+.converter-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 30px 32px 32px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+
+/* ---- Inputs Row ---- */
+.inputs-row {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 20px;
+}
+
+.swap-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.swap-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swap-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  transform: rotate(180deg);
+}
+
+.swap-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ---- Action Row ---- */
+.action-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.btn-history,
+.btn-clear {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  flex: 1;
+}
+
+.btn-history {
+  background: #0f172a;
+  color: #fff;
+}
+
+.btn-history:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+}
+
+.btn-history:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-clear {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.btn-clear:hover {
+  transform: translateY(-2px);
+}
+
+/* ---- Conversion Info ---- */
+.conversion-info {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.info-card {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 14px 18px;
+  border: 1px solid #e2e8f0;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.info-values {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.value-pair {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.arrow {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.info-formula {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+/* ---- History ---- */
+.history-section {
+  margin-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.history-title {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.history-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.history-count {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.btn-clear-history {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.btn-clear-history:hover {
+  background: #fef2f2;
+}
+
+.history-empty {
+  text-align: center;
+  padding: 20px 0;
+  color: #94a3b8;
+}
+
+.empty-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.empty-hint {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.history-value {
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.history-time {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+/* ---- State Visualization ---- */
+.state-visualization {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.state-visualization details {
+  cursor: pointer;
+}
+
+.state-visualization summary {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  padding: 4px 0;
+}
+
+.state-json {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-family: 'Courier New', monospace;
+  margin-top: 8px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+/* ---- Footer ---- */
+.converter-footer {
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.converter-footer p {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 4px 0;
+}
+
+.converter-footer strong {
+  color: #0f172a;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .converter-container {
+    padding: 16px 12px;
+  }
+
+  .converter-card {
+    padding: 20px 16px;
+  }
+
+  .inputs-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .swap-section {
+    padding: 4px 0;
+  }
+
+  .swap-btn {
+    transform: rotate(90deg);
+  }
+
+  .swap-btn:hover:not(:disabled) {
+    transform: rotate(270deg);
+  }
+
+  .conversion-info {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .action-row {
+    flex-direction: column;
+  }
+
+  .btn-history,
+  .btn-clear {
+    flex: unset;
+    width: 100%;
+  }
+
+  .converter-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .history-item {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .history-time {
+    flex: 1 1 100%;
+    text-align: right;
+  }
+}
