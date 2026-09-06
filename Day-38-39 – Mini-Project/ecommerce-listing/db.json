@@ -1,0 +1,154 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Wireless Headphones Pro",
+      "price": 79.99,
+      "category": "electronics",
+      "description": "Premium noise-canceling headphones with 30-hour battery life and crystal-clear audio.",
+      "image": "🎧",
+      "rating": 4.5,
+      "reviews": 128
+    },
+    {
+      "id": 2,
+      "name": "Smart Watch Series 5",
+      "price": 249.99,
+      "category": "electronics",
+      "description": "Track your fitness, heart rate, sleep, and stay connected with notifications.",
+      "image": "⌚",
+      "rating": 4.7,
+      "reviews": 95
+    },
+    {
+      "id": 3,
+      "name": "Laptop Backpack Pro",
+      "price": 49.99,
+      "category": "accessories",
+      "description": "Water-resistant backpack with USB charging port, padded laptop sleeve, and multiple compartments.",
+      "image": "🎒",
+      "rating": 4.3,
+      "reviews": 76
+    },
+    {
+      "id": 4,
+      "name": "Bluetooth Speaker X2",
+      "price": 89.99,
+      "category": "electronics",
+      "description": "Portable waterproof speaker with 360° sound, 20-hour battery, and built-in microphone.",
+      "image": "🔊",
+      "rating": 4.2,
+      "reviews": 210
+    },
+    {
+      "id": 5,
+      "name": "Ceramic Coffee Mug",
+      "price": 12.99,
+      "category": "home",
+      "description": "Premium ceramic mug with heat-resistant handle, large capacity, and elegant design.",
+      "image": "☕",
+      "rating": 4.0,
+      "reviews": 45
+    },
+    {
+      "id": 6,
+      "name": "LED Desk Lamp",
+      "price": 34.99,
+      "category": "home",
+      "description": "Adjustable LED desk lamp with 3 brightness levels, color temperature control, and USB charging port.",
+      "image": "💡",
+      "rating": 4.1,
+      "reviews": 63
+    },
+    {
+      "id": 7,
+      "name": "Phone Case Ultra",
+      "price": 19.99,
+      "category": "accessories",
+      "description": "Durable shockproof case with built-in screen protector, raised edges, and camera protection.",
+      "image": "📱",
+      "rating": 4.4,
+      "reviews": 312
+    },
+    {
+      "id": 8,
+      "name": "Power Bank 20000mAh",
+      "price": 39.99,
+      "category": "electronics",
+      "description": "Fast-charging portable power bank with dual USB ports and LED battery indicator.",
+      "image": "🔋",
+      "rating": 4.6,
+      "reviews": 184
+    },
+    {
+      "id": 9,
+      "name": "Insulated Water Bottle",
+      "price": 24.99,
+      "category": "home",
+      "description": "Stainless steel insulated bottle with double-wall vacuum technology. Keeps drinks cold for 24 hours.",
+      "image": "🧴",
+      "rating": 4.3,
+      "reviews": 97
+    },
+    {
+      "id": 10,
+      "name": "Wireless Mouse Pro",
+      "price": 29.99,
+      "category": "electronics",
+      "description": "Ergonomic wireless mouse with silent clicks, adjustable DPI, and long battery life.",
+      "image": "🖱️",
+      "rating": 4.0,
+      "reviews": 156
+    },
+    {
+      "id": 11,
+      "name": "Premium Notebook Set",
+      "price": 14.99,
+      "category": "office",
+      "description": "Set of 3 ruled notebooks with durable covers, perforated pages, and ribbon bookmarks.",
+      "image": "📓",
+      "rating": 3.9,
+      "reviews": 42
+    },
+    {
+      "id": 12,
+      "name": "Ceramic Plant Pot",
+      "price": 22.99,
+      "category": "home",
+      "description": "Handcrafted ceramic plant pot with drainage hole, saucer, and glazed finish.",
+      "image": "🪴",
+      "rating": 4.2,
+      "reviews": 38
+    },
+    {
+      "id": 13,
+      "name": "Mechanical Keyboard RGB",
+      "price": 89.99,
+      "category": "electronics",
+      "description": "Mechanical keyboard with RGB backlighting, hot-swappable switches, and durable build quality.",
+      "image": "⌨️",
+      "rating": 4.8,
+      "reviews": 203
+    },
+    {
+      "id": 14,
+      "name": "USB-C Hub Adapter",
+      "price": 34.99,
+      "category": "electronics",
+      "description": "7-in-1 USB-C hub with HDMI, USB-A, SD card reader, and Ethernet port.",
+      "image": "🔌",
+      "rating": 4.4,
+      "reviews": 156
+    },
+    {
+      "id": 15,
+      "name": "Desk Organizer Stand",
+      "price": 29.99,
+      "category": "office",
+      "description": "Multi-purpose desk organizer with laptop stand, phone holder, and cable management.",
+      "image": "🗂️",
+      "rating": 4.1,
+      "reviews": 67
+    }
+  ]
+}
