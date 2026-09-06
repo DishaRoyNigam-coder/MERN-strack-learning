@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JavaScript Foundation Test - Day 45</title>
+
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 30px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #1e293b;
+            border-radius: 24px;
+            padding: 35px 30px;
+            border: 1px solid #334155;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header .icon {
+            font-size: 2.8rem;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: #3b82f6;
+            color: #fff;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* ---------- PROGRESS ---------- */
+        .progress-bar {
+            background: #334155;
+            border-radius: 30px;
+            height: 8px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 30px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        /* ---------- QUESTIONS ---------- */
+        .question-container {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #0f172a;
+            border-radius: 16px;
+            border: 1px solid #334155;
+            transition: border-color 0.3s ease;
+        }
+
+        .question-container.correct {
+            border-color: #22c55e;
+        }
+
+        .question-container.wrong {
+            border-color: #ef4444;
+        }
+
+        .question-container .q-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .question-container .q-number {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .question-container .q-status {
+            font-size: 1.2rem;
+        }
+
+        .question-container .q-text {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .question-container .q-text code {
+            background: #334155;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #93c5fd;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #1e293b;
+            border-radius: 10px;
+            border: 2px solid #334155;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .options label:hover {
+            border-color: #64748b;
+        }
+
+        .options label input[type="radio"] {
+            accent-color: #3b82f6;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .options label .option-text {
+            font-size: 0.95rem;
+            color: #e2e8f0;
+        }
+
+        .options label .option-text code {
+            background: #334155;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #93c5fd;
+        }
+
+        .options label.selected {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .options label.correct-answer {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.08);
+        }
+
+        .options label.wrong-answer {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .options label.disabled {
+            cursor: default;
+        }
+
+        .options label.disabled:hover {
+            border-color: #334155;
+        }
+
+        .q-explanation {
+            display: none;
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: #1e293b;
+            border-radius: 10px;
+            border-left: 4px solid #3b82f6;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .q-explanation.visible {
+            display: block;
+        }
+
+        .q-explanation .highlight {
+            color: #fcd34d;
+        }
+
+        .q-explanation code {
+            background: #334155;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #93c5fd;
+        }
+
+        /* ---------- BUTTONS ---------- */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-success {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background: #16a34a;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ---------- RESULTS ---------- */
+        .results {
+            display: none;
+            margin-top: 30px;
+            padding: 24px;
+            background: #0f172a;
+            border-radius: 16px;
+            border: 1px solid #334155;
+            text-align: center;
+        }
+
+        .results.visible {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results .result-icon {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .results .result-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .results .result-subtitle {
+            color: #94a3b8;
+            font-size: 1.05rem;
+            margin-bottom: 16px;
+        }
+
+        .results .result-stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 20px;
+        }
+
+        .results .result-stats .stat {
+            text-align: center;
+        }
+
+        .results .result-stats .stat .number {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .results .result-stats .stat .label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .results .result-stats .stat .number.correct {
+            color: #22c55e;
+        }
+        .results .result-stats .stat .number.wrong {
+            color: #ef4444;
+        }
+        .results .result-stats .stat .number.score {
+            color: #fcd34d;
+        }
+
+        .results .weak-spots {
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: #1e293b;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .results .weak-spots h3 {
+            font-size: 1rem;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .results .weak-spots ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .results .weak-spots ul li {
+            padding: 6px 0;
+            color: #e2e8f0;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .results .weak-spots ul li:last-child {
+            border-bottom: none;
+        }
+
+        .results .weak-spots ul li .tag {
+            display: inline-block;
+            background: #ef4444;
+            color: #fff;
+            padding: 0 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 16px;
+            }
+
+            .header h1 {
+                font-size: 1.6rem;
+            }
+
+            .question-container .q-text {
+                font-size: 0.95rem;
+            }
+
+            .options label {
+                padding: 8px 12px;
+            }
+
+            .options label .option-text {
+                font-size: 0.85rem;
+            }
+
+            .results .result-stats {
+                gap: 16px;
+            }
+
+            .results .result-stats .stat .number {
+                font-size: 1.5rem;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="icon">📝</span>
+            <h1>JavaScript Foundation Test</h1>
+            <p>Test your knowledge of core JavaScript concepts</p>
+            <span class="badge">45 Questions • ~45 minutes</span>
+        </div>
+
+        <!-- PROGRESS -->
+        <div class="progress-bar">
+            <div class="fill" id="progressFill"></div>
+        </div>
+
+        <!-- QUESTIONS CONTAINER -->
+        <div id="questionsContainer"></div>
+
+        <!-- BUTTONS -->
+        <div class="btn-group">
+            <button class="btn btn-primary" id="submitBtn">📊 Submit Test</button>
+            <button class="btn btn-secondary" id="resetBtn">🔄 Reset</button>
+        </div>
+
+        <!-- RESULTS -->
+        <div class="results" id="results">
+            <span class="result-icon" id="resultIcon">🏆</span>
+            <div class="result-title" id="resultTitle">Test Complete!</div>
+            <div class="result-subtitle" id="resultSubtitle">Here's how you did.</div>
+            <div class="result-stats">
+                <div class="stat">
+                    <div class="number correct" id="resultCorrect">0</div>
+                    <div class="label">Correct</div>
+                </div>
+                <div class="stat">
+                    <div class="number wrong" id="resultWrong">0</div>
+                    <div class="label">Wrong</div>
+                </div>
+                <div class="stat">
+                    <div class="number score" id="resultScore">0%</div>
+                    <div class="label">Score</div>
+                </div>
+            </div>
+            <div class="weak-spots" id="weakSpots">
+                <h3>📌 Weak Spots (Topics to Re-practice)</h3>
+                <ul id="weakSpotsList"></ul>
+            </div>
+            <div class="btn-group" style="justify-content: center; margin-top: 16px;">
+                <button class="btn btn-success" id="retryBtn">🔄 Retry Wrong Questions</button>
+                <button class="btn btn-secondary" id="allQuestionsBtn">📖 View All Questions</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                    -->
+    <!-- ============================================================ -->
+    <script>
+        /**
+         * ============================================================
+         * PART 1: QUESTION DATA
+         * ============================================================
+         */
+
+        const questions = [{
+            id: 1,
+            topic: 'Variables',
+            question: 'Which of the following correctly declares a constant variable in JavaScript?',
+            options: [
+                'var x = 10;',
+                'let x = 10;',
+                'const x = 10;',
+                'constant x = 10;'
+            ],
+            correct: 2,
+            explanation: '<code>const</code> is used to declare constants in JavaScript. <code>var</code> and <code>let</code> are for variables that can be reassigned.'
+        }, {
+            id: 2,
+            topic: 'Data Types',
+            question: 'What is the data type of <code>typeof null</code> in JavaScript?',
+            options: [
+                '"null"',
+                '"undefined"',
+                '"object"',
+                '"number"'
+            ],
+            correct: 2,
+            explanation: 'This is a famous bug in JavaScript. <code>typeof null</code> returns <code>"object"</code> due to a legacy bug in the language that can\'t be fixed for backward compatibility.'
+        }, {
+            id: 3,
+            topic: 'Functions',
+            question: 'What will be logged to the console?<br/><code>function greet() { return "Hello"; }<br/>console.log(greet);</code>',
+            options: [
+                '"Hello"',
+                'undefined',
+                'The function definition',
+                'null'
+            ],
+            correct: 2,
+            explanation: 'The <code>console.log(greet)</code> logs the function definition itself, not its return value. To log the return value, you need <code>console.log(greet())</code>.'
+        }, {
+            id: 4,
+            topic: 'Arrow Functions',
+            question: 'What is the output of this arrow function?<br/><code>const add = (a, b) => a + b;<br/>console.log(add(2, 3));</code>',
+            options: [
+                '2',
+                '3',
+                '5',
+                'undefined'
+            ],
+            correct: 2,
+            explanation: 'The arrow function <code>(a, b) => a + b</code> returns the sum of its two arguments. <code>add(2, 3)</code> returns <code>5</code>.'
+        }, {
+            id: 5,
+            topic: 'Array Methods',
+            question: 'Which array method transforms each element and returns a new array?',
+            options: [
+                'forEach()',
+                'map()',
+                'filter()',
+                'reduce()'
+            ],
+            correct: 1,
+            explanation: '<code>map()</code> transforms each element and returns a new array. <code>forEach()</code> doesn\'t return anything, <code>filter()</code> returns a subset, and <code>reduce()</code> returns a single value.'
+        }, {
+            id: 6,
+            topic: 'Array Methods',
+            question: 'What does <code>filter()</code> do in JavaScript?',
+            options: [
+                'Transforms each element',
+                'Filters out elements and returns a new array',
+                'Reduces the array to a single value',
+                'Loops through the array'
+            ],
+            correct: 1,
+            explanation: '<code>filter()</code> creates a new array with only the elements that pass the test function. It does not modify the original array.'
+        }, {
+            id: 7,
+            topic: 'Objects',
+            question: 'How do you access a property called "name" from an object <code>person</code>?',
+            options: [
+                'person["name"]',
+                'person.name',
+                'Both are correct',
+                'Neither is correct'
+            ],
+            correct: 2,
+            explanation: 'Both <code>person.name</code> (dot notation) and <code>person["name"]</code> (bracket notation) are valid ways to access object properties in JavaScript.'
+        }, {
+            id: 8,
+            topic: 'Objects',
+            question: 'What is the output of <code>const person = { name: "Alice" };<br/>person.age = 25;<br/>console.log(person);</code>',
+            options: [
+                '{ name: "Alice" }',
+                '{ name: "Alice", age: 25 }',
+                'undefined',
+                'Error'
+            ],
+            correct: 1,
+            explanation: 'Objects are mutable in JavaScript. You can add new properties at any time by simply assigning a value to a new key. The <code>age</code> property is added to the object.'
+        }, {
+            id: 9,
+            topic: 'DOM',
+            question: 'Which method is used to select the first element that matches a CSS selector in the DOM?',
+            options: [
+                'document.getElementById()',
+                'document.querySelector()',
+                'document.querySelectorAll()',
+                'document.getElementsByClassName()'
+            ],
+            correct: 1,
+            explanation: '<code>document.querySelector()</code> returns the first element that matches the given CSS selector. <code>querySelectorAll()</code> returns all matches.'
+        }, {
+            id: 10,
+            topic: 'DOM',
+            question: 'How do you add a click event listener to a button with ID "myButton"?',
+            options: [
+                'document.getElementById("myButton").addEventListener("click", handler)',
+                'document.getElementById("myButton").onClick(handler)',
+                'document.getElementById("myButton").click(handler)',
+                'document.getElementById("myButton").addEvent("click", handler)'
+            ],
+            correct: 0,
+            explanation: 'The correct method is <code>addEventListener("click", handler)</code>. <code>onClick</code> is not a method (it\'s a property), and <code>click(handler)</code> is not a real method.'
+        }, {
+            id: 11,
+            topic: 'Events',
+            question: 'What is event delegation?',
+            options: [
+                'Adding event listeners to every element',
+                'Adding a single event listener to a parent element to handle events for its children',
+                'Removing all event listeners from a page',
+                'Preventing events from bubbling'
+            ],
+            correct: 1,
+            explanation: 'Event delegation is the technique of adding a single event listener to a parent element to handle events for its children. This is efficient for dynamically added elements.'
+        }, {
+            id: 12,
+            topic: 'Events',
+            question: 'What does <code>event.preventDefault()</code> do?',
+            options: [
+                'Stops the event from bubbling up',
+                'Prevents the default browser behavior for the event',
+                'Removes the event listener',
+                'Triggers the event again'
+            ],
+            correct: 1,
+            explanation: '<code>event.preventDefault()</code> prevents the default browser behavior for the event. For example, it prevents a form from submitting or a link from navigating to a new page.'
+        }, {
+            id: 13,
+            topic: 'DOM',
+            question: 'How do you create a new HTML element in JavaScript?',
+            options: [
+                'document.createElement("div")',
+                'document.createElement("div")',
+                'new Element("div")',
+                'document.addElement("div")'
+            ],
+            correct: 0,
+            explanation: '<code>document.createElement("div")</code> creates a new HTML element. The correct method name is <code>createElement</code> (with a capital "E").'
+        }, {
+            id: 14,
+            topic: 'Closures',
+            question: 'What is a closure in JavaScript?',
+            options: [
+                'A function that is called immediately',
+                'A function that has access to its lexical scope even when executed outside that scope',
+                'A function that always returns a boolean',
+                'A type of error in JavaScript'
+            ],
+            correct: 1,
+            explanation: 'A closure is a function that "remembers" its lexical environment even when the function is executed outside that scope. This allows inner functions to access outer function variables.'
+        }, {
+            id: 15,
+            topic: 'Closures',
+            question: 'What will be logged to the console?<br/><code>function outer() {<br/>let x = 10;<br/>return function inner() {<br/>console.log(x);<br/>};<br/>}<br/>const fn = outer();<br/>fn();</code>',
+            options: [
+                'undefined',
+                '10',
+                'Error',
+                'null'
+            ],
+            correct: 1,
+            explanation: 'The <code>inner</code> function closes over the <code>x</code> variable from <code>outer</code>. When <code>fn()</code> is called, it logs <code>10</code> because of the closure.'
+        }, {
+            id: 16,
+            topic: 'Event Loop',
+            question: 'What will be logged to the console?<br/><code>console.log("A");<br/>setTimeout(() => console.log("B"), 0);<br/>console.log("C");</code>',
+            options: [
+                'A, B, C',
+                'A, C, B',
+                'B, A, C',
+                'C, A, B'
+            ],
+            correct: 1,
+            explanation: 'The <code>setTimeout</code> callback is placed in the task queue and runs after the synchronous code. So the order is <code>A, C, B</code>.'
+        }, {
+            id: 17,
+            topic: 'Event Loop',
+            question: 'What is the difference between a microtask and a macrotask?',
+            options: [
+                'Microtasks are larger than macrotasks',
+                'Microtasks have higher priority and run before macrotasks',
+                'Macrotasks have higher priority than microtasks',
+                'There is no difference'
+            ],
+            correct: 1,
+            explanation: 'Microtasks (like Promises) have higher priority than macrotasks (like setTimeout). The event loop processes all microtasks before any macrotask.'
+        }, {
+            id: 18,
+            topic: 'Async/Await',
+            question: 'What is the purpose of the <code>await</code> keyword?',
+            options: [
+                'To pause the execution of an async function until a Promise resolves',
+                'To start a new thread',
+                'To create a new Promise',
+                'To catch errors'
+            ],
+            correct: 0,
+            explanation: '<code>await</code> pauses the execution of an async function until the Promise resolves (or rejects) and returns the resolved value.'
+        }, {
+            id: 19,
+            topic: 'Async/Await',
+            question: 'What will be logged?<br/><code>async function test() {<br/>return "Hello";<br/>}<br/>console.log(test());</code>',
+            options: [
+                '"Hello"',
+                'undefined',
+                'A Promise object',
+                'Error'
+            ],
+            correct: 2,
+            explanation: 'An async function always returns a Promise. <code>test()</code> returns a Promise that resolves to <code>"Hello"</code>. To get the value, you need to use <code>.then()</code> or <code>await</code>.'
+        }, {
+            id: 20,
+            topic: 'Fetch API',
+            question: 'What does <code>response.json()</code> do in the Fetch API?',
+            options: [
+                'Converts the response body to a JavaScript object',
+                'Converts the response body to a string',
+                'Converts the response body to XML',
+                'Checks if the response is OK'
+            ],
+            correct: 0,
+            explanation: '<code>response.json()</code> parses the response body as JSON and returns a Promise that resolves to a JavaScript object.'
+        }, {
+            id: 21,
+            topic: 'Error Handling',
+            question: 'What is the correct way to handle errors in an async/await function?',
+            options: [
+                'Using if/else statements',
+                'Using try/catch blocks',
+                'Using .catch() after the function call',
+                'Using .error() method'
+            ],
+            correct: 1,
+            explanation: 'With async/await, errors are handled using <code>try/catch</code> blocks. This is the idiomatic way to handle errors in async functions.'
+        }, {
+            id: 22,
+            topic: 'Scope',
+            question: 'What is the output of this code?<br/><code>let x = 5;<br/>function test() {<br/>console.log(x);<br/>let x = 10;<br/>}<br/>test();</code>',
+            options: [
+                '5',
+                '10',
+                'undefined',
+                'ReferenceError (TDZ)'
+            ],
+            correct: 3,
+            explanation: 'This throws a ReferenceError because of the Temporal Dead Zone (TDZ). The <code>let x</code> inside the function is hoisted but not initialized, and accessing it before the declaration causes a ReferenceError.'
+        }, {
+            id: 23,
+            topic: 'Scope',
+            question: 'What is the difference between <code>let</code> and <code>var</code> in terms of scope?',
+            options: [
+                '<code>var</code> is block-scoped, <code>let</code> is function-scoped',
+                'Both are function-scoped',
+                '<code>let</code> is block-scoped, <code>var</code> is function-scoped',
+                'There is no difference'
+            ],
+            correct: 2,
+            explanation: '<code>let</code> is block-scoped (limited to the nearest <code>{}</code> block), while <code>var</code> is function-scoped (limited to the function where it\'s declared).'
+        }, {
+            id: 24,
+            topic: 'Hoisting',
+            question: 'What is hoisting in JavaScript?',
+            options: [
+                'Moving variables to the top of the scope before execution',
+                'Moving variables to the bottom of the scope',
+                'Deleting variables from memory',
+                'Converting variables to constants'
+            ],
+            correct: 0,
+            explanation: 'Hoisting is the behavior of moving variable and function declarations to the top of their scope before code execution. For <code>var</code>, the variable is hoisted but initialized to <code>undefined</code>.'
+        }, {
+            id: 25,
+            topic: 'Hoisting',
+            question: 'What will be logged?<br/><code>console.log(x);<br/>var x = 5;</code>',
+            options: [
+                '5',
+                'undefined',
+                'ReferenceError',
+                'null'
+            ],
+            correct: 1,
+            explanation: 'The <code>var x</code> is hoisted to the top, so <code>x</code> exists but is <code>undefined</code> until the assignment <code>x = 5</code> is executed.'
+        }, {
+            id: 26,
+            topic: 'Template Literals',
+            question: 'What is the correct syntax for a template literal?',
+            options: [
+                '"Hello ${name}"',
+                "'Hello ${name}'",
+                '`Hello ${name}`',
+                '"Hello {name}"'
+            ],
+            correct: 2,
+            explanation: 'Template literals use backticks (<code>`</code>) and allow embedded expressions using <code>${}</code>.'
+        }, {
+            id: 27,
+            topic: 'String Methods',
+            question: 'Which method is used to convert a string to uppercase?',
+            options: [
+                '.toUpperCase()',
+                '.toUpper()',
+                '.uppercase()',
+                '.toUppercase()'
+            ],
+            correct: 0,
+            explanation: 'The correct method is <code>.toUpperCase()</code>. It returns the string with all characters converted to uppercase.'
+        }, {
+            id: 28,
+            topic: 'Array Methods',
+            question: 'What does <code>reduce()</code> do in JavaScript?',
+            options: [
+                'Reduces the array length',
+                'Accumulates values into a single result',
+                'Removes the first element',
+                'Creates a new array with transformed values'
+            ],
+            correct: 1,
+            explanation: '<code>reduce()</code> executes a reducer function on each element, accumulating the results into a single value. It\'s used for summing numbers, counting occurrences, etc.'
+        }, {
+            id: 29,
+            topic: 'JSON',
+            question: 'How do you convert a JavaScript object to a JSON string?',
+            options: [
+                'JSON.parse()',
+                'JSON.stringify()',
+                'JSON.convert()',
+                'object.toJSON()'
+            ],
+            correct: 1,
+            explanation: '<code>JSON.stringify()</code> converts a JavaScript object to a JSON string. <code>JSON.parse()</code> does the opposite.'
+        }, {
+            id: 30,
+            topic: 'JSON',
+            question: 'How do you parse a JSON string into a JavaScript object?',
+            options: [
+                'JSON.parse()',
+                'JSON.stringify()',
+                'JSON.convert()',
+                'object.fromJSON()'
+            ],
+            correct: 0,
+            explanation: '<code>JSON.parse()</code> parses a JSON string and returns a JavaScript object.'
+        }, {
+            id: 31,
+            topic: 'Optional Chaining',
+            question: 'What does <code>user?.profile?.name</code> do?',
+            options: [
+                'Throws an error if user or profile is undefined',
+                'Returns undefined if user or profile is undefined',
+                'Returns "null" if user or profile is undefined',
+                'Does nothing'
+            ],
+            correct: 1,
+            explanation: 'Optional chaining (<code>?.</code>) returns <code>undefined</code> if any part of the chain is <code>null</code> or <code>undefined</code>, instead of throwing an error.'
+        }, {
+            id: 32,
+            topic: 'Nullish Coalescing',
+            question: 'What is the output of <code>0 ?? 10</code>?',
+            options: [
+                '0',
+                '10',
+                'undefined',
+                'null'
+            ],
+            correct: 0,
+            explanation: 'Nullish coalescing (<code>??</code>) only uses the fallback if the left side is <code>null</code> or <code>undefined</code>. <code>0</code> is a valid value, so it returns <code>0</code>.'
+        }, {
+            id: 33,
+            topic: 'Module System',
+            question: 'How do you export a function from a module in ES6?',
+            options: [
+                'module.exports = myFunction',
+                'exports.myFunction = myFunction',
+                'export myFunction',
+                'export default myFunction'
+            ],
+            correct: 3,
+            explanation: 'In ES6 modules, you use <code>export default</code> for the main export, or <code>export function myFunction()</code> for named exports.'
+        }, {
+            id: 34,
+            topic: 'Module System',
+            question: 'How do you import a default export in ES6?',
+            options: [
+                'import * as myModule from "./myModule.js"',
+                'import myFunction from "./myModule.js"',
+                'import { myFunction } from "./myModule.js"',
+                'require("./myModule.js")'
+            ],
+            correct: 1,
+            explanation: 'Default exports are imported without curly braces: <code>import myFunction from "./myModule.js"</code>. Named exports use curly braces.'
+        }, {
+            id: 35,
+            topic: 'this Keyword',
+            question: 'What does <code>this</code> refer to in a regular function?',
+            options: [
+                'The global object (or undefined in strict mode)',
+                'The function itself',
+                'The parent object',
+                'The nearest class'
+            ],
+            correct: 0,
+            explanation: 'In a regular function, <code>this</code> refers to the global object (window in browsers) or <code>undefined</code> in strict mode.'
+        }, {
+            id: 36,
+            topic: 'this Keyword',
+            question: 'In an arrow function, what does <code>this</code> refer to?',
+            options: [
+                'The global object',
+                'The enclosing lexical scope',
+                'The function itself',
+                'Undefined'
+            ],
+            correct: 1,
+            explanation: 'Arrow functions do not have their own <code>this</code>. They inherit <code>this</code> from their enclosing (lexical) scope.'
+        }, {
+            id: 37,
+            topic: 'Error Handling',
+            question: 'What is a custom error class in JavaScript?',
+            options: [
+                'A class that extends the Error class',
+                'A class that returns a string',
+                'A class that catches errors',
+                'A class that logs errors'
+            ],
+            correct: 0,
+            explanation: 'Custom error classes are created by extending the built-in <code>Error</code> class. This allows you to create specific error types with custom properties.'
+        }, {
+            id: 38,
+            topic: 'Rest/Spread',
+            question: 'What does the spread operator (<code>...</code>) do in this code?<br/><code>const newArray = [...oldArray, 4];</code>',
+            options: [
+                'Copies the elements of oldArray into newArray and adds 4',
+                'Creates a copy of oldArray with 4 removed',
+                'Creates a copy of oldArray with 4 at the beginning',
+                'Does nothing'
+            ],
+            correct: 0,
+            explanation: 'The spread operator expands the elements of <code>oldArray</code> into the new array, so <code>newArray</code> contains all elements of <code>oldArray</code> plus the new element 4.'
+        }, {
+            id: 39,
+            topic: 'Rest/Spread',
+            question: 'What is the output of this code?<br/><code>const { name, ...rest } = { name: "Alice", age: 30, city: "NYC" };<br/>console.log(rest);</code>',
+            options: [
+                '{ name: "Alice" }',
+                '{ age: 30, city: "NYC" }',
+                '{ name: "Alice", age: 30, city: "NYC" }',
+                'undefined'
+            ],
+            correct: 1,
+            explanation: 'The rest operator <code>...rest</code> collects all remaining properties into a new object. <code>name</code> is extracted, and the rest (<code>age</code> and <code>city</code>) are in the <code>rest</code> object.'
+        }, {
+            id: 40,
+            topic: 'Destructuring',
+            question: 'What is the output of this array destructuring?<br/><code>const [first, second] = [1, 2, 3];<br/>console.log(first, second);</code>',
+            options: [
+                '1, 2',
+                '1, 3',
+                '2, 3',
+                '1, undefined'
+            ],
+            correct: 0,
+            explanation: 'Array destructuring assigns the first two elements: <code>first = 1</code>, <code>second = 2</code>. The third element is ignored.'
+        }, {
+            id: 41,
+            topic: 'localStorage',
+            question: 'Which method is used to save data to localStorage?',
+            options: [
+                'localStorage.save()',
+                'localStorage.setItem()',
+                'localStorage.store()',
+                'localStorage.put()'
+            ],
+            correct: 1,
+            explanation: '<code>localStorage.setItem(key, value)</code> is used to save data. Both key and value must be strings.'
+        }, {
+            id: 42,
+            topic: 'localStorage',
+            question: 'How do you retrieve data from localStorage?',
+            options: [
+                'localStorage.get()',
+                'localStorage.getItem()',
+                'localStorage.retrieve()',
+                'localStorage.load()'
+            ],
+            correct: 1,
+            explanation: '<code>localStorage.getItem(key)</code> retrieves the value associated with the given key. It returns <code>null</code> if the key doesn\'t exist.'
+        }, {
+            id: 43,
+            topic: 'Destructuring',
+            question: 'What is the output of this object destructuring?<br/><code>const person = { name: "Alice", age: 25 };<br/>const { name, age } = person;<br/>console.log(name, age);</code>',
+            options: [
+                'undefined, undefined',
+                'Alice, 25',
+                '{ name: "Alice", age: 25 }',
+                'Error'
+            ],
+            correct: 1,
+            explanation: 'Object destructuring extracts properties by name. <code>name</code> gets <code>"Alice"</code> and <code>age</code> gets <code>25</code>.'
+        }, {
+            id: 44,
+            topic: 'Error Handling',
+            question: 'What does <code>finally</code> do in a <code>try/catch</code> block?',
+            options: [
+                'Runs only if there is an error',
+                'Runs only if there is no error',
+                'Always runs, regardless of error or success',
+                'Catches errors and passes them to the next catch'
+            ],
+            correct: 2,
+            explanation: 'The <code>finally</code> block always executes, whether an error was thrown or not. It\'s used for cleanup tasks (closing connections, resetting state, etc.).'
+        }, {
+            id: 45,
+            topic: 'this Keyword',
+            question: 'What is the output of this code?<br/><code>const person = {<br/>name: "Alice",<br/>greet: function() {<br/>console.log(this.name);<br/>}<br/>};<br/>const greet = person.greet;<br/>greet();</code>',
+            options: [
+                '"Alice"',
+                'undefined',
+                'Error',
+                'null'
+            ],
+            correct: 1,
+            explanation: 'When the function is called as <code>greet()</code> without an object context, <code>this</code> refers to the global object (or <code>undefined</code> in strict mode). So <code>this.name</code> is <code>undefined</code>.'
+        }];
+
+        /**
+         * ============================================================
+         * PART 2: QUIZ STATE
+         * ============================================================
+         */
+
+        let userAnswers = {};
+        let submitted = false;
+
+        /**
+         * ============================================================
+         * PART 3: RENDER QUESTIONS
+         * ============================================================
+         */
+
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const letters = ['A', 'B', 'C', 'D'];
+                const div = document.createElement('div');
+                div.className = 'question-container';
+                div.id = `q-${q.id}`;
+
+                div.innerHTML = `
+                    <div class="q-header">
+                        <span class="q-number">${index + 1}. ${q.topic}</span>
+                        <span class="q-status" id="status-${q.id}"></span>
+                    </div>
+                    <div class="q-text">${q.question}</div>
+                    <div class="options" id="options-${q.id}">
+                        ${q.options.map((opt, optIndex) => `
+                            <label>
+                                <input type="radio" name="q${q.id}" value="${optIndex}" />
+                                <span class="option-text">${letters[optIndex]}. ${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="q-explanation" id="explanation-${q.id}">
+                        💡 ${q.explanation}
+                    </div>
+                `;
+
+                container.appendChild(div);
+
+                // Add event listeners to radio buttons
+                div.querySelectorAll('input[type="radio"]').forEach(input => {
+                    input.addEventListener('change', () => {
+                        if (!submitted) {
+                            const qId = q.id;
+                            userAnswers[qId] = parseInt(input.value);
+                            updateProgress();
+                        }
+                    });
+                });
+            });
+
+            updateProgress();
+        }
+
+        /**
+         * ============================================================
+         * PART 4: PROGRESS
+         * ============================================================
+         */
+
+        function updateProgress() {
+            const answered = Object.keys(userAnswers).length;
+            const total = questions.length;
+            const progress = (answered / total) * 100;
+            document.getElementById('progressFill').style.width = `${Math.min(progress, 100)}%`;
+        }
+
+        /**
+         * ============================================================
+         * PART 5: SUBMIT TEST
+         * ============================================================
+         */
+
+        function submitTest() {
+            if (submitted) return;
+
+            const total = questions.length;
+            let correct = 0;
+            let wrong = 0;
+
+            // Check answers and mark UI
+            questions.forEach(q => {
+                const userAnswer = userAnswers[q.id];
+                const isCorrect = userAnswer === q.correct;
+                const container = document.getElementById(`q-${q.id}`);
+                const statusEl = document.getElementById(`status-${q.id}`);
+                const explanationEl = document.getElementById(`explanation-${q.id}`);
+
+                // Show explanation
+                explanationEl.classList.add('visible');
+
+                // Mark container
+                if (userAnswer !== undefined) {
+                    if (isCorrect) {
+                        container.classList.add('correct');
+                        statusEl.textContent = '✅';
+                        correct++;
+                    } else {
+                        container.classList.add('wrong');
+                        statusEl.textContent = '❌';
+                        wrong++;
+                    }
+                } else {
+                    container.classList.add('wrong');
+                    statusEl.textContent = '❌';
+                    wrong++;
+                }
+
+                // Mark options
+                const optionsContainer = document.getElementById(`options-${q.id}`);
+                optionsContainer.querySelectorAll('label').forEach((label, idx) => {
+                    label.classList.add('disabled');
+
+                    const radio = label.querySelector('input[type="radio"]');
+                    radio.disabled = true;
+
+                    if (idx === q.correct) {
+                        label.classList.add('correct-answer');
+                    }
+
+                    if (userAnswer === idx && !isCorrect) {
+                        label.classList.add('wrong-answer');
+                    }
+
+                    if (userAnswer === idx) {
+                        label.classList.add('selected');
+                    }
+                });
+            });
+
+            submitted = true;
+
+            // Show results
+            const score = Math.round((correct / total) * 100);
+            displayResults(correct, wrong, score);
+            document.getElementById('submitBtn').disabled = true;
+        }
+
+        /**
+         * ============================================================
+         * PART 6: DISPLAY RESULTS
+         * ============================================================
+         */
+
+        function displayResults(correct, wrong, score) {
+            const results = document.getElementById('results');
+            results.classList.add('visible');
+
+            document.getElementById('resultCorrect').textContent = correct;
+            document.getElementById('resultWrong').textContent = wrong;
+            document.getElementById('resultScore').textContent = `${score}%`;
+
+            let icon, title, subtitle;
+            if (score >= 90) {
+                icon = '🏆';
+                title = '🎉 Outstanding!';
+                subtitle = 'You have a strong foundation in JavaScript!';
+            } else if (score >= 70) {
+                icon = '🌟';
+                title = '👍 Great Job!';
+                subtitle = 'You\'re doing well. Review the topics you missed.';
+            } else if (score >= 50) {
+                icon = '📚';
+                title = '📖 Keep Learning!';
+                subtitle = 'Review the concepts below and re-practice.';
+            } else {
+                icon = '💪';
+                title = '🤔 Keep Going!';
+                subtitle = 'You can do this! Revisit the lessons and try again.';
+            }
+
+            document.getElementById('resultIcon').textContent = icon;
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultSubtitle').textContent = subtitle;
+
+            // Generate weak spots list
+            const weakSpots = [];
+            questions.forEach(q => {
+                const userAnswer = userAnswers[q.id];
+                if (userAnswer !== q.correct) {
+                    if (!weakSpots.includes(q.topic)) {
+                        weakSpots.push(q.topic);
+                    }
+                }
+            });
+
+            const listEl = document.getElementById('weakSpotsList');
+            if (weakSpots.length === 0) {
+                listEl.innerHTML = `<li>✅ No weak spots detected. You've mastered all topics!</li>`;
+            } else {
+                listEl.innerHTML = weakSpots.map(topic =>
+                    `<li><span class="tag">REVIEW</span> ${topic}</li>`
+                ).join('');
+            }
+
+            // Scroll to results
+            results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        /**
+         * ============================================================
+         * PART 7: RESET
+         * ============================================================
+         */
+
+        function resetTest() {
+            userAnswers = {};
+            submitted = false;
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('results').classList.remove('visible');
+
+            // Reset all questions
+            questions.forEach(q => {
+                const container = document.getElementById(`q-${q.id}`);
+                container.classList.remove('correct', 'wrong');
+                const statusEl = document.getElementById(`status-${q.id}`);
+                statusEl.textContent = '';
+                const explanationEl = document.getElementById(`explanation-${q.id}`);
+                explanationEl.classList.remove('visible');
+
+                const optionsContainer = document.getElementById(`options-${q.id}`);
+                optionsContainer.querySelectorAll('label').forEach(label => {
+                    label.classList.remove('selected', 'correct-answer', 'wrong-answer', 'disabled');
+                    const radio = label.querySelector('input[type="radio"]');
+                    radio.disabled = false;
+                    radio.checked = false;
+                });
+            });
+
+            updateProgress();
+            document.getElementById('progressFill').style.width = '0%';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /**
+         * ============================================================
+         * PART 8: RETRY WRONG QUESTIONS
+         * ============================================================
+         */
+
+        function retryWrongQuestions() {
+            // Filter questions that were answered incorrectly
+            const wrongQuestions = questions.filter(q => {
+                const userAnswer = userAnswers[q.id];
+                return userAnswer !== q.correct;
+            });
+
+            if (wrongQuestions.length === 0) {
+                alert('🎉 You got all questions correct! No need to retry.');
+                return;
+            }
+
+            // Create a new test with only wrong questions
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            // Show a header
+            const header = document.createElement('div');
+            header.style.cssText = `
+                background: #3b82f6;
+                color: #fff;
+                padding: 12px 20px;
+                border-radius: 12px;
+                margin-bottom: 20px;
+                text-align: center;
+            `;
+            header.innerHTML = `
+                <strong>🔄 Retry Mode</strong> — ${wrongQuestions.length} questions to retry
+            `;
+            container.appendChild(header);
+
+            const retryQuestions = wrongQuestions.map((q, index) => {
+                const letters = ['A', 'B', 'C', 'D'];
+                const div = document.createElement('div');
+                div.className = 'question-container';
+                div.id = `q-${q.id}`;
+
+                div.innerHTML = `
+                    <div class="q-header">
+                        <span class="q-number">${index + 1}. ${q.topic}</span>
+                        <span class="q-status" id="status-${q.id}"></span>
+                    </div>
+                    <div class="q-text">${q.question}</div>
+                    <div class="options" id="options-${q.id}">
+                        ${q.options.map((opt, optIndex) => `
+                            <label>
+                                <input type="radio" name="q${q.id}" value="${optIndex}" />
+                                <span class="option-text">${letters[optIndex]}. ${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="q-explanation" id="explanation-${q.id}">
+                        💡 ${q.explanation}
+                    </div>
+                `;
+
+                container.appendChild(div);
+
+                // Add event listeners
+                div.querySelectorAll('input[type="radio"]').forEach(input => {
+                    input.addEventListener('change', () => {
+                        if (!submitted) {
+                            userAnswers[q.id] = parseInt(input.value);
+                            updateProgress();
+                        }
+                    });
+                });
+
+                return q;
+            });
+
+            // Reset state for retry
+            submitted = false;
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('results').classList.remove('visible');
+            updateProgress();
+            document.getElementById('progressFill').style.width = '0%';
+
+            // Update submit button to handle retry
+            const originalSubmit = document.getElementById('submitBtn');
+            const newSubmit = originalSubmit.cloneNode(true);
+            originalSubmit.parentNode.replaceChild(newSubmit, originalSubmit);
+
+            newSubmit.addEventListener('click', () => {
+                submitRetry(retryQuestions);
+            });
+
+            // Hide the old results
+            document.getElementById('results').classList.remove('visible');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function submitRetry(retryQuestions) {
+            if (submitted) return;
+
+            const total = retryQuestions.length;
+            let correct = 0;
+            let wrong = 0;
+
+            retryQuestions.forEach(q => {
+                const userAnswer = userAnswers[q.id];
+                const isCorrect = userAnswer === q.correct;
+                const container = document.getElementById(`q-${q.id}`);
+                const statusEl = document.getElementById(`status-${q.id}`);
+                const explanationEl = document.getElementById(`explanation-${q.id}`);
+
+                explanationEl.classList.add('visible');
+
+                if (userAnswer !== undefined) {
+                    if (isCorrect) {
+                        container.classList.add('correct');
+                        statusEl.textContent = '✅';
+                        correct++;
+                    } else {
+                        container.classList.add('wrong');
+                        statusEl.textContent = '❌';
+                        wrong++;
+                    }
+                } else {
+                    container.classList.add('wrong');
+                    statusEl.textContent = '❌';
+                    wrong++;
+                }
+
+                const optionsContainer = document.getElementById(`options-${q.id}`);
+                optionsContainer.querySelectorAll('label').forEach((label, idx) => {
+                    label.classList.add('disabled');
+                    const radio = label.querySelector('input[type="radio"]');
+                    radio.disabled = true;
+
+                    if (idx === q.correct) {
+                        label.classList.add('correct-answer');
+                    }
+
+                    if (userAnswer === idx && !isCorrect) {
+                        label.classList.add('wrong-answer');
+                    }
+
+                    if (userAnswer === idx) {
+                        label.classList.add('selected');
+                    }
+                });
+            });
+
+            submitted = true;
+
+            const score = Math.round((correct / total) * 100);
+            const totalCorrect = Object.values(userAnswers).filter((v, i) => {
+                const q = retryQuestions[i];
+                return q && v === q.correct;
+            }).length;
+
+            // Show results with retry summary
+            displayResults(correct, wrong, score);
+            document.getElementById('submitBtn').disabled = true;
+        }
+
+        /**
+         * ============================================================
+         * PART 9: EVENT BINDING
+         * ============================================================
+         */
+
+        document.getElementById('submitBtn').addEventListener('click', submitTest);
+        document.getElementById('resetBtn').addEventListener('click', resetTest);
+        document.getElementById('retryBtn').addEventListener('click', retryWrongQuestions);
+        document.getElementById('allQuestionsBtn').addEventListener('click', () => {
+            resetTest();
+            document.getElementById('questionsContainer').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
+
+        renderQuestions();
+
+        console.log('📝 JS Foundation Test loaded!');
+        console.log(`📊 ${questions.length} questions across ${[...new Set(questions.map(q => q.topic))].length} topics`);
+        console.log('💡 Take the test to assess your JavaScript knowledge!');
+    </script>
+
+</body>
+</html>
