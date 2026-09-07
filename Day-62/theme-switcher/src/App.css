@@ -1,0 +1,310 @@
+/* src/App.css */
+
+/* ============================================================
+   CSS VARIABLES – THEME
+   ============================================================ */
+
+:root {
+  /* Light theme (default) */
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-inverse: #ffffff;
+  --border-color: #e2e8f0;
+  --shadow-color: rgba(0, 0, 0, 0.06);
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+}
+
+/* Dark theme – applied to :root.dark */
+:root.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-inverse: #0f172a;
+  --border-color: #334155;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --accent-color: #3b82f6;
+  --accent-hover: #60a5fa;
+}
+
+/* ============================================================
+   GLOBAL STYLES
+   ============================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background 0.3s, color 0.3s;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   APP LAYOUT
+   ============================================================ */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+
+.hero {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 30px 32px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.hero h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.hero p {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   FEATURES
+   ============================================================ */
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.feature-card {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 20px 18px;
+  border: 1px solid var(--border-color);
+  text-align: center;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  transition: background 0.3s, border-color 0.3s, transform 0.2s;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.feature-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.feature-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ============================================================
+   DEMO SECTION
+   ============================================================ */
+
+.demo-section {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 24px 28px 28px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.demo-section h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.demo-section > p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.demo-card {
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.demo-card.light-card {
+  background: #f8fafc;
+}
+
+.demo-card.dark-card {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+.demo-emoji {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.demo-card p {
+  font-size: 0.85rem;
+}
+
+.demo-card small {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.app-footer .theme-toggle {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .app {
+    padding: 12px;
+  }
+
+  .app-header {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+    padding: 14px 16px;
+  }
+
+  .app-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .hero {
+    padding: 20px 18px;
+  }
+
+  .hero h2 {
+    font-size: 1.2rem;
+  }
+
+  .features {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .demo-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .app-footer {
+    flex-direction: column;
+    text-align: center;
+    padding: 14px 16px;
+  }
+}
+
+@media (max-width: 400px) {
+  .features {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-grid {
+    grid-template-columns: 1fr;
+  }
+}
