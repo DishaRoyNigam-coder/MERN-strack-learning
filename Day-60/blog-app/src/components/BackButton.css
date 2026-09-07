@@ -1,0 +1,25 @@
+/* src/components/BackButton.css */
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 30px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.back-button:hover {
+  background: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+.back-button:active {
+  transform: translateY(0);
+}

@@ -1,0 +1,136 @@
+/* src/pages/BlogList.css (additions) */
+
+/* --- Filter Bar --- */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 150px;
+  min-width: 120px;
+}
+
+.filter-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-group select,
+.filter-group input {
+  padding: 8px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #ffffff;
+  transition: border-color 0.3s;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+/* --- Filter Summary --- */
+.filter-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.filter-tag-remove {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.filter-tag-remove:hover {
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.clear-filters-btn {
+  padding: 4px 14px;
+  border: none;
+  border-radius: 30px;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.clear-filters-btn:hover {
+  background: #cbd5e1;
+}
+
+.filter-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- No Posts --- */
+.no-posts-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+  .filter-bar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  .filter-group {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .filter-summary {
+    flex-wrap: wrap;
+  }
+}
