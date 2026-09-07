@@ -1,0 +1,131 @@
+/* src/pages/Contact.css */
+
+.contact-page h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.contact-page > p {
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+.contact-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+}
+
+/* --- Contact Info --- */
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.info-icon {
+  font-size: 1.5rem;
+}
+
+.info-item strong {
+  display: block;
+  font-size: 0.85rem;
+  color: #0f172a;
+}
+
+.info-item p {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* --- Contact Form --- */
+.contact-form {
+  background: #f8fafc;
+  padding: 20px 24px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.contact-form .form-group {
+  margin-bottom: 14px;
+}
+
+.contact-form .form-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.contact-form .form-group input,
+.contact-form .form-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: #ffffff;
+  transition: border-color 0.3s;
+}
+
+.contact-form .form-group input:focus,
+.contact-form .form-group textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: #0f172a;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+}
+
+.success-message {
+  text-align: center;
+  margin-top: 12px;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+  .contact-container {
+    grid-template-columns: 1fr;
+  }
+
+  .home-page .hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+  }
+
+  .team-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

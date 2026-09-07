@@ -1,0 +1,78 @@
+/* src/pages/About.css */
+
+.about-page h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 20px;
+}
+
+.about-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.about-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  border: 1px solid #e2e8f0;
+}
+
+.about-card h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.about-card p {
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.team-member {
+  text-align: center;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.member-avatar {
+  font-size: 2.5rem;
+  display: block;
+}
+
+.team-member h4 {
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.team-member p {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.tech-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tech-tag {
+  padding: 4px 14px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
