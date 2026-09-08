@@ -1,0 +1,105 @@
+/* src/components/PostItem.css */
+
+.post-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: background 0.2s, transform 0.2s;
+  animation: slideIn 0.3s ease-out;
+}
+
+.post-item:hover {
+  background: #f1f5f9;
+  transform: translateX(4px);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.post-content {
+  flex: 1;
+}
+
+.post-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.post-body {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.post-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.like-btn,
+.delete-btn {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.like-btn {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.like-btn:hover {
+  background: #fee2e2;
+  transform: scale(1.05);
+}
+
+.delete-btn {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.delete-btn:hover {
+  background: #e2e8f0;
+  color: #dc2626;
+  transform: scale(1.05);
+}
+
+@media (max-width: 500px) {
+  .post-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .post-actions {
+    justify-content: flex-end;
+  }
+}
