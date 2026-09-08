@@ -1,0 +1,391 @@
+/* src/App.css */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+/* ---- Header ---- */
+.app-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.app-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+.app-header p {
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+/* ---- Search ---- */
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+}
+
+.search-input {
+  flex: 1;
+  padding: 14px 18px;
+  border: 2px solid #334155;
+  border-radius: 16px;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #3b82f6;
+}
+
+.search-input::placeholder {
+  color: #64748b;
+}
+
+.loading-spinner {
+  position: absolute;
+  right: 16px;
+  font-size: 1.4rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Error ---- */
+.error-message {
+  padding: 14px 20px;
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* ---- Results Info ---- */
+.results-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #334155;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---- Movie Grid ---- */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+/* ---- Movie Card ---- */
+.movie-card {
+  background: #1e293b;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #334155;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.movie-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.movie-poster {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  background: #0f172a;
+}
+
+.movie-info {
+  padding: 12px 14px 14px;
+}
+
+.movie-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movie-year {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.movie-id {
+  font-size: 0.65rem;
+  color: #64748b;
+  display: block;
+  margin-top: 4px;
+  font-family: monospace;
+}
+
+/* ---- Pagination ---- */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 20px 0 10px;
+}
+
+.page-btn {
+  padding: 8px 16px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #334155;
+}
+
+.page-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---- Empty State ---- */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.empty-state h3 {
+  color: #e2e8f0;
+  font-size: 1.2rem;
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background: #1e293b;
+  border-radius: 24px;
+  max-width: 850px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px 28px 28px;
+  position: relative;
+  border: 1px solid #334155;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.6rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+  z-index: 10;
+}
+
+.modal-close:hover {
+  color: #dc2626;
+}
+
+.modal-body {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.modal-poster {
+  width: 200px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  object-fit: cover;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.modal-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.modal-info h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.modal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.modal-plot,
+.modal-cast,
+.modal-director,
+.modal-rated {
+  font-size: 0.95rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+
+.modal-plot strong,
+.modal-cast strong,
+.modal-director strong,
+.modal-rated strong {
+  color: #e2e8f0;
+}
+
+.imdb-link {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 18px;
+  background: #f59e0b;
+  color: #0f172a;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.imdb-link:hover {
+  background: #d97706;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .app-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .movie-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 14px;
+  }
+
+  .modal-body {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .modal-poster {
+    width: 150px;
+  }
+
+  .modal-info h2 {
+    font-size: 1.3rem;
+    text-align: center;
+  }
+
+  .modal-meta {
+    justify-content: center;
+  }
+
+  .pagination {
+    gap: 4px;
+  }
+
+  .page-btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .movie-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
