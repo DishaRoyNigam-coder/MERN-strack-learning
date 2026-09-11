@@ -1,0 +1,54 @@
+/* src/pages/FavoritesPage.css */
+
+.favorites-page {
+  padding: 20px 0;
+}
+
+.favorites-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.favorites-header h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #e2e8f0;
+}
+
+[data-theme="light"] .favorites-header h1 {
+  color: #0f172a;
+}
+
+.favorites-header p {
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.favorites-count {
+  display: inline-block;
+  padding: 4px 16px;
+  background: #1e293b;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-top: 8px;
+}
+
+[data-theme="light"] .favorites-count {
+  background: #f1f5f9;
+}
+
+.empty-link {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 20px;
+  background: #3b82f6;
+  color: #fff;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.empty-link:hover {
+  background: #2563eb;
+}

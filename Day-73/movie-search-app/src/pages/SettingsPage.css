@@ -1,0 +1,207 @@
+/* src/pages/SettingsPage.css */
+
+.settings-page {
+  padding: 20px 0;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.settings-page-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.settings-page-header h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #e2e8f0;
+}
+
+[data-theme="light"] .settings-page-header h1 {
+  color: #0f172a;
+}
+
+.settings-page-header p {
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.setting-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  transition: border-color 0.3s;
+}
+
+[data-theme="light"] .setting-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.setting-card.danger-card {
+  border-color: #dc2626;
+}
+
+.setting-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.setting-icon {
+  font-size: 1.6rem;
+}
+
+.setting-card-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+[data-theme="light"] .setting-card-header h3 {
+  color: #0f172a;
+}
+
+.setting-card-header p {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.setting-card-control {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding-left: 10px;
+}
+
+.theme-option,
+.view-option {
+  padding: 8px 20px;
+  border: 2px solid #334155;
+  border-radius: 30px;
+  background: #0f172a;
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+[data-theme="light"] .theme-option,
+[data-theme="light"] .view-option {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.theme-option.active,
+.view-option.active {
+  border-color: #3b82f6;
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+[data-theme="light"] .theme-option.active,
+[data-theme="light"] .view-option.active {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.theme-option:hover:not(.active),
+.view-option:hover:not(.active) {
+  background: #334155;
+}
+
+[data-theme="light"] .theme-option:hover:not(.active),
+[data-theme="light"] .view-option:hover:not(.active) {
+  background: #e2e8f0;
+}
+
+.theme-current,
+.view-current {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-left: 8px;
+}
+
+.history-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+}
+
+.history-term {
+  padding: 4px 14px;
+  background: #0f172a;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+[data-theme="light"] .history-term {
+  background: #f1f5f9;
+}
+
+.empty-hint,
+.favorites-hint {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.danger-btn,
+.reset-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.danger-btn {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.danger-btn:hover {
+  background: #fee2e2;
+  transform: scale(1.02);
+}
+
+.reset-btn {
+  background: #dc2626;
+  color: #fff;
+}
+
+.reset-btn:hover {
+  background: #b91c1c;
+  transform: scale(1.02);
+}
+
+@media (max-width: 640px) {
+  .setting-card {
+    padding: 16px 18px;
+  }
+
+  .setting-card-control {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .theme-option,
+  .view-option,
+  .danger-btn,
+  .reset-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .history-list {
+    flex-direction: column;
+  }
+}
