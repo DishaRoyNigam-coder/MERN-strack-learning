@@ -1,0 +1,89 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Admin User",
+      "email": "admin@example.com",
+      "password": "admin123",
+      "role": "admin",
+      "avatar": "👤"
+    },
+    {
+      "id": 2,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "password": "john123",
+      "role": "member",
+      "avatar": "👨"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Design Dashboard Layout",
+      "description": "Create wireframes and mockups for the dashboard",
+      "status": "completed",
+      "priority": "high",
+      "assignedTo": 1,
+      "createdBy": 1,
+      "createdAt": "2026-09-01T10:00:00Z",
+      "dueDate": "2026-09-05T17:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Implement Authentication",
+      "description": "Add login/logout functionality with Context API",
+      "status": "in-progress",
+      "priority": "high",
+      "assignedTo": 1,
+      "createdBy": 1,
+      "createdAt": "2026-09-02T09:30:00Z",
+      "dueDate": "2026-09-10T17:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "Build Task Management UI",
+      "description": "Create task list, create/edit modal, and filtering",
+      "status": "pending",
+      "priority": "medium",
+      "assignedTo": 2,
+      "createdBy": 1,
+      "createdAt": "2026-09-03T14:00:00Z",
+      "dueDate": "2026-09-15T17:00:00Z"
+    },
+    {
+      "id": 4,
+      "title": "Write Documentation",
+      "description": "Document the API and frontend components",
+      "status": "pending",
+      "priority": "low",
+      "assignedTo": 2,
+      "createdBy": 1,
+      "createdAt": "2026-09-04T11:00:00Z",
+      "dueDate": "2026-09-20T17:00:00Z"
+    }
+  ],
+  "teams": [
+    {
+      "id": 1,
+      "name": "Frontend Team",
+      "members": [1, 2]
+    }
+  ],
+  "activities": [
+    {
+      "id": 1,
+      "action": "Task Created",
+      "details": "Design Dashboard Layout",
+      "userId": 1,
+      "createdAt": "2026-09-01T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "action": "Task Updated",
+      "details": "Implement Authentication → In Progress",
+      "userId": 1,
+      "createdAt": "2026-09-02T09:30:00Z"
+    }
+  ]
+}
