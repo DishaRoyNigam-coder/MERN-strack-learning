@@ -1,18 +1,22 @@
-// src/components/TaskList.jsx
+// src/components/TaskList.jsx (updated)
 
 import { useQuery } from '@tanstack/react-query';
 import { taskApi } from '../api/tasks';
+import { useDeleteTask } from '../hooks/useTaskMutations';
 
 function TaskList() {
-  const {
-    data: tasks,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
+  const { data: tasks, isLoading, error, refetch } = useQuery({
     queryKey: ['tasks'],
     queryFn: taskApi.getTasks,
   });
+
+  const deleteTask = useDeleteTask();
+
+  const handleDelete = (id) => {
+    if (window.confirm('Delete this task?')) {
+      deleteTask.mutate(id);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -41,13 +45,22 @@ function TaskList() {
       {tasks?.map((task) => (
         <li
           key={task.id}
-          className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+          className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex justify-between items-center"
         >
-          <h3 className="font-medium">{task.title}</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{task.description}</p>
-          <span className="inline-block mt-2 text-xs font-medium px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
-            {task.status}
-          </span>
+          <div>
+            <h3 className="font-medium">{task.title}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{task.description}</p>
+            <span className="inline-block mt-2 text-xs font-medium px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+              {task.status}
+            </span>
+          </div>
+          <button
+            onClick={() => handleDelete(task.id)}
+            disabled={deleteTask.isPending}
+            className="text-red-500 hover:text-red-700 disabled:opacity-50"
+          >
+            {deleteTask.isPending ? '...' : '🗑️'}
+          </button>
         </li>
       ))}
     </ul>
