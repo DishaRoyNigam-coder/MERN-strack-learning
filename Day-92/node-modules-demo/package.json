@@ -1,0 +1,14 @@
+{
+  "name": "node-modules-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app-esm.js",
+  "type": "module",
+  "scripts": {
+    "start-cjs": "node app-cjs.js",
+    "start-esm": "node app-esm.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
