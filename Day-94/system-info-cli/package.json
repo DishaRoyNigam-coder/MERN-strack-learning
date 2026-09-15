@@ -1,0 +1,19 @@
+{
+  "name": "system-info-cli",
+  "version": "1.0.0",
+  "description": "A CLI tool that shows system information",
+  "main": "index.js",
+  "bin": {
+    "sysinfo": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "path": "node index.js path",
+    "os": "node index.js os",
+    "url": "node index.js url",
+    "summary": "node index.js summary"
+  },
+  "keywords": ["cli", "system", "info", "nodejs"],
+  "author": "Your Name",
+  "license": "MIT"
+}
