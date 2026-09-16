@@ -1,0 +1,18 @@
+{
+  "name": "task-event-system",
+  "version": "1.0.0",
+  "description": "Task management system with Node.js EventEmitter",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": ["events", "eventemitter", "node", "task"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "figlet": "^1.7.0"
+  }
+}
