@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Middleware Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: #60a5fa; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; margin-bottom: 30px; }
+    .section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .section h2 { color: #fcd34d; font-size: 1.1rem; margin-bottom: 12px; }
+    .endpoint {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .endpoint:hover { background: rgba(255, 255, 255, 0.08); }
+    .method {
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.7rem;
+      color: #fff;
+    }
+    .get { background: #22c55e; }
+    .post { background: #3b82f6; }
+    .url { color: #60a5fa; }
+    .desc { color: #94a3b8; font-size: 0.8rem; margin-left: auto; }
+    .result {
+      margin-top: 16px;
+      background: #0a0f1a;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Middleware Demo</h1>
+    <p class="subtitle">Click an endpoint to test. Watch the server console for logs!</p>
+
+    <div class="section">
+      <h2>Public Routes</h2>
+      <div class="endpoint" onclick="testEndpoint('GET', '/')">
+        <span class="method get">GET</span>
+        <span class="url">/</span>
+        <span class="desc">Root endpoint</span>
+      </div>
+      <div class="endpoint" onclick="testEndpoint('GET', '/health')">
+        <span class="method get">GET</span>
+        <span class="url">/health</span>
+        <span class="desc">Health check</span>
+      </div>
+      <div class="endpoint" onclick="testEndpoint('GET', '/api/public')">
+        <span class="method get">GET</span>
+        <span class="url">/api/public</span>
+        <span class="desc">Public endpoint</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Protected Routes (Bearer secret-token)</h2>
+      <div class="endpoint" onclick="testEndpoint('GET', '/api/protected', true)">
+        <span class="method get">GET</span>
+        <span class="url">/api/protected</span>
+        <span class="desc">Requires token</span>
+      </div>
+      <div class="endpoint" onclick="testEndpoint('GET', '/api/users', true)">
+        <span class="method get">GET</span>
+        <span class="url">/api/users</span>
+        <span class="desc">Users list</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Performance & Error</h2>
+      <div class="endpoint" onclick="testEndpoint('GET', '/api/slow')">
+        <span class="method get">GET</span>
+        <span class="url">/api/slow</span>
+        <span class="desc">3s delay</span>
+      </div>
+      <div class="endpoint" onclick="testEndpoint('GET', '/api/error')">
+        <span class="method get">GET</span>
+        <span class="url">/api/error</span>
+        <span class="desc">Throws error</span>
+      </div>
+      <div class="endpoint" onclick="testEndpoint('GET', '/api/teapot')">
+        <span class="method get">GET</span>
+        <span class="url">/api/teapot</span>
+        <span class="desc">418 status</span>
+      </div>
+    </div>
+
+    <div class="result" id="result">Click an endpoint to see the response...</div>
+  </div>
+
+  <script>
+    async function testEndpoint(method, url, auth = false) {
+      const resultEl = document.getElementById('result');
+      resultEl.textContent = `⏳ ${method} ${url}...`;
+
+      try {
+        const options = { method };
+        if (auth) {
+          options.headers = { 'Authorization': 'Bearer secret-token' };
+        }
+
+        const response = await fetch(url, options);
+        const data = await response.json();
+
+        resultEl.textContent =
+          `✅ ${method} ${url}\n` +
+          `Status: ${response.status}\n` +
+          `Request-Id: ${response.headers.get('X-Request-Id')}\n\n` +
+          JSON.stringify(data, null, 2);
+      } catch (error) {
+        resultEl.textContent = `❌ Error: ${error.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
