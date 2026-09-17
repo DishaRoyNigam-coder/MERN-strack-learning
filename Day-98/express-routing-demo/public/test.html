@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Routing Test</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 { color: #60a5fa; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; margin-bottom: 30px; }
+    .section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .section h2 { color: #fcd34d; font-size: 1.1rem; margin-bottom: 12px; }
+    .endpoint {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    .method {
+      padding: 2px 10px;
+      background: #22c55e;
+      color: #fff;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.7rem;
+    }
+    .url { color: #60a5fa; }
+    .desc { color: #94a3b8; font-size: 0.8rem; margin-left: auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Express Routing Test</h1>
+    <p class="subtitle">Click an endpoint below or use curl to test.</p>
+
+    <div class="section">
+      <h2>Route Parameters</h2>
+      <a class="endpoint" href="/api/users/1" target="_blank">
+        <span class="method">GET</span>
+        <span class="url">/api/users/1</span>
+        <span class="desc">Get user by ID</span>
+      </a>
+      <a class="endpoint" href="/api/users/1/posts" target="_blank">
+        <span class="method">GET</span>
+        <span class="url">/api/users/1/posts</span>
+        <span class="desc">User's posts</span>
+      </a>
+      <a class="endpoint" href="/api/posts/2" target="_blank">
+        <span class="method">GET</span>
+        <span class="url">/api/posts/2</span>
+        <span class="desc">Get post by ID</span>
+      </a>
+    </div>
+
+    <div class="section">
+      <h2>Query Strings</h2>
+      <a class="endpoint" href="/api/users?role=admin" target="_blank">
+        <span class="method">GET</span>
+        <span class="url">/api/users?role=admin</span>
+        <span class="desc">Filter by role</span>
+      </a>
+      <a class="endpoint" href="/api/users?sort=name&order=asc" target="_blank">
+        <span class="method">GET</span>
+        <span class="url">/api/users?sort=name&order=asc</span>
+        <span class="desc">Sort by name</span>
+      </a>
+      <a class="endpoint" href="/api/users?page=1&limit=2" target="_blank">
+        <span class="method">GET</span>
+        <span class="url">/api/users?page=1&limit=2</span>
+        <span class="desc">Pagination</span>
+      </a>
+    </div>
+
+    <div class="section">
+      <h2>Search</h2>
+      <a class="endpoint" href="/api/search?q=express" target="_blank">
+        <span class="method">GET</span>
+        <span class="url">/api/search?q=express</span>
+        <span class="desc">Search all</span>
+      </a>
+      <a class="endpoint" href="/api/search?q=react&type=posts" target="_blank">
+        <span class="method">GET</span>
+        <span class="url">/api/search?q=react&type=posts</span>
+        <span class="desc">Search posts only</span>
+      </a>
+      <a class="endpoint" href="/api/search?q=alice&type=users" target="_blank">
+        <span class="method">GET</span>
+        <span class="url">/api/search?q=alice&type=users</span>
+        <span class="desc">Search users only</span>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
