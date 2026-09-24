@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Posts API Tester</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 30px 20px;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { color: #60a5fa; margin-bottom: 8px; font-size: 1.8rem; }
+    .subtitle { color: #94a3b8; margin-bottom: 24px; }
+    .section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .section h2 { color: #fcd34d; font-size: 1rem; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .endpoint {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .endpoint:hover { background: rgba(255, 255, 255, 0.1); }
+    .method {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.7rem;
+      color: #fff;
+      min-width: 55px;
+      text-align: center;
+    }
+    .get { background: #22c55e; }
+    .post { background: #3b82f6; }
+    .put { background: #f59e0b; }
+    .patch { background: #8b5cf6; }
+    .delete { background: #ef4444; }
+    .url { color: #60a5fa; flex: 1; }
+    .result {
+      margin-top: 16px;
+      background: #0a0f1a;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .result .status-ok { color: #22c55e; font-weight: 700; }
+    .result .status-err { color: #ef4444; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 Posts API Tester</h1>
+    <p class="subtitle">Click any endpoint to test it live</p>
+
+    <div class="section">
+      <h2>Read (GET)</h2>
+      <div class="endpoint" onclick="test('GET', '/api/posts')">
+        <span class="method get">GET</span>
+        <span class="url">/api/posts</span>
+      </div>
+      <div class="endpoint" onclick="test('GET', '/api/posts/1')">
+        <span class="method get">GET</span>
+        <span class="url">/api/posts/1</span>
+      </div>
+      <div class="endpoint" onclick="test('GET', '/api/posts?author=Alice')">
+        <span class="method get">GET</span>
+        <span class="url">/api/posts?author=Alice</span>
+      </div>
+      <div class="endpoint" onclick="test('GET', '/api/posts?sort=likes&order=desc')">
+        <span class="method get">GET</span>
+        <span class="url">/api/posts?sort=likes&order=desc</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Create (POST)</h2>
+      <div class="endpoint" onclick="createPost()">
+        <span class="method post">POST</span>
+        <span class="url">/api/posts</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Update (PUT / PATCH)</h2>
+      <div class="endpoint" onclick="putPost()">
+        <span class="method put">PUT</span>
+        <span class="url">/api/posts/1</span>
+      </div>
+      <div class="endpoint" onclick="patchPost()">
+        <span class="method patch">PATCH</span>
+        <span class="url">/api/posts/1</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Delete (DELETE)</h2>
+      <div class="endpoint" onclick="deletePost()">
+        <span class="method delete">DELETE</span>
+        <span class="url">/api/posts/3</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Custom Actions</h2>
+      <div class="endpoint" onclick="likePost()">
+        <span class="method post">POST</span>
+        <span class="url">/api/posts/1/like</span>
+      </div>
+    </div>
+
+    <div class="result" id="result">Click an endpoint to see the response...</div>
+  </div>
+
+  <script>
+    const result = document.getElementById('result');
+
+    async function sendRequest(method, url, body = null) {
+      result.textContent = `⏳ ${method} ${url}...`;
+      try {
+        const options = { method };
+        if (body) {
+          options.headers = { 'Content-Type': 'application/json' };
+          options.body = JSON.stringify(body);
+        }
+        const response = await fetch(url, options);
+        const data = await response.json();
+        const statusClass = response.ok ? 'status-ok' : 'status-err';
+        result.innerHTML = `<span class="${statusClass}">Status: ${response.status} ${response.statusText}</span>\n\n${JSON.stringify(data, null, 2)}`;
+      } catch (err) {
+        result.textContent = `❌ ${err.message}`;
+      }
+    }
+
+    function test(method, url) {
+      sendRequest(method, url);
+    }
+
+    function createPost() {
+      sendRequest('POST', '/api/posts', {
+        title: 'New Post from Test Page',
+        body: 'This post was created from the interactive test page. It works!',
+        author: 'Test User',
+        tags: ['test', 'demo'],
+        published: true,
+      });
+    }
+
+    function putPost() {
+      sendRequest('PUT', '/api/posts/1', {
+        title: 'Completely New Title (PUT)',
+        body: 'This content replaces the entire original post body.',
+        author: 'Alice Johnson',
+        tags: ['updated'],
+        published: false,
+      });
+    }
+
+    function patchPost() {
+      sendRequest('PATCH', '/api/posts/1', {
+        title: 'Only the Title Changed',
+      });
+    }
+
+    function deletePost() {
+      if (confirm('Delete post #3?')) {
+        sendRequest('DELETE', '/api/posts/3');
+      }
+    }
+
+    function likePost() {
+      sendRequest('POST', '/api/posts/1/like');
+    }
+  </script>
+</body>
+</html>
