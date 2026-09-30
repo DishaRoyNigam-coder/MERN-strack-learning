@@ -10,32 +10,25 @@ import {
   deletePost,
   likePost,
 } from '../controllers/posts.controller.js';
+import { requireAuth, requireRole, optionalAuth } from '../middleware/auth.js';
 
 const router = Router();
 
 // ============================================================
-// ROUTES
+// PUBLIC / OPTIONAL AUTH ROUTES
 // ============================================================
 
-// GET /api/posts — List all posts
-router.get('/', getAllPosts);
+router.get('/', optionalAuth, getAllPosts);
+router.get('/:id', optionalAuth, getPostById);
+router.post('/:id/like', optionalAuth, likePost);
 
-// GET /api/posts/:id — Get one post
-router.get('/:id', getPostById);
+// ============================================================
+// PROTECTED ROUTES (require login)
+// ============================================================
 
-// POST /api/posts — Create a post
-router.post('/', createPost);
-
-// PUT /api/posts/:id — Full replace
-router.put('/:id', replacePost);
-
-// PATCH /api/posts/:id — Partial update
-router.patch('/:id', updatePost);
-
-// DELETE /api/posts/:id — Delete
-router.delete('/:id', deletePost);
-
-// POST /api/posts/:id/like — Custom action
-router.post('/:id/like', likePost);
+router.post('/', requireAuth, createPost);
+router.put('/:id', requireAuth, replacePost);
+router.patch('/:id', requireAuth, updatePost);
+router.delete('/:id', requireAuth, requireRole('admin', 'editor'), deletePost);
 
 export default router;

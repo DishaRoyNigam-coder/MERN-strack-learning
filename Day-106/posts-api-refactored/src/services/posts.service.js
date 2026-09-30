@@ -1,6 +1,6 @@
 // src/services/posts.service.js
 
-import { posts, getNextId } from '../data/store.js';
+import { posts, getNextPostId } from '../data/store.js';
 import { NotFoundError } from '../errors/AppError.js';
 
 // ============================================================
@@ -113,7 +113,7 @@ export const postsService = {
   create(data) {
     const now = new Date().toISOString();
     const newPost = {
-      id: getNextId(),
+      id: getNextPostId(),
       title: data.title.trim(),
       body: data.body.trim(),
       author: data.author.trim(),

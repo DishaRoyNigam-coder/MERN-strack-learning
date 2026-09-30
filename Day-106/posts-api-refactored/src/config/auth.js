@@ -1,0 +1,21 @@
+// src/config/auth.js
+
+import 'dotenv/config';
+
+// Validate JWT_SECRET exists
+if (!process.env.JWT_SECRET) {
+  console.error('❌ JWT_SECRET is missing from environment variables');
+  process.exit(1);
+}
+
+if (process.env.JWT_SECRET.length < 32) {
+  console.warn('⚠️  JWT_SECRET should be at least 32 characters for security');
+}
+
+export const authConfig = {
+  jwtSecret: process.env.JWT_SECRET,
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  jwtIssuer: process.env.JWT_ISSUER || 'posts-api',
+  jwtAudience: process.env.JWT_AUDIENCE || 'posts-api-users',
+  bcryptRounds: Number(process.env.BCRYPT_ROUNDS) || 10,
+};

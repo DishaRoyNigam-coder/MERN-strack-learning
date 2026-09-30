@@ -4,7 +4,7 @@ import express from 'express';
 import chalk from 'chalk';
 import routes from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
-
+import { seedUsers } from './data/store.js';
 const app = express();
 
 // ============================================================
@@ -58,6 +58,12 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
   });
+});
+
+
+// Seed users on startup (async)
+seedUsers().catch(err => {
+  console.error('Failed to seed users:', err);
 });
 
 // ============================================================
