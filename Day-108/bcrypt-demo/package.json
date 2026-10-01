@@ -1,0 +1,22 @@
+{
+  "name": "bcrypt-demo",
+  "version": "1.0.0",
+  "description": "Password hashing with bcrypt - salts, rounds, and best practices",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "demo": "node demo.js"
+  },
+  "keywords": ["bcrypt", "password", "hashing", "security"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
