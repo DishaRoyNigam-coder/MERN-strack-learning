@@ -4,25 +4,27 @@ import jwt from 'jsonwebtoken';
 import { authConfig } from '../config/auth.js';
 import { UnauthorizedError } from '../errors/AppError.js';
 
-/**
- * Sign a new JWT token
- * @param {object} payload - The data to encode (userId, role, etc.)
- * @returns {string} The signed JWT token
- */
-export function signToken(payload) {
-  return jwt.sign(payload, authConfig.jwtSecret, {
-    expiresIn: authConfig.jwtExpiresIn,
-    issuer: authConfig.jwtIssuer,
-    audience: authConfig.jwtAudience,
-  });
+// ============================================================
+// SIGN TOKEN
+// ============================================================
+
+export function signToken(payload, options = {}) {
+  return jwt.sign(
+    payload,
+    authConfig.jwtSecret,
+    {
+      expiresIn: options.expiresIn || authConfig.jwtExpiresIn,
+      issuer: authConfig.jwtIssuer,
+      audience: authConfig.jwtAudience,
+      ...options,
+    }
+  );
 }
 
-/**
- * Verify a JWT token
- * @param {string} token - The JWT to verify
- * @returns {object} The decoded payload
- * @throws {UnauthorizedError} If token is invalid or expired
- */
+// ============================================================
+// VERIFY TOKEN
+// ============================================================
+
 export function verifyToken(token) {
   try {
     return jwt.verify(token, authConfig.jwtSecret, {
@@ -30,42 +32,44 @@ export function verifyToken(token) {
       audience: authConfig.jwtAudience,
     });
   } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      throw new UnauthorizedError('Token has expired', {
-        expiredAt: error.expiredAt,
-      });
+    // Distinguish between token error types for better debugging
+    switch (error.name) {
+      case 'TokenExpiredError':
+        throw new UnauthorizedError('Token has expired', {
+          expiredAt: error.expiredAt,
+          hint: 'Please log in again',
+        });
+      case 'JsonWebTokenError':
+        throw new UnauthorizedError('Invalid token', {
+          reason: error.message,
+        });
+      case 'NotBeforeError':
+        throw new UnauthorizedError('Token not yet valid', {
+          date: error.date,
+        });
+      default:
+        throw new UnauthorizedError('Token verification failed');
     }
-    if (error.name === 'JsonWebTokenError') {
-      throw new UnauthorizedError('Invalid token', {
-        reason: error.message,
-      });
-    }
-    if (error.name === 'NotBeforeError') {
-      throw new UnauthorizedError('Token not yet valid', {
-        date: error.date,
-      });
-    }
-    throw new UnauthorizedError('Token verification failed');
   }
 }
 
-/**
- * Decode a token without verifying (for debugging)
- * @param {string} token
- * @returns {object|null}
- */
+// ============================================================
+// DECODE TOKEN (without verification, for debugging)
+// ============================================================
+
 export function decodeToken(token) {
-  return jwt.decode(token);
+  return jwt.decode(token, { complete: true });
 }
 
-/**
- * Extract the token from a Bearer header
- * @param {string} authHeader - e.g. "Bearer eyJhbGc..."
- * @returns {string|null} The token or null
- */
+// ============================================================
+// EXTRACT BEARER TOKEN
+// ============================================================
+
 export function extractBearerToken(authHeader) {
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
-  }
-  return authHeader.substring(7); // Remove "Bearer "
+  if (!authHeader) return null;
+  if (typeof authHeader !== 'string') return null;
+  if (!authHeader.startsWith('Bearer ')) return null;
+
+  const token = authHeader.substring(7).trim();
+  return token.length > 0 ? token : null;
 }

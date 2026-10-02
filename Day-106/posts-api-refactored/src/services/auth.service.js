@@ -22,7 +22,7 @@ export const authService = {
     }
 
     // 2. Compare password with hash
-    const isValid = await comparePassword(password, user.password);
+    const isValid = await comparePassword(password, user.passwordHash);
 
     if (!isValid) {
       throw new UnauthorizedError('Invalid email or password');
@@ -36,10 +36,11 @@ export const authService = {
     });
 
     // 4. Return token and safe user data (no password!)
-    const { password: _, ...safeUser } = user;
-
-    return { token, user: safeUser };
-  },
+ 
+  // ✅ Return safe user (no passwordHash)
+  const { passwordHash: _, ...safeUser } = user;
+  return { token, user: safeUser };
+},
 
   /**
    * Register a new user
