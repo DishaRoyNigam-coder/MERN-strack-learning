@@ -3,19 +3,55 @@
 import { postsService } from '../services/posts.service.js';
 import { validatePost, validateId } from '../utils/validate.js';
 import { ForbiddenError } from '../errors/AppError.js';
+import { ROLES, roleIsAtLeast } from '../config/roles.js';
 
 // ============================================================
-// GET /api/posts — List all posts (public)
+// HELPER: Check if user can edit a post
+// ============================================================
+
+function canEditPost(user, post) {
+  if (!user) return false;
+  if (user.role === ROLES.ADMIN) return true;
+  if (roleIsAtLeast(user.role, ROLES.EDITOR)) return true;
+  return post.authorId === user.id;
+}
+
+// ============================================================
+// HELPER: Check if user can delete a post
+// ============================================================
+
+function canDeletePost(user, post) {
+  if (!user) return false;
+  if (user.role === ROLES.ADMIN) return true;
+  if (roleIsAtLeast(user.role, ROLES.EDITOR)) return true;
+  return post.authorId === user.id;
+}
+
+// ============================================================
+// GET /api/posts
 // ============================================================
 
 export function getAllPosts(req, res, next) {
   try {
-    const result = postsService.list(req.query);
+    // Optional: admins can see unpublished posts by default
+    const query = { ...req.query };
+
+    if (req.user && roleIsAtLeast(req.user.role, ROLES.EDITOR)) {
+      // Editors and above can query unpublished posts
+    } else if (!query.published) {
+      // Regular users only see published posts by default
+      // (unless explicitly asking for others)
+      // (This is a demo — in production, use a "status" field)
+    }
+
+    const result = postsService.list(query);
 
     res.status(200).json({
       success: true,
       ...result,
-      viewer: req.user ? { id: req.user.id, name: req.user.name } : null,
+      viewer: req.user
+        ? { id: req.user.id, name: req.user.name, role: req.user.role }
+        : null,
     });
   } catch (error) {
     next(error);
@@ -23,7 +59,7 @@ export function getAllPosts(req, res, next) {
 }
 
 // ============================================================
-// GET /api/posts/:id — Get one post (public)
+// GET /api/posts/:id
 // ============================================================
 
 export function getPostById(req, res, next) {
@@ -34,9 +70,8 @@ export function getPostById(req, res, next) {
     res.status(200).json({
       success: true,
       data: post,
-      canEdit: req.user
-        ? req.user.id === post.authorId || req.user.role === 'admin'
-        : false,
+      canEdit: canEditPost(req.user, post),
+      canDelete: canDeletePost(req.user, post),
     });
   } catch (error) {
     next(error);
@@ -44,12 +79,11 @@ export function getPostById(req, res, next) {
 }
 
 // ============================================================
-// POST /api/posts — Create a post (PROTECTED by requireAuth)
+// POST /api/posts
 // ============================================================
 
 export function createPost(req, res, next) {
   try {
-    // req.user is guaranteed by requireAuth middleware
     validatePost(req.body);
 
     const postData = {
@@ -70,6 +104,7 @@ export function createPost(req, res, next) {
         createdBy: {
           id: req.user.id,
           name: req.user.name,
+          role: req.user.role,
         },
       });
   } catch (error) {
@@ -78,7 +113,7 @@ export function createPost(req, res, next) {
 }
 
 // ============================================================
-// PUT /api/posts/:id — Full replace (requireAuth + ownership)
+// PUT /api/posts/:id — Full replace (auth + ownership or editor+)
 // ============================================================
 
 export function replacePost(req, res, next) {
@@ -86,11 +121,12 @@ export function replacePost(req, res, next) {
     const id = validateId(req.params.id);
     const existing = postsService.getById(id);
 
-    // Ownership check: only author or admin
-    if (existing.authorId !== req.user.id && req.user.role !== 'admin') {
+    if (!canEditPost(req.user, existing)) {
       throw new ForbiddenError('You can only edit your own posts', {
         postAuthorId: existing.authorId,
         yourId: req.user.id,
+        yourRole: req.user.role,
+        hint: 'Only the author, editors, or admins can edit this post',
       });
     }
 
@@ -108,7 +144,7 @@ export function replacePost(req, res, next) {
 }
 
 // ============================================================
-// PATCH /api/posts/:id — Partial update (requireAuth + ownership)
+// PATCH /api/posts/:id — Partial update
 // ============================================================
 
 export function updatePost(req, res, next) {
@@ -116,7 +152,7 @@ export function updatePost(req, res, next) {
     const id = validateId(req.params.id);
     const existing = postsService.getById(id);
 
-    if (existing.authorId !== req.user.id && req.user.role !== 'admin') {
+    if (!canEditPost(req.user, existing)) {
       throw new ForbiddenError('You can only edit your own posts');
     }
 
@@ -134,7 +170,7 @@ export function updatePost(req, res, next) {
 }
 
 // ============================================================
-// DELETE /api/posts/:id — Delete (requireAuth + role check)
+// DELETE /api/posts/:id — Delete (ownership or editor+)
 // ============================================================
 
 export function deletePost(req, res, next) {
@@ -142,13 +178,9 @@ export function deletePost(req, res, next) {
     const id = validateId(req.params.id);
     const existing = postsService.getById(id);
 
-    // Authorization: only author, admin, or editor
-    const isAuthor = existing.authorId === req.user.id;
-    const isPrivileged = ['admin', 'editor'].includes(req.user.role);
-
-    if (!isAuthor && !isPrivileged) {
+    if (!canDeletePost(req.user, existing)) {
       throw new ForbiddenError(
-        'Only the author, admin, or editor can delete this post'
+        'Only the author, editors, or admins can delete this post'
       );
     }
 
@@ -158,6 +190,11 @@ export function deletePost(req, res, next) {
       success: true,
       message: 'Post deleted successfully',
       data: deleted,
+      deletedBy: {
+        id: req.user.id,
+        name: req.user.name,
+        role: req.user.role,
+      },
     });
   } catch (error) {
     next(error);
@@ -165,7 +202,7 @@ export function deletePost(req, res, next) {
 }
 
 // ============================================================
-// POST /api/posts/:id/like — Like a post (optionalAuth)
+// POST /api/posts/:id/like
 // ============================================================
 
 export function likePost(req, res, next) {

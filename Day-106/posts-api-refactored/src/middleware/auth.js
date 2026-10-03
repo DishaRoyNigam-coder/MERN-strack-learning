@@ -1,9 +1,19 @@
+
 // src/middleware/auth.js
 
 import chalk from 'chalk';
+
 import { verifyToken, extractBearerToken } from '../utils/jwt.js';
-import { UnauthorizedError, ForbiddenError } from '../errors/AppError.js';
+
+import {
+  UnauthorizedError,
+  ForbiddenError,
+} from '../errors/AppError.js';
+
 import { users } from '../data/store.js';
+
+import { PERMISSIONS } from '../config/roles.js';
+
 
 // ============================================================
 // HELPER: Log authentication events
@@ -20,18 +30,54 @@ function logAuth(action, req, details = {}) {
   };
 
   const color = colors[action] || chalk.gray;
-  const icon = action === 'success' ? '✅' :
-               action === 'failure' ? '❌' : 'ℹ️';
+
+  const icon =
+    action === 'success'
+      ? '✅'
+      : action === 'failure'
+        ? '❌'
+        : 'ℹ️';
 
   console.log(
-    chalk.gray(`[${time}]`) + ' ' +
-    `${icon} ` +
-    color(`AUTH:${action.toUpperCase()}`) + ' ' +
-    chalk.cyan(`${req.method} ${req.originalUrl}`) + ' ' +
-    chalk.gray(`from ${ip}`) +
-    (details.reason ? ' ' + chalk.yellow(`(${details.reason})`) : '')
+    chalk.gray(`[${time}]`) +
+      ' ' +
+      `${icon} ` +
+      color(`AUTH:${action.toUpperCase()}`) +
+      ' ' +
+      chalk.cyan(`${req.method} ${req.originalUrl}`) +
+      ' ' +
+      chalk.gray(`from ${ip}`) +
+      (details.reason
+        ? ' ' + chalk.yellow(`(${details.reason})`)
+        : '')
   );
 }
+
+
+// ============================================================
+// HELPER: Attach user with permissions to request
+// ============================================================
+
+function attachUser(req, user, token, decoded) {
+  // Remove passwordHash before attaching user to request
+  const { passwordHash, ...safeUser } = user;
+
+  // Get permissions based on user's role
+  const userPermissions = PERMISSIONS[user.role] || [];
+
+  // Attach safe user information + permissions
+  req.user = {
+    ...safeUser,
+    permissions: userPermissions,
+  };
+
+  // Attach additional authentication information
+  req.userId = user.id;
+  req.userRole = user.role;
+  req.token = token;
+  req.tokenExp = decoded.exp;
+}
+
 
 // ============================================================
 // 1. requireAuth — Enforce authentication
@@ -43,7 +89,10 @@ export function requireAuth(req, res, next) {
     const token = extractBearerToken(req.headers.authorization);
 
     if (!token) {
-      logAuth('failure', req, { reason: 'Missing token' });
+      logAuth('failure', req, {
+        reason: 'Missing token',
+      });
+
       throw new UnauthorizedError('Authentication required', {
         hint: 'Include header: Authorization: Bearer <token>',
       });
@@ -51,68 +100,86 @@ export function requireAuth(req, res, next) {
 
     // --- Step 2: Verify token ---
     let decoded;
+
     try {
       decoded = verifyToken(token);
     } catch (error) {
-      logAuth('failure', req, { reason: error.message });
-      throw error; // Already a proper UnauthorizedError
+      logAuth('failure', req, {
+        reason: error.message,
+      });
+
+      throw error;
     }
 
-    // --- Step 3: Look up user (token might be valid but user deleted) ---
-    const user = users.find(u => u.id === decoded.userId);
+    // --- Step 3: Look up user ---
+    // Token may be valid but user may have been deleted
+    const user = users.find(
+      (u) => u.id === decoded.userId
+    );
 
     if (!user) {
-      logAuth('failure', req, { reason: 'User not found' });
-      throw new UnauthorizedError('User no longer exists', {
-        hint: 'Please register again',
+      logAuth('failure', req, {
+        reason: 'User not found',
       });
+
+      throw new UnauthorizedError(
+        'User no longer exists',
+        {
+          hint: 'Please register again',
+        }
+      );
     }
 
-    // --- Step 4: Attach user to request (no password!) ---
-    const { passwordHash, ...safeUser } = user;
-    req.user = safeUser;
-    req.userId = user.id;
-    req.userRole = user.role;
-    req.token = token;
-    req.tokenExp = decoded.exp;
+    // --- Step 4: Attach user + permissions ---
+    attachUser(req, user, token, decoded);
 
     // --- Step 5: Continue ---
-    logAuth('success', req, { reason: `user=${user.email}` });
+    logAuth('success', req, {
+      reason: `user=${user.email}`,
+    });
+
     next();
   } catch (error) {
     next(error);
   }
 }
 
+
 // ============================================================
-// 2. optionalAuth — Attach user if token present (but don't require)
+// 2. optionalAuth — Attach user if token present
+//    But don't require authentication
 // ============================================================
 
 export function optionalAuth(req, res, next) {
   try {
-    const token = extractBearerToken(req.headers.authorization);
+    const token = extractBearerToken(
+      req.headers.authorization
+    );
 
-    // No token? Just continue without user
+    // No token?
+    // Continue as anonymous user
     if (!token) {
       req.user = null;
       return next();
     }
 
-    // Try to verify. If invalid, continue as anonymous (don't fail)
+    // Try to verify token
     try {
       const decoded = verifyToken(token);
-      const user = users.find(u => u.id === decoded.userId);
+
+      const user = users.find(
+        (u) => u.id === decoded.userId
+      );
 
       if (user) {
-        const { passwordHash, ...safeUser } = user;
-        req.user = safeUser;
-        req.userId = user.id;
-        req.userRole = user.role;
-        req.token = token;
-        req.tokenExp = decoded.exp;
+        // Attach user + permissions
+        attachUser(req, user, token, decoded);
+      } else {
+        // Token is valid but user doesn't exist
+        req.user = null;
       }
     } catch (error) {
-      // Ignore invalid tokens in optional auth
+      // Ignore invalid tokens in optional authentication
       req.user = null;
     }
 
@@ -121,6 +188,7 @@ export function optionalAuth(req, res, next) {
     next(error);
   }
 }
+
 
 // ============================================================
 // 3. requireRole — Enforce role-based access
@@ -131,9 +199,14 @@ export function requireRole(...allowedRoles) {
   return (req, res, next) => {
     // Ensure requireAuth ran first
     if (!req.user) {
-      return next(new UnauthorizedError('Authentication required'));
+      return next(
+        new UnauthorizedError(
+          'Authentication required'
+        )
+      );
     }
 
+    // Check whether user's role is allowed
     if (!allowedRoles.includes(req.user.role)) {
       logAuth('failure', req, {
         reason: `role=${req.user.role} not in [${allowedRoles.join(',')}]`,
@@ -150,37 +223,54 @@ export function requireRole(...allowedRoles) {
       );
     }
 
-    logAuth('success', req, { reason: `role=${req.user.role} allowed` });
+    logAuth('success', req, {
+      reason: `role=${req.user.role} allowed`,
+    });
+
     next();
   };
 }
+
 
 // ============================================================
 // 4. requireOwnership — Enforce resource ownership
 // Must be used AFTER requireAuth
 //
 // Usage:
-//   router.put('/:id', requireAuth, requireOwnership(getResource), updatePost)
+// router.put(
+//   '/:id',
+//   requireAuth,
+//   requireOwnership(getResource),
+//   updatePost
+// )
 //
-// getResource is an async function (req) => resource
+// getResource is an async function:
+// (req) => resource
 // ============================================================
 
-export function requireOwnership(getResource, ownerField = 'authorId') {
+export function requireOwnership(
+  getResource,
+  ownerField = 'authorId'
+) {
   return async (req, res, next) => {
     try {
+      // Make sure user is authenticated
       if (!req.user) {
-        throw new UnauthorizedError('Authentication required');
+        throw new UnauthorizedError(
+          'Authentication required'
+        );
       }
 
       // Fetch the resource
       const resource = await getResource(req);
 
+      // If resource doesn't exist,
+      // let route handler deal with 404
       if (!resource) {
-        // If resource doesn't exist, let the route handler deal with 404
         return next();
       }
 
-      // Admins bypass ownership
+      // Admins bypass ownership check
       if (req.user.role === 'admin') {
         return next();
       }
@@ -200,7 +290,10 @@ export function requireOwnership(getResource, ownerField = 'authorId') {
         );
       }
 
-      logAuth('success', req, { reason: 'ownership verified' });
+      logAuth('success', req, {
+        reason: 'ownership verified',
+      });
+
       next();
     } catch (error) {
       next(error);
@@ -208,20 +301,30 @@ export function requireOwnership(getResource, ownerField = 'authorId') {
   };
 }
 
+
 // ============================================================
-// 5. requireVerified — Enforce email verification (bonus)
+// 5. requireVerified — Enforce email verification
 // ============================================================
 
 export function requireVerified(req, res, next) {
+  // Make sure user is authenticated
   if (!req.user) {
-    return next(new UnauthorizedError('Authentication required'));
+    return next(
+      new UnauthorizedError(
+        'Authentication required'
+      )
+    );
   }
 
+  // Check email verification
   if (!req.user.emailVerified) {
     return next(
-      new ForbiddenError('Email verification required', {
-        hint: 'Please verify your email before continuing',
-      })
+      new ForbiddenError(
+        'Email verification required',
+        {
+          hint: 'Please verify your email before continuing',
+        }
+      )
     );
   }
 
