@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CORS Test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
+    h1 { color: #1e293b; }
+    button { padding: 10px 20px; margin: 4px; font-size: 14px; cursor: pointer;
+             background: #3b82f6; color: white; border: none; border-radius: 8px; }
+    button:hover { background: #2563eb; }
+    button.danger { background: #dc2626; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 8px;
+          overflow-x: auto; font-size: 13px; max-height: 400px; }
+    .ok { color: #22c55e; font-weight: 700; }
+    .err { color: #ef4444; font-weight: 700; }
+    .info { color: #64748b; font-size: 14px; }
+    input { padding: 8px 12px; margin: 4px; border: 1px solid #cbd5e1; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>🌐 CORS Test Page</h1>
+  <p class="info">
+    This page is served from <strong id="origin">?</strong>.
+    It calls the API at <strong>http://localhost:3000</strong> — a different origin.
+    If CORS is configured correctly, the requests will succeed.
+  </p>
+
+  <h3>Quick Tests</h3>
+  <button onclick="testHealth()">GET /health</button>
+  <button onclick="testList()">GET /api/posts</button>
+  <button onclick="testCreate()">POST /api/posts (no auth)</button>
+
+  <h3>Auth Flow</h3>
+  <input id="email" value="admin@example.com" />
+  <input id="password" type="password" value="admin123" />
+  <button onclick="login()">Login</button>
+  <button onclick="getMe()">GET /api/auth/me</button>
+  <button onclick="createPost()">POST /api/posts (auth)</button>
+  <button class="danger" onclick="logout()">Logout</button>
+
+  <h3>Response</h3>
+  <pre id="output">Click a button to test...</pre>
+
+  <script>
+    const API = 'http://localhost:3000';
+    const output = document.getElementById('output');
+    document.getElementById('origin').textContent = window.location.origin;
+
+    async function call(path, options = {}) {
+      output.textContent = `⏳ ${options.method || 'GET'} ${path}...`;
+      try {
+        const res = await fetch(`${API}${path}`, {
+          credentials: 'include', // ← sends cookies
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Client-Type': 'browser',
+            ...options.headers,
+          },
+          ...options,
+        });
+        const data = await res.json();
+        output.innerHTML =
+          `<span class="${res.ok ? 'ok' : 'err'}">${res.status} ${res.statusText}</span>\n\n` +
+          JSON.stringify(data, null, 2);
+      } catch (err) {
+        output.innerHTML = `<span class="err">Error: ${err.message}</span>\n\n` +
+          `Check the Network tab — the request may have been blocked by CORS.`;
+      }
+    }
+
+    function testHealth() { call('/health'); }
+    function testList() { call('/api/posts'); }
+    function testCreate() {
+      call('/api/posts', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: 'CORS Test (no auth)',
+          body: 'This should return 401 because we did not log in.',
+        }),
+      });
+    }
+    function login() {
+      call('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value,
+        }),
+      });
+    }
+    function getMe() { call('/api/auth/me'); }
+    function createPost() {
+      call('/api/posts', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: 'CORS Post with Cookie',
+          body: 'This post was created from a cross-origin page using cookies via CORS.',
+          tags: ['cors', 'cookie'],
+        }),
+      });
+    }
+    function logout() { call('/api/auth/logout', { method: 'POST' }); }
+  </script>
+</body>
+</html>

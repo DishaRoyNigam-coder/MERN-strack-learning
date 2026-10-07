@@ -1,14 +1,16 @@
 // src/app.js
 
 import express from 'express';
+import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import chalk from 'chalk';
 import routes from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { seedUsers } from './data/store.js';
+import { corsOptions } from './config/cors.js';
 
 const app = express();
-
+app.use(cors(corsOptions));
 // ============================================================
 // GLOBAL MIDDLEWARE (order matters!)
 // ============================================================

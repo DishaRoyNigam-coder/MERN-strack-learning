@@ -2,11 +2,13 @@
 
 import chalk from 'chalk';
 import app from './src/app.js';
+import { getAllowedOrigins } from './src/config/cors.js';
 
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 app.listen(PORT, () => {
+  const origins = getAllowedOrigins();
   console.log('\n' + '='.repeat(60));
   console.log(chalk.bold.cyan('🔐 Posts API — Cookie-Based JWT Auth'));
   console.log('='.repeat(60));
@@ -14,6 +16,12 @@ app.listen(PORT, () => {
   console.log(chalk.white(`🔧 Environment:  ${NODE_ENV}`));
   console.log(chalk.white(`📅 Started:      ${new Date().toLocaleString()}`));
   console.log(chalk.white(`📦 Node:         ${process.version}`));
+  console.log(chalk.yellow('\n📋 Allowed Origins:'));
+
+  origins.forEach((origin) => {
+    console.log(chalk.green(`   ✅ ${origin}`));
+  });
+
   console.log('='.repeat(60));
   console.log(chalk.yellow('\n🍪 Cookie Configuration:'));
   console.log(chalk.gray('   Name:      auth_token'));
