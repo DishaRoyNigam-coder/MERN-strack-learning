@@ -5,6 +5,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import chalk from 'chalk';
 import routes from './routes/index.js';
+import { uploadConfig } from './config/upload.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { seedUsers } from './data/store.js';
 import { corsOptions } from './config/cors.js';
@@ -79,6 +80,26 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// ============================================================
+// SERVE UPLOADED FILES
+// ============================================================
+
+app.use(
+  '/uploads',
+  // Security headers
+  (req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'");
+    next();
+  },
+  // Static file serving
+  express.static(uploadConfig.rootDir, {
+    maxAge: '1d', // Cache for 1 day
+    etag: true,
+    lastModified: true,
+  })
+);
 
 // ============================================================
 // API ROUTES

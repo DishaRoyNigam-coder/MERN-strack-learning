@@ -36,4 +36,11 @@ app.listen(PORT, () => {
   console.log(chalk.gray('   curl -c cookies.txt -X POST /api/auth/login ...'));
   console.log(chalk.gray('   curl -b cookies.txt /api/auth/me'));
   console.log('='.repeat(60) + '\n');
+  // server.js — add to the console logs
+
+console.log(chalk.yellow('\n📤 File Uploads:'));
+console.log(chalk.gray('   Upload directory:  uploads/'));
+console.log(chalk.gray('   Max file size:     5 MB'));
+console.log(chalk.gray('   Allowed types:     jpg, jpeg, png, webp, gif'));
+console.log(chalk.gray('   Avatar size:       400x400'));
 });

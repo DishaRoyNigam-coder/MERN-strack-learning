@@ -8,7 +8,6 @@ import { hashPassword } from '../utils/password.js';
 
 export const users = [];
 
-// Seed with hashed passwords (async on first import)
 export async function seedUsers() {
   if (users.length > 0) return;
 
@@ -18,27 +17,30 @@ export async function seedUsers() {
 
   users.push(
     {
-      id: 1,
+      id: "1",
       name: 'Admin User',
       email: 'admin@example.com',
       passwordHash: adminHash,
       role: 'admin',
+      avatar: null, // ← New field: relative URL path
       createdAt: '2026-01-01T00:00:00.000Z',
     },
     {
-      id: 2,
+      id: "2",
       name: 'Alice Johnson',
       email: 'alice@example.com',
       passwordHash: userHash,
       role: 'user',
+      avatar: null,
       createdAt: '2026-01-15T10:00:00.000Z',
     },
     {
-      id: 3,
+      id: "3",
       name: 'Bob Smith',
       email: 'bob@example.com',
       passwordHash: editorHash,
       role: 'editor',
+      avatar: null,
       createdAt: '2026-02-10T14:30:00.000Z',
     }
   );
@@ -52,50 +54,27 @@ export async function seedUsers() {
 
 export const posts = [
   {
-    id: 1,
-    title: 'Getting Started with Express',
-    body: 'Express is a minimal and flexible Node.js web application framework...',
-    author: 'Alice Johnson',
-    authorId: 2,
-    tags: ['express', 'node', 'backend'],
-    published: true,
-    likes: 120,
-    createdAt: '2026-09-01T10:00:00.000Z',
-    updatedAt: '2026-09-01T10:00:00.000Z',
-  },
-  {
-    id: 2,
-    title: 'Mastering React Hooks',
-    body: 'Hooks changed the way we write React components...',
-    author: 'Bob Smith',
-    authorId: 3,
-    tags: ['react', 'hooks', 'frontend'],
-    published: true,
-    likes: 340,
-    createdAt: '2026-09-03T14:30:00.000Z',
-    updatedAt: '2026-09-05T09:15:00.000Z',
-  },
-  {
-    id: 3,
-    title: 'REST API Best Practices',
-    body: 'Designing a good REST API is a combination of art and science...',
-    author: 'Admin User',
-    authorId: 1,
-    tags: ['rest', 'api', 'backend'],
-    published: false,
-    likes: 210,
-    createdAt: '2026-09-05T08:45:00.000Z',
-    updatedAt: '2026-09-05T08:45:00.000Z',
-  },
+    id: "1",
+    title: "Welcome to our platform!",
+    content: "This is our very first system-generated post.",
+    userId: "1",
+    coverImage: null,
+    createdAt: '2026-01-01T01:00:00.000Z',
+    updatedAt: '2026-01-01T01:00:00.000Z'
+  }
 ];
 
-let nextPostId = posts.length + 1;
-let nextUserId = users.length + 1;
+// ============================================================
+// ID COUNTERS & GENERATORS
+// ============================================================
 
-export function getNextPostId() {
-  return nextPostId++;
+let nextPostId = posts.length + 1;
+let nextUserId = 4; // Starts at 4 since users 1, 2, and 3 are seeded
+
+export function getNextPostId() { 
+  return String(nextPostId++); 
 }
 
-export function getNextUserId() {
-  return nextUserId++;
+export function getNextUserId() { 
+  return String(nextUserId++); 
 }

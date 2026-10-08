@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Avatar Upload Test</title>
+  <style>
+    body { font-family: system-ui; max-width: 600px; margin: 40px auto; padding: 20px; }
+    h1 { color: #1e293b; }
+    .preview { width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
+               border: 3px solid #cbd5e1; margin: 12px 0; }
+    input[type="file"] { margin: 12px 0; }
+    button { padding: 10px 20px; background: #3b82f6; color: white; border: none;
+             border-radius: 8px; cursor: pointer; font-size: 14px; }
+    button:hover { background: #2563eb; }
+    button.danger { background: #dc2626; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 8px;
+          overflow-x: auto; font-size: 13px; }
+    .row { display: flex; align-items: center; gap: 16px; margin: 12px 0; }
+    .ok { color: #22c55e; font-weight: 700; }
+    .err { color: #ef4444; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>📤 Avatar Upload Test</h1>
+
+  <div class="row">
+    <input id="email" value="alice@example.com" style="padding: 8px;" />
+    <input id="password" type="password" value="user123" style="padding: 8px;" />
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div class="row">
+    <input type="file" id="fileInput" accept="image/*" onchange="preview()" />
+    <img id="preview" class="preview" src="https://via.placeholder.com/120" alt="preview" />
+  </div>
+
+  <div class="row">
+    <button onclick="upload()">Upload Avatar</button>
+    <button onclick="getMe()">Get Profile</button>
+    <button class="danger" onclick="removeAvatar()">Delete Avatar</button>
+  </div>
+
+  <pre id="output">Ready...</pre>
+
+  <script>
+    const API = 'http://localhost:3000';
+    const output = document.getElementById('output');
+    const fileInput = document.getElementById('fileInput');
+    const previewImg = document.getElementById('preview');
+
+    function log(msg, type = '') {
+      output.innerHTML = `<span class="${type}">${msg}</span>\n\n${output.innerHTML}`;
+    }
+
+    function preview() {
+      const file = fileInput.files[0];
+      if (file) {
+        previewImg.src = URL.createObjectURL(file);
+      }
+    }
+
+    async function login() {
+      const res = await fetch(`${API}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value,
+        }),
+      });
+      const data = await res.json();
+      log(`Login: ${res.status}\n${JSON.stringify(data, null, 2)}`, res.ok ? 'ok' : 'err');
+    }
+
+    async function upload() {
+      const file = fileInput.files[0];
+      if (!file) return log('Select a file first', 'err');
+
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const res = await fetch(`${API}/api/auth/me/avatar`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData, // ← No Content-Type header! The browser sets it.
+      });
+      const data = await res.json();
+
+      if (res.ok && data.data?.file?.url) {
+        previewImg.src = `${API}${data.data.file.url}`;
+      }
+      log(`Upload: ${res.status}\n${JSON.stringify(data, null, 2)}`, res.ok ? 'ok' : 'err');
+    }
+
+    async function getMe() {
+      const res = await fetch(`${API}/api/auth/me`, { credentials: 'include' });
+      const data = await res.json();
+      log(`Get Me: ${res.status}\n${JSON.stringify(data, null, 2)}`, res.ok ? 'ok' : 'err');
+    }
+
+    async function removeAvatar() {
+      const res = await fetch(`${API}/api/auth/me/avatar`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      previewImg.src = 'https://via.placeholder.com/120';
+      log(`Delete: ${res.status}\n${JSON.stringify(data, null, 2)}`, res.ok ? 'ok' : 'err');
+    }
+  </script>
+</body>
+</html>
