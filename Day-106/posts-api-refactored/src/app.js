@@ -9,12 +9,17 @@ import { uploadConfig } from './config/upload.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { seedUsers } from './data/store.js';
 import { corsOptions } from './config/cors.js';
+import { verifyEmailConnection } from './services/email.service.js';
+import { emailConfig } from './config/email.js';
 
 const app = express();
-app.use(cors(corsOptions));
+
 // ============================================================
 // GLOBAL MIDDLEWARE (order matters!)
 // ============================================================
+
+// 0. CORS (configured once, via config/cors.js)
+app.use(cors(corsOptions));
 
 // 1. Cookie parser — MUST come before auth middleware
 app.use(cookieParser(process.env.COOKIE_SECRET || 'cookie-secret'));
@@ -44,27 +49,6 @@ app.use((req, res, next) => {
     originalEnd.apply(res, args);
   };
 
-  next();
-});
-
-// 4. CORS — with credentials support
-app.use((req, res, next) => {
-  const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:3001',
-  ];
-  const origin = req.headers.origin;
-
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true'); // ← Required for cookies
-  }
-
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
 });
 
@@ -115,11 +99,15 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // ============================================================
-// SEED USERS ON STARTUP
+// SEED USERS + VERIFY EMAIL ON STARTUP
 // ============================================================
 
-seedUsers().catch(err => {
-  console.error('Failed to seed users:', err);
-});
+seedUsers().catch(err =>
+  console.error('Failed to seed users:', err)
+);
+
+verifyEmailConnection().catch(err =>
+  console.error('Email verification failed:', err.message)
+);
 
 export default app;
