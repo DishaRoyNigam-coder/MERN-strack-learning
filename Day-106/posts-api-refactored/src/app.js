@@ -5,6 +5,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import chalk from 'chalk';
 import routes from './routes/index.js';
+import { generalLimiter } from './middleware/rateLimit.js';
 import { uploadConfig } from './config/upload.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { seedUsers } from './data/store.js';
@@ -88,7 +89,9 @@ app.use(
 // ============================================================
 // API ROUTES
 // ============================================================
-
+// Global rate limit as a fallback safety net
+// (Routes can still have their own tighter limits)
+app.use('/api', generalLimiter);
 app.use('/api', routes);
 
 // ============================================================

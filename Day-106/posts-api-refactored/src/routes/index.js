@@ -10,8 +10,14 @@ const router = Router();
 router.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: '📝 Posts API with RBAC',
-    version: '3.0.0',
+    message: '📝 Posts API with Rate Limiting',
+    version: '4.0.0',
+    rateLimits: {
+      login: '5 requests per 15 min per (IP + email)',
+      register: '3 requests per hour per IP',
+      upload: '10 requests per hour per user',
+      general: '100 requests per minute per user/IP',
+    },
     roles: {
       user: 'Can create posts, edit/delete own posts',
       editor: 'Can edit/delete any post, publish content',
