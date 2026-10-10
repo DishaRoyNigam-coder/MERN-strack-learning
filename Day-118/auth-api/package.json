@@ -1,0 +1,16 @@
+{
+  "name": "auth-api",
+  "version": "1.0.0",
+  "description": "Production-grade Authentication API",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "prod": "NODE_ENV=production node server.js",
+    "test:e2e": "bash tests/auth-e2e.sh"
+  },
+  "keywords": ["auth", "jwt", "express", "bcrypt"],
+  "author": "Your Name",
+  "license": "MIT"
+}
