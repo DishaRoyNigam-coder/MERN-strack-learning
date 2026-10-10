@@ -1,5 +1,6 @@
 // server.js
 
+import chalk from 'chalk';
 import app from './src/app.js';
 import logger from './src/utils/logger.js';
 import { loggerConfig } from './src/config/logger.js';
@@ -17,6 +18,23 @@ const server = app.listen(PORT, () => {
     logLevel: loggerConfig.level,
     logToFile: loggerConfig.toFile,
   });
+
+  // ============================================================
+  // SECURITY HEADERS BANNER
+  // ============================================================
+  console.log(chalk.yellow('\n🛡️  Security Headers:'));
+  console.log(chalk.gray('   ✅ Content-Security-Policy'));
+  console.log(chalk.gray('   ✅ Strict-Transport-Security (production only)'));
+  console.log(chalk.gray('   ✅ X-Frame-Options: DENY'));
+  console.log(chalk.gray('   ✅ X-Content-Type-Options: nosniff'));
+  console.log(chalk.gray('   ✅ Referrer-Policy: no-referrer'));
+  console.log(chalk.gray('   ✅ Cross-Origin-Opener-Policy'));
+  console.log(chalk.gray('   ✅ Cross-Origin-Resource-Policy'));
+  console.log(chalk.gray('   ✅ X-DNS-Prefetch-Control'));
+  console.log(chalk.gray('   ✅ X-Permitted-Cross-Domain-Policies'));
+  console.log(chalk.gray('   ✅ X-Powered-By removed'));
+  console.log(chalk.yellow('\n🧪 Test at: https://securityheaders.com'));
+  console.log('');
 });
 
 // ============================================================
