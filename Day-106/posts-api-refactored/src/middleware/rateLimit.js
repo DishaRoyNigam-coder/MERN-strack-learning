@@ -1,7 +1,8 @@
+
 // src/middleware/rateLimit.js
 
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import chalk from 'chalk';
+import logger from '../utils/logger.js';
 import { rateLimits } from '../config/rateLimits.js';
 
 // ============================================================
@@ -9,27 +10,24 @@ import { rateLimits } from '../config/rateLimits.js';
 // ============================================================
 
 function logLimitHit(req, limiterName) {
-  const time = new Date().toLocaleTimeString();
-  const ip = req.ip;
+  logger.warn('Rate limit hit', {
+    limiter: limiterName,
+    ip: req.ip,
+    method: req.method,
+    url: req.originalUrl,
+    userId: req.userId,
+  });
 
-  console.log(
-    chalk.gray(`[${time}]`) + ' ' +
-    chalk.bgYellow.black(' 🚫 RATE LIMIT ') + ' ' +
-    chalk.yellow(limiterName) + ' ' +
-    chalk.cyan(`${req.method} ${req.originalUrl}`) + ' ' +
-    chalk.gray(`from ${ip}`)
-  );
-
-  // In production, send to monitoring/alerting
-  // e.g., metrics.increment('rate_limit.hit', { endpoint, ip });
+  // In production, your logger can send these events
+  // to a centralized logging or monitoring service.
 }
 
 // ============================================================
-// FACTORY: Create a limiter
+// FACTORY: CREATE A LIMITER
 // ============================================================
 
 function createLimiter(name, { windowMs, max }, extraOptions = {}) {
-  // In test/disabled mode, return a no-op middleware
+  // In test/disabled mode, return a no-op middleware.
   if (rateLimits.disabled) {
     return (req, res, next) => next();
   }
@@ -37,107 +35,149 @@ function createLimiter(name, { windowMs, max }, extraOptions = {}) {
   return rateLimit({
     windowMs,
     max,
+
+    // Response returned when the rate limit is exceeded.
     message: {
       success: false,
       error: 'Too many requests',
       code: 'RATE_LIMITED',
       statusCode: 429,
-      message: 'You have exceeded the rate limit. Please try again later.',
+      message:
+        'You have exceeded the rate limit. Please try again later.',
     },
-    standardHeaders: 'draft-7', // RateLimit-* headers
-    legacyHeaders: true,        // Also send X-RateLimit-*
 
-    // Custom handler for logging
+    standardHeaders: 'draft-7',
+    legacyHeaders: true,
+
+    // Custom handler for logging rate limit hits.
     handler: (req, res, next, options) => {
       logLimitHit(req, name);
       res.status(options.statusCode).json(options.message);
     },
 
-    // Skip successful requests for login (only count failures)
-    skipSuccessfulRequests: extraOptions.skipSuccessfulRequests ?? false,
-    skipFailedRequests: extraOptions.skipFailedRequests ?? false,
+    // Configure request counting behavior.
+    skipSuccessfulRequests:
+      extraOptions.skipSuccessfulRequests ?? false,
 
-    // Custom key generator
-    keyGenerator: extraOptions.keyGenerator || ((req) => ipKeyGenerator(req)),
+    skipFailedRequests:
+      extraOptions.skipFailedRequests ?? false,
 
-    // Skip certain requests
+    // Custom key generator.
+    keyGenerator:
+      extraOptions.keyGenerator || ((req) => ipKeyGenerator(req.ip)),
+
+    // Skip certain requests when required.
     skip: extraOptions.skip || (() => false),
 
+    // Apply any additional limiter-specific options.
     ...extraOptions,
   });
 }
 
 // ============================================================
-// 1. LOGIN LIMITER — Prevents brute force
-// ============================================================
-// Key insight: We use IP + email as key, so an attacker can't
-// brute force a single account from one IP, but ALSO can't
-// lock out all accounts from one IP by hitting the shared limit.
-
-export const loginLimiter = createLimiter('login', rateLimits.login, {
-  keyGenerator: (req) => {
-    const email = (req.body?.email || 'unknown').toLowerCase().trim();
-    return `${ipKeyGenerator(req)}-${email}`;
-  },
-  // Only count failed logins toward the limit — successful logins
-  // don't consume the quota, so normal users aren't punished.
-  skipSuccessfulRequests: true,
-});
-
-// ============================================================
-// 2. REGISTER LIMITER — Prevents spam signups
+// 1. LOGIN LIMITER — PREVENTS BRUTE-FORCE ATTACKS
 // ============================================================
 
-export const registerLimiter = createLimiter('register', rateLimits.register, {
-  keyGenerator: (req) => ipKeyGenerator(req),
-});
+export const loginLimiter = createLimiter(
+  'login',
+  rateLimits.login,
+  {
+    // Separate limits by IP address and email address.
+    keyGenerator: (req) => {
+      const email = (req.body?.email || 'unknown')
+        .toLowerCase()
+        .trim();
+
+      return `${ipKeyGenerator(req.ip)}-${email}`;
+    },
+
+    // Successful logins do not count toward the limit.
+    skipSuccessfulRequests: true,
+  }
+);
 
 // ============================================================
-// 3. PASSWORD RESET LIMITER — Prevents email bombing
+// 2. REGISTER LIMITER — PREVENTS SPAM SIGNUPS
+// ============================================================
+
+export const registerLimiter = createLimiter(
+  'register',
+  rateLimits.register,
+  {
+    keyGenerator: (req) => ipKeyGenerator(req.ip),
+  }
+);
+
+// ============================================================
+// 3. PASSWORD RESET LIMITER — PREVENTS EMAIL BOMBING
 // ============================================================
 
 export const passwordResetLimiter = createLimiter(
   'password-reset',
   rateLimits.passwordReset,
   {
+    // Track password reset requests by email and IP.
     keyGenerator: (req) => {
-      const email = (req.body?.email || 'unknown').toLowerCase().trim();
-      return `pwreset-${email}-${ipKeyGenerator(req)}`;
+      const email = (req.body?.email || 'unknown')
+        .toLowerCase()
+        .trim();
+
+      return `pwreset-${email}-${ipKeyGenerator(req.ip)}`;
     },
   }
 );
 
 // ============================================================
-// 4. UPLOAD LIMITER — Prevents disk filling
+// 4. UPLOAD LIMITER — HELPS PREVENT DISK ABUSE
 // ============================================================
 
-export const uploadLimiter = createLimiter('upload', rateLimits.upload, {
-  keyGenerator: (req) => {
-    // Prefer authenticated user ID
-    if (req.userId) return `user-${req.userId}`;
-    return ipKeyGenerator(req);
-  },
-});
+export const uploadLimiter = createLimiter(
+  'upload',
+  rateLimits.upload,
+  {
+    // Prefer the authenticated user's ID.
+    // Otherwise, use the request IP address.
+    keyGenerator: (req) => {
+      if (req.userId) {
+        return `user-${req.userId}`;
+      }
+
+      return ipKeyGenerator(req.ip);
+    },
+  }
+);
 
 // ============================================================
-// 5. GENERAL API LIMITER — Prevents scraping
+// 5. GENERAL API LIMITER — HELPS PREVENT SCRAPING
 // ============================================================
 
-export const generalLimiter = createLimiter('general', rateLimits.general, {
-  keyGenerator: (req) => {
-    // Prefer authenticated user, fall back to IP
-    if (req.userId) return `user-${req.userId}`;
-    return ipKeyGenerator(req);
-  },
-  // Skip health checks — they should never be rate-limited
-  skip: (req) => req.path === '/health',
-});
+export const generalLimiter = createLimiter(
+  'general',
+  rateLimits.general,
+  {
+    // Prefer the authenticated user's ID.
+    // Otherwise, use the request IP address.
+    keyGenerator: (req) => {
+      if (req.userId) {
+        return `user-${req.userId}`;
+      }
+
+      return ipKeyGenerator(req.ip);
+    },
+
+    // Health checks should not be rate-limited.
+    skip: (req) => req.path === '/health',
+  }
+);
 
 // ============================================================
-// 6. STRICT LIMITER — For especially sensitive operations
+// 6. STRICT LIMITER — SENSITIVE OPERATIONS
 // ============================================================
 
-export const strictLimiter = createLimiter('strict', {
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3,
-});
+export const strictLimiter = createLimiter(
+  'strict',
+  {
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 3,
+  }
+);

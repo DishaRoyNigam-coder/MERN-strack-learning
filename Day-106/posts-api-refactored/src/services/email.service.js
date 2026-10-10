@@ -1,9 +1,8 @@
 // src/services/email.service.js
-
 import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
-import chalk from 'chalk';
 import { emailConfig } from '../config/email.js';
+import logger from '../utils/logger.js';
 
 // ============================================================
 // LAZY INITIALIZATION
@@ -41,7 +40,7 @@ function getResendClient() {
 
 async function sendEmail({ to, subject, html, text }) {
   if (!emailConfig.enabled) {
-    console.log(chalk.yellow('📧 Email disabled — skipping send'));
+    logger.info('Email disabled — skipping send', { to, subject });
     return { skipped: true };
   }
 
@@ -57,7 +56,8 @@ async function sendEmail({ to, subject, html, text }) {
       });
 
       if (error) throw new Error(error.message);
-      console.log(chalk.green(`📧 Email sent via Resend: ${subject} → ${to}`));
+      
+      logger.info('Email sent', { to, subject, provider: 'resend', id: data?.id });
       return { id: data?.id, provider: 'resend' };
     }
 
@@ -71,16 +71,16 @@ async function sendEmail({ to, subject, html, text }) {
       text,
     });
 
-    // For Ethereal, log the preview URL
+    // For Ethereal, log the preview URL if available
     const previewUrl = nodemailer.getTestMessageUrl(info);
     if (previewUrl) {
-      console.log(chalk.cyan(`📧 Email preview: ${previewUrl}`));
+      logger.info('Email preview available', { to, subject, previewUrl });
     }
 
-    console.log(chalk.green(`📧 Email sent via Nodemailer: ${subject} → ${to}`));
+    logger.info('Email sent', { to, subject, provider: 'nodemailer', messageId: info.messageId });
     return { messageId: info.messageId, provider: 'nodemailer' };
   } catch (error) {
-    console.error(chalk.red(`📧 Email failed: ${error.message}`));
+    logger.error('Email failed', { to, subject, error: error.message });
     throw error;
   }
 }
@@ -124,7 +124,7 @@ function wrapTemplate({ title, body, ctaText, ctaUrl, footer }) {
               <table cellpadding="0" cellspacing="0" style="margin-top: 24px;">
                 <tr>
                   <td style="background: #3b82f6; border-radius: 8px;">
-                    <a href="${ctaUrl}" style="display: inline-block; padding: 12px 28px; color: #ffffff; font-weight: 600; text-decoration: none;">${ctaText}</a>
+                    <a href="\({ctaUrl}" style="display: inline-block; padding: 12px 28px; color: #ffffff; font-weight: 600; text-decoration: none;">\){ctaText}</a>
                   </td>
                 </tr>
               </table>
@@ -216,7 +216,7 @@ export async function sendPasswordResetEmail(user, resetToken) {
 
 export async function verifyEmailConnection() {
   if (!emailConfig.enabled) {
-    console.log(chalk.yellow('📧 Email service disabled'));
+    logger.info('Email service disabled on startup');
     return false;
   }
 
@@ -224,15 +224,14 @@ export async function verifyEmailConnection() {
     if (emailConfig.service === 'nodemailer') {
       const transport = getNodemailerTransporter();
       await transport.verify();
-      console.log(chalk.green('📧 SMTP connection verified'));
+      logger.info('SMTP connection verified successfully');
       return true;
     }
 
-    // For Resend, we can't easily verify — assume OK
-    console.log(chalk.green('📧 Resend client initialized'));
+    logger.info('Resend client initialized successfully');
     return true;
   } catch (error) {
-    console.error(chalk.red(`📧 Email connection failed: ${error.message}`));
+    logger.error('Email startup connection failed', { error: error.message });
     return false;
   }
 }

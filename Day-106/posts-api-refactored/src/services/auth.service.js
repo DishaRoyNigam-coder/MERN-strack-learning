@@ -1,12 +1,11 @@
 // src/services/auth.service.js
-
 import { users } from '../data/store.js';
 import { comparePassword, hashPassword } from '../utils/password.js';
 import { signToken } from '../utils/jwt.js';
 import { UnauthorizedError, ConflictError } from '../errors/AppError.js';
 import { getNextUserId } from '../data/store.js';
 import { sendWelcomeEmail } from './email.service.js';
-import chalk from 'chalk';
+import logger from '../utils/logger.js';
 
 export const authService = {
   async login(email, password) {
@@ -22,6 +21,9 @@ export const authService = {
       role: user.role,
     });
 
+    // Added: Log user login success
+    logger.info('User logged in', { userId: user.id, email: user.email });
+
     const { passwordHash: _, ...safeUser } = user;
     return { token, user: safeUser };
   },
@@ -33,7 +35,6 @@ export const authService = {
     }
 
     const hashedPassword = await hashPassword(password);
-
     const newUser = {
       id: getNextUserId(),
       name: name.trim(),
@@ -53,11 +54,21 @@ export const authService = {
       role: newUser.role,
     });
 
+    // Added: Log user registration success
+    logger.info('User registered', {
+      userId: newUser.id,
+      email: newUser.email,
+      role: newUser.role,
+    });
+
     const { passwordHash: _, ...safeUser } = newUser;
 
     // ✅ FIRE-AND-FORGET: Send welcome email but don't block signup
     sendWelcomeEmail(safeUser).catch(err => {
-      console.error(chalk.red(`Failed to send welcome email to ${safeUser.email}:`), err.message);
+      logger.error('Failed to send welcome email', { 
+        email: safeUser.email, 
+        error: err.message 
+      });
     });
 
     return { token, user: safeUser };
@@ -66,6 +77,7 @@ export const authService = {
   getCurrentUser(userId) {
     const user = users.find(u => u.id === userId);
     if (!user) throw new UnauthorizedError('User no longer exists');
+
     const { passwordHash: _, ...safeUser } = user;
     return safeUser;
   },

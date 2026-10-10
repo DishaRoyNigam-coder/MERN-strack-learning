@@ -1,6 +1,7 @@
+
 // src/middleware/auth.js
 
-import chalk from 'chalk';
+import logger from '../utils/logger.js';
 import { verifyToken } from '../utils/jwt.js';
 import { extractToken } from '../utils/cookies.js';
 import { UnauthorizedError } from '../errors/AppError.js';
@@ -12,20 +13,28 @@ import { PERMISSIONS } from '../config/roles.js';
 // ============================================================
 
 function logAuth(action, req, details = {}) {
-  const time = new Date().toLocaleTimeString();
-  const icon = action === 'success' ? '✅' :
-               action === 'failure' ? '❌' : 'ℹ️';
-  const color = action === 'success' ? chalk.green :
-                action === 'failure' ? chalk.red : chalk.gray;
+  const { source, reason, userId, email } = details;
 
-  console.log(
-    chalk.gray(`[${time}]`) + ' ' +
-    `${icon} ` +
-    color(`AUTH:${action.toUpperCase()}`) + ' ' +
-    chalk.cyan(`${req.method} ${req.originalUrl}`) +
-    (details.source ? ' ' + chalk.magenta(`via=${details.source}`) : '') +
-    (details.reason ? ' ' + chalk.yellow(`(${details.reason})`) : '')
-  );
+  if (action === 'success') {
+    logger.debug('Auth success', {
+      userId,
+      email,
+      source,
+      method: req.method,
+      url: req.originalUrl,
+    });
+    return;
+  }
+
+  if (action === 'failure') {
+    logger.warn('Auth failure', {
+      reason,
+      source,
+      ip: req.ip,
+      method: req.method,
+      url: req.originalUrl,
+    });
+  }
 }
 
 // ============================================================
@@ -40,6 +49,7 @@ function attachUser(req, user, token, decoded) {
     ...safeUser,
     permissions: userPermissions,
   };
+
   req.userId = user.id;
   req.userRole = user.role;
   req.token = token;
@@ -54,29 +64,64 @@ export function requireAuth(req, res, next) {
   try {
     const { token, source } = extractToken(req);
 
+    // No token provided.
     if (!token) {
-      logAuth('failure', req, { reason: 'No token (cookie or header)' });
-      throw new UnauthorizedError('Authentication required', {
-        hint: 'Provide a valid cookie or Authorization: Bearer <token> header',
-      });
-    }
+      const error = new UnauthorizedError(
+        'Authentication required',
+        {
+          hint:
+            'Provide a valid cookie or Authorization: Bearer <token> header',
+        }
+      );
 
-    let decoded;
-    try {
-      decoded = verifyToken(token);
-    } catch (error) {
-      logAuth('failure', req, { reason: error.message, source });
+      logAuth('failure', req, {
+        reason: 'No token (cookie or header)',
+        source,
+      });
+
       throw error;
     }
 
-    const user = users.find(u => u.id === decoded.userId);
-    if (!user) {
-      logAuth('failure', req, { reason: 'User not found', source });
-      throw new UnauthorizedError('User no longer exists');
+    // Verify the token.
+    let decoded;
+
+    try {
+      decoded = verifyToken(token);
+    } catch (error) {
+      logAuth('failure', req, {
+        reason: error.message,
+        source,
+      });
+
+      throw error;
     }
 
+    // Find the authenticated user.
+    const user = users.find((u) => u.id === decoded.userId);
+
+    if (!user) {
+      const error = new UnauthorizedError(
+        'User no longer exists'
+      );
+
+      logAuth('failure', req, {
+        reason: 'User not found',
+        source,
+      });
+
+      throw error;
+    }
+
+    // Attach user information to the request.
     attachUser(req, user, token, decoded);
-    logAuth('success', req, { reason: user.email, source });
+
+    // Log successful authentication.
+    logAuth('success', req, {
+      userId: user.id,
+      email: user.email,
+      source,
+    });
+
     next();
   } catch (error) {
     next(error);
@@ -84,12 +129,14 @@ export function requireAuth(req, res, next) {
 }
 
 // ============================================================
-// optionalAuth — Attach user if cookie OR header present
+// optionalAuth — Attach user if cookie OR header is present
 // ============================================================
 
 export function optionalAuth(req, res, next) {
   try {
-    const { token, source } = extractToken(req);
+    const { token } = extractToken(req);
+
+    // Authentication is optional.
     if (!token) {
       req.user = null;
       return next();
@@ -97,13 +144,15 @@ export function optionalAuth(req, res, next) {
 
     try {
       const decoded = verifyToken(token);
-      const user = users.find(u => u.id === decoded.userId);
+      const user = users.find((u) => u.id === decoded.userId);
+
       if (user) {
         attachUser(req, user, token, decoded);
       } else {
         req.user = null;
       }
     } catch (error) {
+      // Invalid or expired tokens do not block optional access.
       req.user = null;
     }
 
