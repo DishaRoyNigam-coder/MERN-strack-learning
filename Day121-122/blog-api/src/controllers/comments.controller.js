@@ -2,15 +2,13 @@
 
 import { commentsService } from '../services/comments.service.js';
 
+// src/controllers/comments.controller.js
 export function listComments(req, res, next) {
   try {
-    const query = { ...req.query };
-    if (req.user) query.userRole = req.user.role;
-    const result = commentsService.listByPost(req.params.postId, query);
+    const result = commentsService.listByPost(req.params.postId, req.query, req.user);
     res.json({ success: true, ...result });
   } catch (err) { next(err); }
 }
-
 export function createComment(req, res, next) {
   try {
     const comment = commentsService.create(req.params.postId, req.body, req.user);

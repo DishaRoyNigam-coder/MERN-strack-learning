@@ -9,7 +9,6 @@ import { categories, posts, comments, users } from '../src/data/store.js';
 async function seedTestData() {
   const { seedData } = await import('../src/data/store.js');
 
-  // Wipe existing data
   users.length = 0;
   categories.length = 0;
   posts.length = 0;
@@ -75,7 +74,6 @@ describe('Blog API — End-to-End', () => {
     it('DELETE /api/categories/:id — blocked if it has posts', async () => {
       const res = await admin.agent.delete('/api/categories/2');
 
-      // Category 2 has posts
       expect(res.status).toBe(400);
     });
   });
@@ -173,6 +171,380 @@ describe('Blog API — End-to-End', () => {
   });
 
   // ============================================================
+  // Posts — Query Features
+  // ============================================================
+
+  describe('GET /api/posts — Query Features', () => {
+    // Create 25 published posts with different tags, likes, views and dates.
+    beforeAll(async () => {
+      const base = Date.now();
+
+      for (let i = 1; i <= 25; i++) {
+        const res = await reader.agent
+          .post('/api/posts')
+          .send({
+            title: `Test Post ${i}`,
+            body: `Body for post ${i} with enough content to pass validation checks.`,
+            categoryId: (i % 3) + 1,
+            tags: i % 2 === 0 ? ['even', 'test'] : ['odd', 'test'],
+          });
+
+        expect(res.status).toBe(201);
+
+        const created = posts.find(
+          (post) => post.id === res.body.data.id
+        );
+
+        expect(created).toBeDefined();
+
+        // Reader-created posts default to draft; publish test fixtures.
+        created.status = 'published';
+        created.likes = i * 2;
+        created.views = i * 10;
+        created.createdAt = new Date(
+          base - i * 24 * 60 * 60 * 1000
+        ).toISOString();
+      }
+    });
+
+    // ------------------------------------------------------------
+    // Pagination
+    // ------------------------------------------------------------
+
+    describe('Pagination', () => {
+      it('uses page=1 and limit=10 by default', async () => {
+        const res = await request(app).get('/api/posts');
+
+        expect(res.status).toBe(200);
+        expect(res.body.pagination.page).toBe(1);
+        expect(res.body.pagination.limit).toBe(10);
+        expect(res.body.data.length).toBeLessThanOrEqual(10);
+      });
+
+      it('supports a custom page and limit', async () => {
+        const res = await request(app).get('/api/posts?page=2&limit=5');
+
+        expect(res.status).toBe(200);
+        expect(res.body.pagination.page).toBe(2);
+        expect(res.body.pagination.limit).toBe(5);
+        expect(res.body.data).toHaveLength(5);
+      });
+
+      it('caps the limit at 100', async () => {
+        const res = await request(app).get('/api/posts?limit=1000');
+
+        expect(res.status).toBe(200);
+        expect(res.body.pagination.limit).toBe(100);
+      });
+
+      it('uses defaults for invalid page and limit values', async () => {
+        const res = await request(app).get('/api/posts?page=abc&limit=xyz');
+
+        expect(res.status).toBe(200);
+        expect(res.body.pagination.page).toBe(1);
+        expect(res.body.pagination.limit).toBe(10);
+      });
+
+      it('returns nextPage and prevPage metadata', async () => {
+        const res = await request(app).get('/api/posts?page=2&limit=5');
+
+        expect(res.status).toBe(200);
+        expect(res.body.pagination.nextPage).toBe(3);
+        expect(res.body.pagination.prevPage).toBe(1);
+        expect(res.body.pagination.hasPrev).toBe(true);
+        expect(res.body.pagination.hasNext).toBe(true);
+      });
+
+      it('returns an empty array for an out-of-range page', async () => {
+        const res = await request(app).get('/api/posts?page=9999');
+
+        expect(res.status).toBe(200);
+        expect(res.body.data).toEqual([]);
+        expect(res.body.pagination.hasNext).toBe(false);
+      });
+    });
+
+    // ------------------------------------------------------------
+    // Sorting
+    // ------------------------------------------------------------
+
+    describe('Sorting', () => {
+      it('sorts by createdAt descending by default', async () => {
+        const res = await request(app).get('/api/posts?limit=5');
+
+        expect(res.status).toBe(200);
+
+        const dates = res.body.data.map(
+          (post) => new Date(post.createdAt).getTime()
+        );
+
+        for (let i = 1; i < dates.length; i++) {
+          expect(dates[i]).toBeLessThanOrEqual(dates[i - 1]);
+        }
+      });
+
+      it('sorts by likes ascending', async () => {
+        const res = await request(app).get(
+          '/api/posts?sort=likes&order=asc&limit=10'
+        );
+
+        expect(res.status).toBe(200);
+
+        const likes = res.body.data.map((post) => post.likes);
+
+        for (let i = 1; i < likes.length; i++) {
+          expect(likes[i]).toBeGreaterThanOrEqual(likes[i - 1]);
+        }
+      });
+
+      it('sorts by title ascending', async () => {
+        const res = await request(app).get(
+          '/api/posts?sort=title&order=asc'
+        );
+
+        expect(res.status).toBe(200);
+
+        const titles = res.body.data.map((post) => post.title);
+
+        expect(titles).toEqual([...titles].sort());
+      });
+
+      it('accepts multi-field sorting', async () => {
+        const res = await request(app).get(
+          '/api/posts?sort=categoryId,likes&order=asc,desc'
+        );
+
+        expect(res.status).toBe(200);
+        expect(res.body.data.length).toBeGreaterThan(0);
+      });
+
+      it('ignores non-whitelisted sort fields', async () => {
+        const res = await request(app).get(
+          '/api/posts?sort=__proto__&order=asc'
+        );
+
+        expect(res.status).toBe(200);
+      });
+    });
+
+    // ------------------------------------------------------------
+    // Filtering
+    // ------------------------------------------------------------
+
+    describe('Filtering', () => {
+      it('filters by authorId', async () => {
+        const res = await request(app).get(
+          `/api/posts?authorId=${reader.user.id}`
+        );
+
+        expect(res.status).toBe(200);
+
+        expect(
+          res.body.data.every(
+            (post) => post.author.id === reader.user.id
+          )
+        ).toBe(true);
+      });
+
+      it('filters by category slug', async () => {
+        const res = await request(app).get(
+          '/api/posts?category=javascript'
+        );
+
+        expect(res.status).toBe(200);
+
+        expect(
+          res.body.data.every(
+            (post) => post.category.slug === 'javascript'
+          )
+        ).toBe(true);
+      });
+
+      it('filters by categoryId', async () => {
+        const res = await request(app).get(
+          '/api/posts?categoryId=1'
+        );
+
+        expect(res.status).toBe(200);
+
+        expect(
+          res.body.data.every((post) => post.categoryId === 1)
+        ).toBe(true);
+      });
+
+      it('filters by a single tag', async () => {
+        const res = await request(app).get('/api/posts?tag=even');
+
+        expect(res.status).toBe(200);
+
+        expect(
+          res.body.data.every((post) => post.tags.includes('even'))
+        ).toBe(true);
+      });
+
+      it('filters by multiple tags using AND logic', async () => {
+        const res = await request(app).get(
+          '/api/posts?tags=even,test'
+        );
+
+        expect(res.status).toBe(200);
+
+        expect(
+          res.body.data.every(
+            (post) =>
+              post.tags.includes('even') &&
+              post.tags.includes('test')
+          )
+        ).toBe(true);
+      });
+
+      it('returns only published posts to public users', async () => {
+        const res = await request(app).get('/api/posts');
+
+        expect(res.status).toBe(200);
+
+        expect(
+          res.body.data.every((post) => post.status === 'published')
+        ).toBe(true);
+      });
+
+      it('filters by minLikes', async () => {
+        const res = await request(app).get('/api/posts?minLikes=20');
+
+        expect(res.status).toBe(200);
+
+        expect(
+          res.body.data.every((post) => post.likes >= 20)
+        ).toBe(true);
+      });
+
+      it('filters by date range', async () => {
+        const from = new Date(
+          Date.now() - 10 * 24 * 60 * 60 * 1000
+        ).toISOString();
+
+        const to = new Date().toISOString();
+
+        const res = await request(app).get(
+          `/api/posts?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+        );
+
+        expect(res.status).toBe(200);
+
+        res.body.data.forEach((post) => {
+          const created = new Date(post.createdAt).getTime();
+
+          expect(created).toBeGreaterThanOrEqual(
+            new Date(from).getTime()
+          );
+
+          expect(created).toBeLessThanOrEqual(
+            new Date(to).getTime()
+          );
+        });
+      });
+
+      it('combines multiple filters', async () => {
+        const res = await request(app).get(
+          `/api/posts?authorId=${reader.user.id}&categoryId=1&minLikes=5`
+        );
+
+        expect(res.status).toBe(200);
+
+        res.body.data.forEach((post) => {
+          expect(post.author.id).toBe(reader.user.id);
+          expect(post.categoryId).toBe(1);
+          expect(post.likes).toBeGreaterThanOrEqual(5);
+        });
+      });
+    });
+
+    // ------------------------------------------------------------
+    // Search
+    // ------------------------------------------------------------
+
+    describe('Search', () => {
+      it('searches in title and body', async () => {
+        const res = await request(app).get(
+          '/api/posts?q=body for post'
+        );
+
+        expect(res.status).toBe(200);
+        expect(res.body.data.length).toBeGreaterThan(0);
+      });
+
+      it('is case-insensitive', async () => {
+        const lower = await request(app).get('/api/posts?q=test');
+        const upper = await request(app).get('/api/posts?q=TEST');
+
+        expect(lower.status).toBe(200);
+        expect(upper.status).toBe(200);
+
+        expect(lower.body.pagination.total).toBe(
+          upper.body.pagination.total
+        );
+      });
+
+      it('returns an empty result when nothing matches', async () => {
+        const res = await request(app).get(
+          '/api/posts?q=xyznonexistent'
+        );
+
+        expect(res.status).toBe(200);
+        expect(res.body.data).toEqual([]);
+        expect(res.body.pagination.total).toBe(0);
+      });
+    });
+
+    // ------------------------------------------------------------
+    // Field Selection
+    // ------------------------------------------------------------
+
+    describe('Field Selection', () => {
+      it('returns only requested fields', async () => {
+        const res = await request(app).get(
+          '/api/posts?fields=id,title&limit=3'
+        );
+
+        expect(res.status).toBe(200);
+        expect(res.body.data.length).toBeGreaterThan(0);
+
+        res.body.data.forEach((post) => {
+          expect(Object.keys(post).sort()).toEqual(['id', 'title']);
+        });
+      });
+
+      it('ignores non-whitelisted fields', async () => {
+        const res = await request(app).get(
+          '/api/posts?fields=id,__proto__&limit=3'
+        );
+
+        expect(res.status).toBe(200);
+
+        res.body.data.forEach((post) => {
+          expect(Object.keys(post)).toEqual(['id']);
+        });
+      });
+    });
+
+    // ------------------------------------------------------------
+    // Meta Endpoint
+    // ------------------------------------------------------------
+
+    describe('Meta endpoint', () => {
+      it('returns query documentation', async () => {
+        const res = await request(app).get('/api/posts/meta');
+
+        expect(res.status).toBe(200);
+        expect(res.body).toHaveProperty('pagination');
+        expect(res.body).toHaveProperty('sorting');
+        expect(res.body).toHaveProperty('filtering');
+        expect(res.body.examples).toBeInstanceOf(Array);
+      });
+    });
+  });
+
+  // ============================================================
   // Comments
   // ============================================================
 
@@ -230,7 +602,7 @@ describe('Blog API — End-to-End', () => {
     });
 
     it('DELETE /api/comments/:id — reader cannot delete others comment', async () => {
-      // Editor creates a fresh independent comment
+      // Editor creates a fresh independent comment.
       const created = await editor.agent
         .post('/api/posts/1/comments')
         .send({
@@ -241,7 +613,7 @@ describe('Blog API — End-to-End', () => {
 
       const editorCommentId = created.body.data.id;
 
-      // Reader tries to delete Editor's comment
+      // Reader tries to delete Editor's comment.
       const res = await reader.agent.delete(
         `/api/comments/${editorCommentId}`
       );

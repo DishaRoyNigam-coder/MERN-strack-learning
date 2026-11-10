@@ -4,9 +4,7 @@ import { postsService } from '../services/posts.service.js';
 
 export function listPosts(req, res, next) {
   try {
-    const query = { ...req.query };
-    if (req.user) query.userRole = req.user.role;
-    const result = postsService.list(query);
+    const result = postsService.list(req.query, req.user);
     res.json({ success: true, ...result });
   } catch (err) { next(err); }
 }
