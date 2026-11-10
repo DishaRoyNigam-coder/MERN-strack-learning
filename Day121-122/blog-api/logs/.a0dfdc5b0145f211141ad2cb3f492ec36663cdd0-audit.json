@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "C:\\Users\\nigam\\OneDrive\\Desktop\\MERN\\Day121-122\\blog-api\\logs\\.a0dfdc5b0145f211141ad2cb3f492ec36663cdd0-audit.json",
+    "files": [
+        {
+            "date": 1794289129373,
+            "name": "C:\\Users\\nigam\\OneDrive\\Desktop\\MERN\\Day121-122\\blog-api\\logs\\app-2026-11-10.log",
+            "hash": "5596482c5f9ab7bcb9d8caa364435dc73a8be76fb0113b02e74dfe94a80d9e09"
+        }
+    ],
+    "hashType": "sha256"
+}
